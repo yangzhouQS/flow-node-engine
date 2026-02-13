@@ -1,9 +1,29 @@
 // 统一API响应格式
-export interface ApiResponse<T = {
+export interface ApiResponse<T = any> {
   code: number;
   message: string;
   data: T;
   timestamp: number;
+  total?: number;
+}
+
+// API响应DTO类
+export class ApiResponseDto<T = any> {
+  code: number;
+  message: string;
+  data: T;
+  timestamp: number;
+  total?: number;
+
+  constructor(code: number, message: string, data?: T, total?: number) {
+    this.code = code;
+    this.message = message;
+    this.data = data as T;
+    this.timestamp = Date.now();
+    if (total !== undefined) {
+      this.total = total;
+    }
+  }
 }
 
 // 分页请求格式

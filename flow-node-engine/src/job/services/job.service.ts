@@ -40,6 +40,10 @@ export enum JobEventType {
   JOB_DEAD_LETTER = 'job.dead_letter',
   TIMER_TRIGGERED = 'job.timer_triggered',
   EXTERNAL_WORKER_CLAIMED = 'job.external_worker_claimed',
+  EXECUTION_STARTED = 'job.execution_started',
+  EXECUTION_COMPLETED = 'job.execution_completed',
+  EXECUTION_FAILED = 'job.execution_failed',
+  MOVED_TO_DEAD_LETTER = 'job.moved_to_dead_letter',
 }
 
 /**
@@ -51,6 +55,14 @@ export interface JobEvent {
   jobType: JobType | TimerType | string;
   data: any;
   timestamp: Date;
+  processInstanceId?: string;
+  activityId?: string;
+  executionId?: string;
+  error?: {
+    message: string;
+    code?: string;
+    stack?: string;
+  };
 }
 
 @Injectable()

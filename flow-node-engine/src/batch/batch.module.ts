@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BatchEntity } from './entities/batch.entity';
-import { BatchPartEntity } from './entities/batch-part.entity';
-import { BatchService } from './services/batch.service';
+
 import { BatchController } from './controllers/batch.controller';
+import { BatchPartEntity } from './entities/batch-part.entity';
+import { BatchEntity } from './entities/batch.entity';
+import { BatchService } from './services/batch.service';
 
 @Module({
   imports: [

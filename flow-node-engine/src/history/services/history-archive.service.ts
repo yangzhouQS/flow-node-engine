@@ -3,14 +3,14 @@
  * 处理历史数据的定期归档和清理
  */
 import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Between, LessThanOrEqual } from 'typeorm';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { HistoricTaskInstance } from '../entities/historic-task-instance.entity';
 import { HistoricActivityInstance } from '../entities/historic-activity-instance.entity';
-import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
 import { HistoricDetail } from '../entities/historic-detail.entity';
+import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
+import { HistoricTaskInstance } from '../entities/historic-task-instance.entity';
 import { HistoricVariableInstance } from '../entities/historic-variable-instance.entity';
 
 export interface ArchiveConfig {
@@ -394,7 +394,7 @@ export class HistoryArchiveService {
    * @param beforeDate 截止日期
    * @param limit 返回记录限制
    */
-  async previewArchiveData(beforeDate: Date, limit: number = 100): Promise<{
+  async previewArchiveData(beforeDate: Date, limit = 100): Promise<{
     tasks: HistoricTaskInstance[];
     processInstances: HistoricProcessInstance[];
     counts: {

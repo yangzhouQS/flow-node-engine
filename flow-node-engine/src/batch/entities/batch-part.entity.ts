@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+
 import { BatchEntity, BatchStatus } from './batch.entity';
 
 /**

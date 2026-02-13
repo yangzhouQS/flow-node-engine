@@ -165,7 +165,7 @@ export class TaskRejectController {
   ): Promise<{ success: boolean; message: string; shouldReject?: boolean }> {
     return this.taskRejectService.handleMultiInstanceReject({
       taskId: dto.taskId || taskId,
-      strategy: dto.strategy || MultiInstanceRejectStrategy.ANY_REJECT,
+      strategy: dto.strategy || MultiInstanceRejectStrategy.ALL_BACK,
       reason: dto.reason,
       variables: dto.variables,
       userId,

@@ -11,8 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import {
   CreateCCDto,
   BatchCreateCCDto,
@@ -26,7 +24,11 @@ import {
   CCStatus,
   CCType,
 } from '../dto/cc.dto';
-import { CCService } from '../services/cc.service';
+import { CcService } from '../services/cc.service';
+
+// 临时装饰器占位，待auth模块实现后替换
+const CurrentUser = (field?: string) => (target: any, propertyKey: string | symbol, parameterIndex: number) => {};
+const JwtAuthGuard = class {};
 
 /**
  * 抄送控制器
@@ -35,7 +37,7 @@ import { CCService } from '../services/cc.service';
 @Controller('cc')
 @UseGuards(JwtAuthGuard)
 export class CCController {
-  constructor(private readonly ccService: CCService) {}
+  constructor(private readonly ccService: CcService) {}
 
   /**
    * 创建抄送

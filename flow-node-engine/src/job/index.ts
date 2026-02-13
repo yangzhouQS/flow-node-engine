@@ -18,7 +18,6 @@ export {
   CreateExternalWorkerJobDto,
   ExternalWorkerJobQueryDto,
   FetchAndLockDto,
-  FetchAndLockTopicDto,
   CompleteExternalWorkerJobDto,
   FailExternalWorkerJobDto,
   DeadLetterJobQueryDto,

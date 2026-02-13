@@ -126,6 +126,10 @@ export class Progress {
   @Column({ type: 'bigint', nullable: true })
   duration_: number;
 
+  /** 实际持续时间（毫秒） */
+  @Column({ type: 'bigint', nullable: true })
+  actual_duration_: number;
+
   /** 预计持续时间（毫秒） */
   @Column({ type: 'bigint', nullable: true })
   estimated_duration_: number;

@@ -15,9 +15,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
+import { NotificationType, NotificationStatus } from '../entities/in-app-notification.entity';
 import { InAppNotificationService } from '../services/in-app-notification.service';
 import { NotificationService } from '../services/notification.service';
-import { NotificationType, NotificationStatus } from '../entities/in-app-notification.entity';
 
 @Controller('notifications')
 export class NotificationController {

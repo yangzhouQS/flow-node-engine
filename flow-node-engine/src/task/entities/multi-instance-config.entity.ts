@@ -69,6 +69,12 @@ export class MultiInstanceConfigEntity {
   reject_strategy_: string;
 
   /**
+   * 驳回百分比（用于PERCENTAGE_REJECT策略）
+   */
+  @Column({ type: 'int', nullable: true })
+  reject_percentage_: number;
+
+  /**
    * 完成条件表达式
    */
   @Column({ type: 'text', nullable: true })

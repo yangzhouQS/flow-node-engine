@@ -18,8 +18,30 @@ export enum RejectStrategy {
 
 /**
  * 多实例退回策略枚举
+ * 定义多人任务场景下的退回执行策略
  */
 export enum MultiInstanceRejectStrategy {
+  /** 所有人任务都退回 */
+  ALL_BACK = 'ALL_BACK',
+  /** 仅退回当前操作人的任务 */
+  ONLY_CURRENT = 'ONLY_CURRENT',
+  /** 多数人退回则全部退回 */
+  MAJORITY_BACK = 'MAJORITY_BACK',
+  /** 保留已完成状态，仅重置未完成任务 */
+  KEEP_COMPLETED = 'KEEP_COMPLETED',
+  /** 重置所有任务，需要重新审批 */
+  RESET_ALL = 'RESET_ALL',
+  /** 等待其他人完成后再退回 */
+  WAIT_COMPLETION = 'WAIT_COMPLETION',
+  /** 立即退回，取消其他人的任务 */
+  IMMEDIATE = 'IMMEDIATE',
+}
+
+/**
+ * 多实例投票策略枚举
+ * 定义多人任务场景下的投票决策策略
+ */
+export enum MultiInstanceVoteStrategy {
   /** 任一人驳回即退回 */
   ANY_REJECT = 'ANY_REJECT',
   /** 所有人驳回才退回 */

@@ -3,8 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { FormController } from './controllers/form.controller';
 import { Form } from './entities/form.entity';
-import { FormService } from './services/form.service';
 import { FormValidationService } from './services/form-validation.service';
+import { FormService } from './services/form.service';
 
 @Module({
   imports: [

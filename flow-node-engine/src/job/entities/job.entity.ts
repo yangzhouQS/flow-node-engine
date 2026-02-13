@@ -95,6 +95,31 @@ export class Job {
   @Column({ length: 64, nullable: true })
   task_id_: string;
 
+  /** 关联的活动ID */
+  @Column({ length: 64, nullable: true })
+  activity_id_: string;
+
+  /** 关联的活动名称 */
+  @Column({ length: 255, nullable: true })
+  activity_name_: string;
+
+  /** 元素类型 */
+  @Column({ length: 100, nullable: true })
+  element_type_: string;
+
+  /** 回调配置（JSON格式） */
+  @Column({ type: 'text', nullable: true })
+  callback_config_: string;
+
+  /** 到期时间 */
+  @Column({ type: 'datetime', nullable: true })
+  @Index()
+  due_date_: Date;
+
+  /** 执行耗时（毫秒） */
+  @Column({ type: 'int', nullable: true })
+  duration_: number;
+
   /** 作业处理器的Bean名称 */
   @Column({ length: 255, nullable: true })
   handler_type_: string;

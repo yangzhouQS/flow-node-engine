@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { DmnController } from './controllers/dmn.controller';
 import { DmnDecisionEntity } from './entities/dmn-decision.entity';
 import { DmnExecutionEntity } from './entities/dmn-execution.entity';
-import { DmnController } from './controllers/dmn.controller';
+import { ConditionEvaluatorService } from './services/condition-evaluator.service';
 import { DmnService } from './services/dmn.service';
-import { RuleEngineExecutorService } from './services/rule-engine-executor.service';
-import { HitPolicyHandlerFactory } from './services/hit-policy-handlers.service';
-import {
+import { HitPolicyHandlerFactory ,
   UniqueHitPolicyHandler,
   FirstHitPolicyHandler,
   PriorityHitPolicyHandler,
@@ -15,7 +15,8 @@ import {
   RuleOrderHitPolicyHandler,
   OutputOrderHitPolicyHandler,
 } from './services/hit-policy-handlers.service';
-import { ConditionEvaluatorService } from './services/condition-evaluator.service';
+import { RuleEngineExecutorService } from './services/rule-engine-executor.service';
+
 
 @Module({
   imports: [TypeOrmModule.forFeature([DmnDecisionEntity, DmnExecutionEntity])],

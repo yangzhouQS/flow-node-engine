@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  UpdateDateColumn,
 } from 'typeorm';
 
 import { ProcessInstance } from './process-instance.entity';
@@ -57,10 +58,10 @@ export class Execution {
   @UpdateDateColumn({ name: 'update_time' })
   updateTime: Date;
 
-  @ManyToOne(() => ProcessInstance, (execution) => execution.processInstance)
+  @ManyToOne(() => ProcessInstance)
   @JoinColumn({ name: 'process_instance_id' })
   processInstance: ProcessInstance;
 
   @OneToMany(() => Variable, (variable) => variable.execution)
-  variables: Variable[];
+  variableList: Variable[];
 }

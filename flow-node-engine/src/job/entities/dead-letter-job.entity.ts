@@ -66,6 +66,30 @@ export class DeadLetterJob {
   @Column({ type: 'text', nullable: true })
   payload_: string;
 
+  /** 关联的活动ID */
+  @Column({ length: 64, nullable: true })
+  activity_id_: string;
+
+  /** 关联的活动名称 */
+  @Column({ length: 255, nullable: true })
+  activity_name_: string;
+
+  /** 元素类型 */
+  @Column({ length: 100, nullable: true })
+  element_type_: string;
+
+  /** 回调配置（JSON格式） */
+  @Column({ type: 'text', nullable: true })
+  callback_config_: string;
+
+  /** 重试次数 */
+  @Column({ type: 'int', default: 0 })
+  retry_count_: number;
+
+  /** 最大重试次数 */
+  @Column({ type: 'int', default: 3 })
+  max_retries_: number;
+
   /** 异常消息 */
   @Column({ type: 'text', nullable: true })
   exception_message_: string;

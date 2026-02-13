@@ -4,11 +4,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../identity/guards/jwt-auth.guard';
 import { CreateFormDto } from '../dto/create-form.dto';
+import { ValidateFormDto, ValidateSingleFieldDto, ValidationResultDto, JsonSchemaDto } from '../dto/form-validation.dto';
 import { QueryFormDto } from '../dto/query-form.dto';
 import { UpdateFormDto } from '../dto/update-form.dto';
-import { ValidateFormDto, ValidateSingleFieldDto, ValidationResultDto, JsonSchemaDto } from '../dto/form-validation.dto';
-import { FormService } from '../services/form.service';
 import { FormValidationService } from '../services/form-validation.service';
+import { FormService } from '../services/form.service';
 
 @ApiTags('表单')
 @Controller('forms')

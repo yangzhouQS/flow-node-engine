@@ -18,7 +18,7 @@ import {
   ApiBearerAuth,
   ApiParam,
 } from '@nestjs/swagger';
-import { BatchService } from '../services/batch.service';
+
 import {
   CreateBatchDto,
   UpdateBatchDto,
@@ -28,8 +28,9 @@ import {
   BatchPartResponseDto,
   BatchStatisticsDto,
 } from '../dto/batch.dto';
-import { BatchEntity } from '../entities/batch.entity';
 import { BatchPartEntity } from '../entities/batch-part.entity';
+import { BatchEntity } from '../entities/batch.entity';
+import { BatchService } from '../services/batch.service';
 
 @ApiTags('批处理管理')
 @ApiBearerAuth()

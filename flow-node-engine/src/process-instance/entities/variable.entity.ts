@@ -7,8 +7,9 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { ProcessInstance } from './process-instance.entity';
+
 import { Execution } from './execution.entity';
+import { ProcessInstance } from './process-instance.entity';
 
 @Entity('variables')
 export class Variable {
@@ -24,7 +25,7 @@ export class Variable {
   @Column({ name: 'name' })
   name: string;
 
-  @@Column({ name: 'type' })
+  @Column({ name: 'type' })
   type: string;
 
   @Column({ name: 'value', type: 'text' })

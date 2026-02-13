@@ -46,7 +46,6 @@ export class ExceptionInterceptor implements NestInterceptor {
           return new BusinessException(
             '服务器内部错误',
             500,
-            500,
           );
         });
       }),

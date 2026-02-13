@@ -1,11 +1,12 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, LessThanOrEqual, In } from 'typeorm';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Job, JobType, JobStatus } from '../entities/job.entity';
 import { DeadLetterJob } from '../entities/dead-letter-job.entity';
+import { Job, JobType, JobStatus } from '../entities/job.entity';
+
 import { JobService, JobEvent, JobEventType } from './job.service';
 
 /**
@@ -237,8 +238,8 @@ export class AsyncExecutorService implements OnModuleInit, OnModuleDestroy {
     for (const job of jobs) {
       const locked = await this.lockJob(job.id_, lockOwner);
       if (locked) {
-        job.lock_owner_ = lockOwner;
-        job.lock_until_ = new Date(Date.now() + this.config.lockTimeout);
+        job.locked_by_ = lockOwner;
+        job.locked_until_ = new Date(Date.now() + this.config.lockTimeout);
         lockedJobs.push(job);
       }
     }
@@ -254,11 +255,11 @@ export class AsyncExecutorService implements OnModuleInit, OnModuleDestroy {
       .createQueryBuilder()
       .update(Job)
       .set({
-        lock_owner_: lockOwner,
-        lock_until_: new Date(Date.now() + this.config.lockTimeout),
+        locked_by_: lockOwner,
+        locked_until_: new Date(Date.now() + this.config.lockTimeout),
       })
       .where('id_ = :id', { id: jobId })
-      .andWhere('(lock_owner_ IS NULL OR lock_until_ < :now)', { now: new Date() })
+      .andWhere('(locked_by_ IS NULL OR locked_until_ < :now)', { now: new Date() })
       .execute();
 
     return result.affected === 1;
@@ -325,7 +326,7 @@ export class AsyncExecutorService implements OnModuleInit, OnModuleDestroy {
 
     job.retry_count_ = (job.retry_count_ || 0) + 1;
     job.exception_message_ = error?.message || 'Unknown error';
-    job.exception_stack_ = error?.stack || null;
+    job.exception_stack_trace_ = error?.stack || null;
 
     // 检查是否需要重试
     if (job.retry_count_ < (job.max_retries_ || this.config.maxRetries)) {
@@ -333,8 +334,8 @@ export class AsyncExecutorService implements OnModuleInit, OnModuleDestroy {
       const retryDelay = Math.pow(2, job.retry_count_) * this.config.retryWaitTime;
       job.due_date_ = new Date(Date.now() + retryDelay);
       job.status_ = JobStatus.PENDING;
-      job.lock_owner_ = null;
-      job.lock_until_ = null;
+      job.locked_by_ = null;
+      job.locked_until_ = null;
 
       await this.jobRepository.save(job);
 
@@ -366,7 +367,7 @@ export class AsyncExecutorService implements OnModuleInit, OnModuleDestroy {
     deadLetterJob.callback_config_ = job.callback_config_;
     deadLetterJob.payload_ = job.payload_;
     deadLetterJob.exception_message_ = error?.message || 'Unknown error';
-    deadLetterJob.exception_stack_ = error?.stack || null;
+    deadLetterJob.exception_stack_trace_ = error?.stack || null;
     deadLetterJob.retry_count_ = job.retry_count_;
     deadLetterJob.max_retries_ = job.max_retries_ || this.config.maxRetries;
     deadLetterJob.tenant_id_ = job.tenant_id_;
@@ -391,6 +392,7 @@ export class AsyncExecutorService implements OnModuleInit, OnModuleDestroy {
       type: eventType,
       jobId: job.id_,
       jobType: job.type_ as JobType,
+      data: job,
       processInstanceId: job.process_inst_id_ || undefined,
       executionId: job.execution_id_ || undefined,
       activityId: job.activity_id_ || undefined,

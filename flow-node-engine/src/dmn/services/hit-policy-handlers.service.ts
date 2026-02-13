@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+
+import { HitPolicy, AggregationType } from '../entities/dmn-decision.entity';
 import {
   HitPolicyHandler,
   HitPolicyResult,
   RuleEvaluationResult,
 } from '../interfaces/hit-policy.interface';
-import { HitPolicy, AggregationType } from '../entities/dmn-decision.entity';
 
 /**
  * UNIQUE Hit Policy处理器

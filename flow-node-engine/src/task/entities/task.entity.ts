@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 
-import { ProcessInstance } from '../process-instance/entities/process-instance.entity';
+import { ProcessInstance } from '../../process-instance/entities/process-instance.entity';
 
 /**
  * 任务状态枚举

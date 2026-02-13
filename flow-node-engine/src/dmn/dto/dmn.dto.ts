@@ -1,5 +1,6 @@
-import { IsString, IsOptional, IsEnum, IsObject, IsInt, Min, IsArray, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsEnum, IsObject, IsInt, Min, IsArray, IsBoolean } from 'class-validator';
+
 import { HitPolicy, AggregationType, DmnDecisionStatus } from '../entities/dmn-decision.entity';
 
 /**

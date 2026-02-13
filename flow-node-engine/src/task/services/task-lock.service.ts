@@ -151,7 +151,7 @@ export class TaskLockService {
   private renewLockInternal(taskId: string, userId: string): boolean {
     const lock = this.locks.get(taskId);
 
-    if (!lock || lock.userId !== userId) {
+    if (lock?.userId !== userId) {
       return false;
     }
 

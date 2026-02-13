@@ -5,11 +5,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
-import { InAppNotificationService } from './in-app-notification.service';
 import {
   NotificationType,
   NotificationPriority,
 } from '../entities/in-app-notification.entity';
+
+import { InAppNotificationService } from './in-app-notification.service';
 
 export type NotificationChannel =
   | 'IN_APP'     // 站内通知

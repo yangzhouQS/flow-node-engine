@@ -1,7 +1,8 @@
-import { IsString, IsOptional, IsEnum, IsBoolean, IsInt, IsArray, IsObject, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { BatchType, BatchStatus } from '../entities/batch.entity';
+import { IsString, IsOptional, IsEnum, IsBoolean, IsInt, IsArray, IsObject, Min } from 'class-validator';
+
 import { BatchPartStatus } from '../entities/batch-part.entity';
+import { BatchType, BatchStatus } from '../entities/batch.entity';
 
 /**
  * 创建批处理DTO

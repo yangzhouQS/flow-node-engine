@@ -10,8 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { GroupService } from '../services/group.service';
+
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { GroupService } from '../services/group.service';
 
 @ApiTags('组管理')
 @Controller('api/v1/groups')
@@ -100,7 +101,7 @@ export class GroupController {
   @Get('tree')
   @ApiOperation({ summary: '查询组树' })
   @ApiResponse({ status: 200, description: '查询成功' })
-  async findTree(@Query('parentId') {
+  async findTree(@Query('parentId') parentId: string) {
     const tree = await this.groupService.findTree(parentId);
     return {
       code: 200,
