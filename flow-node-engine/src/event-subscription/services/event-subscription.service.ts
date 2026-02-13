@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, DataSource } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -103,7 +103,9 @@ export class EventSubscriptionService {
     subscription.tenant_id_ = options.tenantId || null;
     subscription.callback_id_ = options.callbackId || null;
     subscription.priority_ = options.priority || 0;
-    subscription.extra_data_ = options.extraData || null;
+    subscription.extra_data_ = options.extraData
+      ? JSON.stringify(options.extraData)
+      : null;
     subscription.is_processed_ = false;
     subscription.processed_time_ = null;
     subscription.create_time_ = new Date();

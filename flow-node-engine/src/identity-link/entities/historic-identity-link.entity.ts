@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryColumn, Index, CreateDateColumn } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
 import { IdentityLinkType } from './identity-link.entity';
 

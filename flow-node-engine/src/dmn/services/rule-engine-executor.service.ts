@@ -13,7 +13,7 @@ import {
 } from '../interfaces/hit-policy.interface';
 
 import { ConditionEvaluatorService } from './condition-evaluator.service';
-import { HitPolicyHandlerFactory, CollectHitPolicyHandler } from './hit-policy-handlers.service';
+import { HitPolicyHandlerFactory } from './hit-policy-handlers.service';
 
 /**
  * 规则引擎执行器服务

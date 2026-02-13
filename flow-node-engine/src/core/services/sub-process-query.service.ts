@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, In, Between, MoreThanOrEqual, LessThanOrEqual , Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
+import { Repository, In, Entity, Column, PrimaryColumn, CreateDateColumn, Index, } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 /**

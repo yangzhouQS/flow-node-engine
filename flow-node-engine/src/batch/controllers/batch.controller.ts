@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -28,7 +27,7 @@ import {
   BatchPartResponseDto,
   BatchStatisticsDto,
 } from '../dto/batch.dto';
-import { BatchPartEntity } from '../entities/batch-part.entity';
+
 import { BatchEntity } from '../entities/batch.entity';
 import { BatchService } from '../services/batch.service';
 

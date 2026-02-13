@@ -1,9 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException,  } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 
 import { HistoricActivityInstance } from '../../history/entities/historic-activity-instance.entity';
-import { MultiInstanceRejectStrategy, MultiInstanceVoteStrategy } from '../dto/task-reject.dto';
+import { MultiInstanceRejectStrategy,  } from '../dto/task-reject.dto';
 import { MultiInstanceConfigEntity } from '../entities/multi-instance-config.entity';
 import { Task, TaskStatus } from '../entities/task.entity';
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BpmnProcessDefinition, BpmnElement, BpmnSequenceFlow } from './bpmn-parser.service';
+import { BpmnProcessDefinition, BpmnElement,  } from './bpmn-parser.service';
 import { EventBusService } from './event-bus.service';
 import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { GatewayExecutorService } from './gateway-executor.service';
@@ -436,12 +436,13 @@ export class ProcessExecutorService {
 
     // 如果是网关，使用网关执行器
     if (currentElement.type.includes('Gateway')) {
-      const nextElementId = await this.gatewayExecutor.execute(
+      const result = await this.gatewayExecutor.execute(
         currentElement,
         outgoingFlows,
         context.variables,
       );
-      if (nextElementId) {
+      // 处理所有下一个元素ID
+      for (const nextElementId of result.nextElementIds) {
         const nextElement = this.findElement(
           context.processDefinition,
           nextElementId,

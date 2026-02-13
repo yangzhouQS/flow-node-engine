@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, Between, LessThanOrEqual, MoreThanOrEqual, In } from 'typeorm';
+import { Repository, DataSource, LessThanOrEqual,  } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { TimerJob, TimerType, TimerJobStatus } from '../entities/timer-job.entity';

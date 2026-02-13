@@ -112,7 +112,19 @@ export class CCController {
   async getStatistics(
     @CurrentUser('userId') userId: string,
   ): Promise<CCStatisticsResponseDto> {
-    return this.ccService.getStatistics(userId);
+    const stats = await this.ccService.getStatistics(userId);
+    // 转换服务返回的字段名到DTO字段名
+    // 并补充缺失的统计字段
+    return {
+      totalCount: stats.total,
+      unreadCount: stats.unread,
+      readCount: stats.read,
+      handledCount: 0, // TODO: 实现已处理统计
+      archivedCount: stats.archived,
+      todayCount: 0, // TODO: 实现今日统计
+      weekCount: 0, // TODO: 实现本周统计
+      monthCount: 0, // TODO: 实现本月统计
+    };
   }
 
   /**

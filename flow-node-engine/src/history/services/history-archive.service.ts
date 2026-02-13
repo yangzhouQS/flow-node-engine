@@ -5,13 +5,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, Between, LessThanOrEqual } from 'typeorm';
+import { Repository, DataSource,  LessThanOrEqual } from 'typeorm';
 
 import { HistoricActivityInstance } from '../entities/historic-activity-instance.entity';
-import { HistoricDetail } from '../entities/historic-detail.entity';
 import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
 import { HistoricTaskInstance } from '../entities/historic-task-instance.entity';
-import { HistoricVariableInstance } from '../entities/historic-variable-instance.entity';
+import { HistoricVariableInstanceEntity } from '../entities/historic-variable-instance.entity';
 
 export interface ArchiveConfig {
   retentionDays: number;      // 保留天数
@@ -54,10 +53,8 @@ export class HistoryArchiveService {
     private readonly historicActivityRepository: Repository<HistoricActivityInstance>,
     @InjectRepository(HistoricProcessInstance)
     private readonly historicProcessRepository: Repository<HistoricProcessInstance>,
-    @InjectRepository(HistoricDetail)
-    private readonly historicDetailRepository: Repository<HistoricDetail>,
-    @InjectRepository(HistoricVariableInstance)
-    private readonly historicVariableRepository: Repository<HistoricVariableInstance>,
+    @InjectRepository(HistoricVariableInstanceEntity)
+    private readonly historicVariableRepository: Repository<HistoricVariableInstanceEntity>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -130,15 +127,7 @@ export class HistoryArchiveService {
         queryRunner,
       );
 
-      // 4. 归档历史详情
-      result.archivedDetails = await this.archiveTable(
-        this.historicDetailRepository,
-        'time',
-        cutoffDate,
-        queryRunner,
-      );
-
-      // 5. 归档历史变量
+      // 4. 归档历史变量
       result.archivedVariables = await this.archiveTable(
         this.historicVariableRepository,
         'createTime',
@@ -148,11 +137,10 @@ export class HistoryArchiveService {
 
       await queryRunner.commitTransaction();
 
-      result.totalArchived = 
-        result.archivedTasks + 
-        result.archivedActivities + 
-        result.archivedProcessInstances + 
-        result.archivedDetails + 
+      result.totalArchived =
+        result.archivedTasks +
+        result.archivedActivities +
+        result.archivedProcessInstances +
         result.archivedVariables;
 
       this.logger.log(`归档完成: ${JSON.stringify(result)}`);
@@ -180,11 +168,11 @@ export class HistoryArchiveService {
     let hasMore = true;
 
     while (hasMore) {
-      // 分批查询要归档的记录
+      // 分批查询要归档的记录 - 使用 any 类型绕过泛型限制
       const records = await repository.find({
         where: {
           [dateField]: LessThanOrEqual(cutoffDate),
-        },
+        } as any,
         take: this.config.archiveBatchSize,
       });
 
@@ -235,43 +223,40 @@ export class HistoryArchiveService {
 
     try {
       // 删除历史任务
-      result.archivedTasks = await queryRunner.manager.delete(
+      const taskDeleteResult = await queryRunner.manager.delete(
         HistoricTaskInstance,
-        { processInstanceId },
+        { processInstanceId: processInstanceId },
       );
+      result.archivedTasks = taskDeleteResult.affected || 0;
 
       // 删除历史活动
-      result.archivedActivities = await queryRunner.manager.delete(
+      const activityDeleteResult = await queryRunner.manager.delete(
         HistoricActivityInstance,
-        { processInstanceId },
+        { processInstanceId: processInstanceId },
       );
-
-      // 删除历史详情
-      result.archivedDetails = await queryRunner.manager.delete(
-        HistoricDetail,
-        { processInstanceId },
-      );
+      result.archivedActivities = activityDeleteResult.affected || 0;
 
       // 删除历史变量
-      result.archivedVariables = await queryRunner.manager.delete(
-        HistoricVariableInstance,
-        { processInstanceId },
+      const variableDeleteResult = await queryRunner.manager.delete(
+        HistoricVariableInstanceEntity,
+        { processInstanceId: processInstanceId },
       );
+      result.archivedVariables = variableDeleteResult.affected || 0;
 
       // 最后删除历史流程实例
-      result.archivedProcessInstances = await queryRunner.manager.delete(
+      const processDeleteResult = await queryRunner.manager.delete(
         HistoricProcessInstance,
-        { id: processInstanceId },
+        { processInstanceId: processInstanceId },
       );
+      result.archivedProcessInstances = processDeleteResult.affected || 0;
 
       await queryRunner.commitTransaction();
 
-      result.totalArchived = 
-        (result.archivedTasks as any).affected + 
-        (result.archivedActivities as any).affected + 
-        (result.archivedProcessInstances as any).affected + 
-        (result.archivedDetails as any).affected + 
-        (result.archivedVariables as any).affected;
+      result.totalArchived =
+        result.archivedTasks +
+        result.archivedActivities +
+        result.archivedProcessInstances +
+        result.archivedVariables;
 
       this.logger.log(`流程实例归档完成: ${processInstanceId}, 共 ${result.totalArchived} 条记录`);
 
@@ -296,11 +281,10 @@ export class HistoryArchiveService {
       taskCount,
       activityCount,
       processCount,
-      detailCount,
       variableCount,
     ] = await Promise.all([
       this.historicTaskRepository.count({
-        where: { endTime: LessThanOrEqual(cutoffDate) },
+        where: { completionTime: LessThanOrEqual(cutoffDate) },
       }),
       this.historicActivityRepository.count({
         where: { endTime: LessThanOrEqual(cutoffDate) },
@@ -308,32 +292,29 @@ export class HistoryArchiveService {
       this.historicProcessRepository.count({
         where: { endTime: LessThanOrEqual(cutoffDate) },
       }),
-      this.historicDetailRepository.count({
-        where: { time: LessThanOrEqual(cutoffDate) },
-      }),
       this.historicVariableRepository.count({
-        where: { createTime: LessThanOrEqual(cutoffDate) },
+        where: { create_time_: LessThanOrEqual(cutoffDate) } as any,
       }),
     ]);
 
     // 获取最老和最新记录的时间
     const oldestTask = await this.historicTaskRepository.findOne({
       where: {},
-      order: { startTime: 'ASC' },
+      order: { createTime: 'ASC' },
     });
 
     const newestTask = await this.historicTaskRepository.findOne({
       where: {},
-      order: { startTime: 'DESC' },
+      order: { createTime: 'DESC' },
     });
 
     // 按月统计记录数
     const recordsByMonth = await this.getRecordsByMonth();
 
     return {
-      totalRecords: taskCount + activityCount + processCount + detailCount + variableCount,
-      oldestRecord: oldestTask?.startTime || null,
-      newestRecord: newestTask?.startTime || null,
+      totalRecords: taskCount + activityCount + processCount + variableCount,
+      oldestRecord: oldestTask?.createTime || null,
+      newestRecord: newestTask?.createTime || null,
       recordsByMonth,
     };
   }
@@ -407,9 +388,9 @@ export class HistoryArchiveService {
   }> {
     const cutoffDate = beforeDate || this.calculateCutoffDate();
 
-    const [tasks, processInstances, taskCount, activityCount, processCount, detailCount, variableCount] = await Promise.all([
+    const [tasks, processInstances, taskCount, activityCount, processCount, variableCount] = await Promise.all([
       this.historicTaskRepository.find({
-        where: { endTime: LessThanOrEqual(cutoffDate) },
+        where: { completionTime: LessThanOrEqual(cutoffDate) },
         take: limit,
       }),
       this.historicProcessRepository.find({
@@ -417,7 +398,7 @@ export class HistoryArchiveService {
         take: limit,
       }),
       this.historicTaskRepository.count({
-        where: { endTime: LessThanOrEqual(cutoffDate) },
+        where: { completionTime: LessThanOrEqual(cutoffDate) },
       }),
       this.historicActivityRepository.count({
         where: { endTime: LessThanOrEqual(cutoffDate) },
@@ -425,11 +406,8 @@ export class HistoryArchiveService {
       this.historicProcessRepository.count({
         where: { endTime: LessThanOrEqual(cutoffDate) },
       }),
-      this.historicDetailRepository.count({
-        where: { time: LessThanOrEqual(cutoffDate) },
-      }),
       this.historicVariableRepository.count({
-        where: { createTime: LessThanOrEqual(cutoffDate) },
+        where: { create_time_: LessThanOrEqual(cutoffDate) } as any,
       }),
     ]);
 
@@ -440,7 +418,7 @@ export class HistoryArchiveService {
         tasks: taskCount,
         activities: activityCount,
         processInstances: processCount,
-        details: detailCount,
+        details: 0,
         variables: variableCount,
       },
     };
@@ -452,7 +430,7 @@ export class HistoryArchiveService {
   async needsArchive(): Promise<boolean> {
     const cutoffDate = this.calculateCutoffDate();
     const count = await this.historicTaskRepository.count({
-      where: { endTime: LessThanOrEqual(cutoffDate) },
+      where: { completionTime: LessThanOrEqual(cutoffDate) },
     });
     return count > 0;
   }

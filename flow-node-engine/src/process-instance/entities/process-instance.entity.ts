@@ -14,6 +14,22 @@ import { ProcessDefinition } from '../../process-definition/entities/process-def
 import { Execution } from './execution.entity';
 import { Variable } from './variable.entity';
 
+/**
+ * 流程实例状态枚举
+ */
+export enum ProcessInstanceStatus {
+  /** 运行中 */
+  RUNNING = 'RUNNING',
+  /** 已完成 */
+  COMPLETED = 'COMPLETED',
+  /** 已取消 */
+  CANCELLED = 'CANCELLED',
+  /** 已暂停 */
+  SUSPENDED = 'SUSPENDED',
+  /** 已终止 */
+  TERMINATED = 'TERMINATED',
+}
+
 @Entity('process_instances')
 export class ProcessInstance {
   @PrimaryGeneratedColumn('uuid')
@@ -39,6 +55,14 @@ export class ProcessInstance {
 
   @Column({ name: 'state', default: 'running' })
   state: string;
+
+  @Column({
+    name: 'status',
+    type: 'varchar',
+    length: '20',
+    default: ProcessInstanceStatus.RUNNING
+  })
+  status: ProcessInstanceStatus;
 
   @Column({ name: 'start_user_id', nullable: true })
   startUserId: string;

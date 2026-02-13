@@ -8,7 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { BatchEntity, BatchStatus } from './batch.entity';
+import { BatchEntity } from './batch.entity';
 
 /**
  * 批处理部分状态枚举

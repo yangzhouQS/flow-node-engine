@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { BpmnElement, BpmnSequenceFlow, BpmnParserService } from './bpmn-parser.service';
+import { BpmnElement, BpmnParserService } from './bpmn-parser.service';
 import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { VariableScopeService, VariableScope } from './variable-scope.service';
 
@@ -148,9 +148,8 @@ export class SubProcessExecutorService {
     // 3. 销毁子流程作用域
     await this.variableScopeService.destroyScope(scopeId);
 
-    // 4. 获取子流程的输出流
-    const outgoingFlows = this.getSubProcessOutgoingFlows(subProcessElement);
-    const nextElementIds = outgoingFlows.map((flow) => flow.targetRef);
+    // 4. 获取子流程的输出流ID列表（outgoing已经是目标元素ID列表）
+    const nextElementIds = this.getSubProcessOutgoingFlowIds(subProcessElement);
 
     this.logger.debug(
       `Sub-process ${subProcessElement.id} completed, continuing to: ${nextElementIds.join(', ')}`,
@@ -181,10 +180,10 @@ export class SubProcessExecutorService {
   }
 
   /**
-   * 获取子流程的输出流
+   * 获取子流程的输出流ID列表
    */
-  private getSubProcessOutgoingFlows(subProcess: BpmnElement): BpmnSequenceFlow[] {
-    // 子流程的输出流在主流程中定义
+  private getSubProcessOutgoingFlowIds(subProcess: BpmnElement): string[] {
+    // 子流程的输出流在主流程中定义，返回的是ID列表
     return subProcess.outgoing || [];
   }
 

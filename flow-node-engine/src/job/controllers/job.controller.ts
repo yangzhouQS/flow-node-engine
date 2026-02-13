@@ -6,7 +6,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Body,
   Param,
@@ -35,7 +34,7 @@ import {
 } from '../dto/job.dto';
 import { DeadLetterJob } from '../entities/dead-letter-job.entity';
 import { ExternalWorkerJob } from '../entities/external-worker-job.entity';
-import { Job, JobStatus } from '../entities/job.entity';
+import { Job } from '../entities/job.entity';
 import { TimerJob } from '../entities/timer-job.entity';
 import { JobService } from '../services/job.service';
 

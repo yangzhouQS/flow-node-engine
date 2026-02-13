@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Repository, DataSource, In, LessThanOrEqual } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { 
@@ -15,7 +15,7 @@ import {
   BatchPartItemDto,
 } from '../dto/batch.dto';
 import { BatchPartEntity, BatchPartStatus } from '../entities/batch-part.entity';
-import { BatchEntity, BatchStatus, BatchType } from '../entities/batch.entity';
+import { BatchEntity, BatchStatus } from '../entities/batch.entity';
 
 /**
  * 批处理执行器接口

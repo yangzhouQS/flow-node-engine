@@ -4,7 +4,7 @@
  */
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, IsNull } from 'typeorm';
+import { Repository, In,  } from 'typeorm';
 
 import {
   InAppNotification,

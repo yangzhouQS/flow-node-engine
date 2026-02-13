@@ -10,8 +10,8 @@ import { EventBusService } from '../../core/services/event-bus.service';
 import { HistoryService } from '../../history/services/history.service';
 import { Execution } from '../../process-instance/entities/execution.entity';
 import { ProcessInstance, ProcessInstanceStatus } from '../../process-instance/entities/process-instance.entity';
-import { TaskReject, RejectType } from '../entities/task-reject.entity';
-import { Task } from '../entities/task.entity';
+import { TaskRejectEntity } from '../entities/task-reject.entity';
+import { Task, TaskStatus } from '../entities/task.entity';
 
 export interface ResubmitTaskDto {
   taskId: string;
@@ -33,8 +33,8 @@ export class ResubmitService {
   constructor(
     @InjectRepository(Task)
     private readonly taskRepository: Repository<Task>,
-    @InjectRepository(TaskReject)
-    private readonly taskRejectRepository: Repository<TaskReject>,
+    @InjectRepository(TaskRejectEntity)
+    private readonly taskRejectRepository: Repository<TaskRejectEntity>,
     @InjectRepository(ProcessInstance)
     private readonly processInstanceRepository: Repository<ProcessInstance>,
     @InjectRepository(Execution)
@@ -92,9 +92,9 @@ export class ResubmitService {
         Object.assign(updatedVariables, dto.variables);
       }
 
-      await queryRunner.manager.update(Task, currentTask.id, {
+      await queryRunner.manager.update(Task, { id: currentTask.id }, {
         variables: updatedVariables,
-      });
+      } as any);
 
       // 5. 完成当前任务，触发流程继续
       await this.completeResubmitTask(
@@ -114,7 +114,7 @@ export class ResubmitService {
         taskId: dto.taskId,
         processInstanceId: currentTask.processInstanceId,
         userId: dto.userId,
-        originalRejectType: lastReject.rejectType,
+        originalRejectType: lastReject.reject_type_,
         variables: dto.variables,
         timestamp: new Date().toISOString(),
       });
@@ -140,7 +140,7 @@ export class ResubmitService {
    */
   private async validateResubmit(task: Task, userId: string): Promise<void> {
     // 检查任务状态
-    if (task.status !== 'CREATED' && task.status !== 'CLAIMED') {
+    if (task.status !== TaskStatus.CREATED && task.status !== TaskStatus.ASSIGNED) {
       throw new BadRequestException(`任务状态不允许重新提交，当前状态: ${task.status}`);
     }
 
@@ -160,8 +160,8 @@ export class ResubmitService {
     // 检查是否是被驳回的任务
     const rejectCount = await this.taskRejectRepository.count({
       where: {
-        processInstanceId: task.processInstanceId,
-        rejectToActivityId: task.taskDefinitionKey,
+        proc_inst_id_: task.processInstanceId,
+        target_task_def_key_: task.taskDefinitionKey,
       },
     });
 
@@ -183,14 +183,14 @@ export class ResubmitService {
   private async getLastRejectRecord(
     processInstanceId: string,
     activityId: string,
-  ): Promise<TaskReject | null> {
+  ): Promise<TaskRejectEntity | null> {
     return this.taskRejectRepository.findOne({
       where: {
-        processInstanceId,
-        rejectToActivityId: activityId,
+        proc_inst_id_: processInstanceId,
+        target_task_def_key_: activityId,
       },
       order: {
-        createTime: 'DESC',
+        create_time_: 'DESC',
       },
     });
   }
@@ -201,26 +201,30 @@ export class ResubmitService {
   private async completeResubmitTask(
     task: Task,
     dto: ResubmitTaskDto,
-    lastReject: TaskReject,
+    lastReject: TaskRejectEntity,
     queryRunner: QueryRunner,
   ): Promise<void> {
     // 更新任务状态为已完成
-    await queryRunner.manager.update(Task, task.id, {
-      status: 'COMPLETED',
+    await queryRunner.manager.update(Task, { id: task.id }, {
+      status: TaskStatus.COMPLETED,
       endTime: new Date(),
-    });
+    } as any);
 
     // 创建历史任务记录
     if (this.historyService) {
-      await this.historyService.createHistoricTask(
-        {
-          ...task,
-          status: 'COMPLETED',
-          endTime: new Date(),
-          deleteReason: 'RESUBMITTED',
-        },
-        queryRunner,
-      );
+      await this.historyService.createHistoricTask({
+        taskId: task.id,
+        taskDefinitionKey: task.taskDefinitionKey,
+        taskDefinitionId: task.taskDefinitionId || '',
+        taskDefinitionVersion: task.taskDefinitionVersion || 1,
+        processInstanceId: task.processInstanceId,
+        processDefinitionId: task.processInstance?.processDefinitionId || '',
+        processDefinitionKey: '',
+        processDefinitionVersion: 1,
+        name: task.name,
+        assignee: task.assignee,
+        status: 'COMPLETED' as any,
+      });
     }
   }
 
@@ -230,22 +234,22 @@ export class ResubmitService {
   private async recordResubmitHistory(
     task: Task,
     dto: ResubmitTaskDto,
-    lastReject: TaskReject,
+    lastReject: TaskRejectEntity,
     queryRunner: QueryRunner,
   ): Promise<void> {
-    const resubmitRecord = queryRunner.manager.create(TaskReject, {
-      id: this.generateUuid(),
-      taskId: task.id,
-      processInstanceId: task.processInstanceId,
-      rejectFromActivityId: task.taskDefinitionKey,
-      rejectFromActivityName: task.name,
-      rejectToActivityId: lastReject.rejectFromActivityId,
-      rejectToActivityName: lastReject.rejectFromActivityName,
-      rejectType: 'RESUBMIT' as any,
-      reason: dto.comment || '重新提交',
-      operatorId: dto.userId,
-      createTime: new Date(),
-    });
+    const resubmitRecord = queryRunner.manager.create(TaskRejectEntity, {
+      id_: this.generateUuid(),
+      task_id_: task.id,
+      proc_inst_id_: task.processInstanceId,
+      task_def_key_: task.taskDefinitionKey,
+      reject_type_: 'RESUBMIT' as any,
+      reject_reason_: dto.comment || '重新提交',
+      reject_user_id_: dto.userId,
+      target_task_def_key_: lastReject.task_def_key_,
+      target_task_name_: null,
+      status_: 'EXECUTED',
+      create_time_: new Date(),
+    } as any);
     await queryRunner.manager.save(resubmitRecord);
   }
 
@@ -267,15 +271,15 @@ export class ResubmitService {
       }
 
       // 检查任务状态
-      if (task.status !== 'CREATED' && task.status !== 'CLAIMED') {
+      if (task.status !== TaskStatus.CREATED && task.status !== TaskStatus.ASSIGNED) {
         return { canResubmit: false, reason: `任务状态不允许重新提交` };
       }
 
       // 检查是否是被驳回的任务
       const rejectCount = await this.taskRejectRepository.count({
         where: {
-          processInstanceId: task.processInstanceId,
-          rejectToActivityId: task.taskDefinitionKey,
+          proc_inst_id_: task.processInstanceId,
+          target_task_def_key_: task.taskDefinitionKey,
         },
       });
 
@@ -302,14 +306,14 @@ export class ResubmitService {
   /**
    * 获取任务的重新提交历史
    */
-  async getResubmitHistory(processInstanceId: string): Promise<TaskReject[]> {
+  async getResubmitHistory(processInstanceId: string): Promise<TaskRejectEntity[]> {
     return this.taskRejectRepository.find({
       where: {
-        processInstanceId,
-        rejectType: 'RESUBMIT' as any,
+        proc_inst_id_: processInstanceId,
+        reject_type_: 'RESUBMIT' as any,
       },
       order: {
-        createTime: 'DESC',
+        create_time_: 'DESC',
       },
     });
   }

@@ -6,8 +6,6 @@ import {
   Query,
   Param,
   UseGuards,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -17,7 +15,6 @@ import {
   BatchRejectDto,
   QueryRejectRecordDto,
   MultiInstanceRejectDto,
-  GetRejectableNodesDto,
   RejectRecordResponseDto,
   RejectableNodeResponseDto,
   RejectConfigResponseDto,
@@ -179,7 +176,12 @@ export class TaskRejectController {
     @Param('taskId') taskId: string,
     @CurrentUser('userId') userId: string,
   ): Promise<{ canReject: boolean; reason?: string; strategies?: RejectStrategy[] }> {
-    return this.taskRejectService.checkCanReject(taskId, userId);
+    const result = await this.taskRejectService.checkCanReject(taskId, userId);
+    return {
+      canReject: result.canReject,
+      reason: result.reason,
+      strategies: result.strategies as RejectStrategy[] | undefined,
+    };
   }
 
   /**

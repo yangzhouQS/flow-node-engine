@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
 import { RejectType } from './task-reject.entity';
 

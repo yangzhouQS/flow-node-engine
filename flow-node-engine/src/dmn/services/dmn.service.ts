@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -12,7 +12,7 @@ import {
   DecisionResultDto,
   ExecutionHistoryDto,
 } from '../dto/dmn.dto';
-import { DmnDecisionEntity, DmnDecisionStatus, HitPolicy, AggregationType } from '../entities/dmn-decision.entity';
+import { DmnDecisionEntity, DmnDecisionStatus, AggregationType } from '../entities/dmn-decision.entity';
 import { DmnExecutionEntity, DmnExecutionStatus } from '../entities/dmn-execution.entity';
 
 import { RuleEngineExecutorService } from './rule-engine-executor.service';

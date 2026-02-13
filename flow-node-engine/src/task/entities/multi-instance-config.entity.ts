@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * 多实例驳回策略枚举

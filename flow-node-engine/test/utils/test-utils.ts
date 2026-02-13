@@ -7,6 +7,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
+import { vi } from 'vitest';
 
 /**
  * 创建测试用的 NestJS 应用

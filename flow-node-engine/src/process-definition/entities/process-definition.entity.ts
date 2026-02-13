@@ -45,6 +45,12 @@ export class ProcessDefinition {
   @Column({ name: 'is_suspended', type: 'boolean', default: false })
   isSuspended: boolean;
 
+  @Column({ name: 'start_activity_id', length: 255, nullable: true })
+  startActivityId?: string;
+
+  @Column({ name: 'start_activity_name', length: 255, nullable: true })
+  startActivityName?: string;
+
   @Column({ name: 'tenant_id', length: 255, nullable: true })
   tenantId?: string;
 

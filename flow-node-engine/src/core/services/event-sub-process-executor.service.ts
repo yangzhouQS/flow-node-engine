@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
+import { EventSubscriptionService, EventSubscriptionType, EventSubscriptionConfigType  } from '../../event-subscription';
 import { BpmnElement } from './bpmn-parser.service';
-import { EventSubscriptionService } from './event-subscription.service';
 import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { VariableScopeService, VariableScope } from './variable-scope.service';
 
@@ -95,6 +95,22 @@ export interface EventSubscriptionInfo {
 }
 
 /**
+ * 将 EventType 转换为 EventSubscriptionType
+ */
+function mapEventTypeToSubscriptionType(eventType: EventType): EventSubscriptionType {
+  const mapping: Record<EventType, EventSubscriptionType> = {
+    [EventType.SIGNAL]: EventSubscriptionType.SIGNAL,
+    [EventType.MESSAGE]: EventSubscriptionType.MESSAGE,
+    [EventType.TIMER]: EventSubscriptionType.TIMER,
+    [EventType.ERROR]: EventSubscriptionType.ERROR,
+    [EventType.ESCALATION]: EventSubscriptionType.ESCALATION,
+    [EventType.COMPENSATION]: EventSubscriptionType.COMPENSATION,
+    [EventType.CONDITIONAL]: EventSubscriptionType.CONDITIONAL,
+  };
+  return mapping[eventType];
+}
+
+/**
  * 事件子流程执行器服务
  * 负责执行事件子流程，包括事件订阅和触发
  */
@@ -166,15 +182,15 @@ export class EventSubProcessExecutorService {
 
       // 保存订阅
       await this.eventSubscriptionService.createSubscription({
-        id: subscription.id,
-        eventType: subscription.eventType,
+        eventType: mapEventTypeToSubscriptionType(subscription.eventType),
         eventName: subscription.eventName,
         processInstanceId: subscription.processInstanceId,
-        elementId: subscription.subProcessElementId,
-        configuration: JSON.stringify({
+        activityId: subscription.subProcessElementId,
+        configurationType: EventSubscriptionConfigType.EVENT_SUBPROCESS,
+        configuration: {
           isInterrupting: subscription.isInterrupting,
           conditionExpression: subscription.conditionExpression,
-        }),
+        },
         tenantId,
       });
 
@@ -293,10 +309,10 @@ export class EventSubProcessExecutorService {
       `Canceling event sub-process: ${eventSubProcessElement.id}`,
     );
 
-    // 取消相关的事件订阅
-    await this.eventSubscriptionService.deleteSubscriptionsByElement(
+    // 取消相关的事件订阅 - 使用 deleteSubscriptionsByProcessInstance
+    // 注意：这会删除该流程实例的所有事件订阅，如果需要更精确的控制，需要在 EventSubscriptionService 中添加新方法
+    await this.eventSubscriptionService.deleteSubscriptionsByProcessInstance(
       processInstanceId,
-      eventSubProcessElement.id,
     );
   }
 

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, In, Between } from 'typeorm';
+import { Repository,  } from 'typeorm';
 
 import { BusinessException } from '../../common/exceptions/business.exception';
 import { EventBusService } from '../../core/services/event-bus.service';

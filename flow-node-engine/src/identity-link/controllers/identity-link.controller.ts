@@ -41,7 +41,7 @@ export class IdentityLinkController {
     const link = await this.identityLinkService.create({
       taskId: dto.taskId,
       processInstanceId: dto.processInstanceId,
-      type: dto.type,
+      linkType: dto.type,
       userId: dto.userId,
       groupId: dto.groupId,
     });
@@ -54,13 +54,40 @@ export class IdentityLinkController {
    */
   @Post('batch')
   async batchCreate(@Body() dto: BatchCreateIdentityLinkDto): Promise<IdentityLinkResponseDto[]> {
-    const links = await this.identityLinkService.batchCreate({
-      taskId: dto.taskId,
-      processInstanceId: dto.processInstanceId,
-      type: dto.type,
-      userIds: dto.userIds,
-      groupIds: dto.groupIds,
-    });
+    // 构建批量创建参数数组
+    const paramsList: Array<{
+      taskId?: string;
+      processInstanceId?: string;
+      linkType: string;
+      userId?: string;
+      groupId?: string;
+    }> = [];
+
+    // 添加用户链接
+    if (dto.userIds) {
+      for (const userId of dto.userIds) {
+        paramsList.push({
+          taskId: dto.taskId,
+          processInstanceId: dto.processInstanceId,
+          linkType: dto.type,
+          userId,
+        });
+      }
+    }
+
+    // 添加组链接
+    if (dto.groupIds) {
+      for (const groupId of dto.groupIds) {
+        paramsList.push({
+          taskId: dto.taskId,
+          processInstanceId: dto.processInstanceId,
+          linkType: dto.type,
+          groupId,
+        });
+      }
+    }
+
+    const links = await this.identityLinkService.batchCreate(paramsList);
     return links.map((link) => this.toResponseDto(link));
   }
 
@@ -73,7 +100,7 @@ export class IdentityLinkController {
     const links = await this.identityLinkService.query({
       taskId: query.taskId,
       processInstanceId: query.processInstanceId,
-      type: query.type,
+      linkType: query.type,
       userId: query.userId,
       groupId: query.groupId,
       tenantId: query.tenantId,
@@ -87,7 +114,12 @@ export class IdentityLinkController {
    */
   @Get('task/:taskId/candidates')
   async getTaskCandidates(@Param('taskId') taskId: string): Promise<TaskCandidatesResponseDto> {
-    return this.identityLinkService.getTaskCandidates(taskId);
+    const result = await this.identityLinkService.getTaskCandidates(taskId);
+    return {
+      taskId,
+      candidateUsers: result.users.map((userId) => ({ userId })),
+      candidateGroups: result.groups.map((groupId) => ({ groupId })),
+    };
   }
 
   /**
@@ -98,7 +130,11 @@ export class IdentityLinkController {
   async getProcessParticipants(
     @Param('processInstanceId') processInstanceId: string,
   ): Promise<ProcessParticipantsResponseDto> {
-    return this.identityLinkService.getProcessParticipants(processInstanceId);
+    const participants = await this.identityLinkService.getProcessParticipants(processInstanceId);
+    return {
+      processInstanceId,
+      participants: participants.map((userId) => ({ userId })),
+    };
   }
 
   /**
@@ -186,13 +222,19 @@ export class IdentityLinkController {
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Body() dto: DeleteIdentityLinkDto): Promise<void> {
-    await this.identityLinkService.delete({
+    // 先查询匹配的身份链接
+    const links = await this.identityLinkService.query({
       taskId: dto.taskId,
       processInstanceId: dto.processInstanceId,
-      type: dto.type,
+      linkType: dto.type,
       userId: dto.userId,
       groupId: dto.groupId,
     });
+    
+    // 删除所有匹配的链接
+    for (const link of links) {
+      await this.identityLinkService.delete(link.id_);
+    }
   }
 
   /**
@@ -206,7 +248,11 @@ export class IdentityLinkController {
     @Query('groups') groups?: string,
   ): Promise<{ hasAccess: boolean; reason?: string }> {
     const groupList = groups ? groups.split(',') : [];
-    return this.identityLinkService.checkTaskAccess(taskId, userId, groupList);
+    const hasAccess = await this.identityLinkService.checkTaskAccess(taskId, userId, groupList);
+    return {
+      hasAccess,
+      reason: hasAccess ? undefined : 'User does not have access to this task',
+    };
   }
 
   /**

@@ -61,7 +61,6 @@ export class VariableService {
       value: serializedValue,
       isLocal,
       scope,
-      tenantId: tenantId || processInstance.tenantId,
       createTime: new Date(),
     });
 
@@ -144,7 +143,6 @@ export class VariableService {
     page = 1,
     pageSize = 10,
     scope?: string,
-    tenantId?: string,
   ): Promise<{ data: Variable[]; total: number }> {
     const queryBuilder = this.variableRepository
       .createQueryBuilder('v')
@@ -153,10 +151,6 @@ export class VariableService {
 
     if (scope) {
       queryBuilder.andWhere('v.scope = :scope', { scope });
-    }
-
-    if (tenantId) {
-      queryBuilder.andWhere('v.tenantId = :tenantId', { tenantId });
     }
 
     const [data, total] = await queryBuilder
@@ -328,15 +322,11 @@ export class VariableService {
   /**
    * 统计变量数量
    */
-  async count(scope?: string, tenantId?: string): Promise<number> {
+  async count(scope?: string): Promise<number> {
     const queryBuilder = this.variableRepository.createQueryBuilder('v');
 
     if (scope) {
       queryBuilder.andWhere('v.scope = :scope', { scope });
-    }
-
-    if (tenantId) {
-      queryBuilder.andWhere('v.tenantId = :tenantId', { tenantId });
     }
 
     return queryBuilder.getCount();

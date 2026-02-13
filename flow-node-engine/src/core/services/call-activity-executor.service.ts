@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
+import { ProcessInstanceService } from '../../process-instance/services/process-instance.service';
 import { BpmnElement } from './bpmn-parser.service';
 import { ExpressionEvaluatorService } from './expression-evaluator.service';
-import { ProcessInstanceService } from './process-instance.service';
 import { VariableScopeService } from './variable-scope.service';
 
 /**
@@ -106,14 +106,13 @@ export class CallActivityExecutorService {
     const subProcessInstanceId = uuidv4();
 
     // 4. 启动子流程实例
-    await this.processInstanceService.startProcessInstance({
-      processDefinitionKey: calledElementKey,
-      businessKey: variables.businessKey,
-      variables: inputVariables,
-      processInstanceId: subProcessInstanceId,
+    await this.processInstanceService.create(
+      calledElementKey,
+      variables.businessKey,
+      undefined,
+      inputVariables,
       tenantId,
-      parentProcessInstanceId: processInstanceId,
-    });
+    );
 
     this.logger.debug(
       `Started sub-process instance ${subProcessInstanceId} for call activity ${callActivityElement.id}`,

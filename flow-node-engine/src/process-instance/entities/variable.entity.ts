@@ -2,7 +2,6 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
@@ -46,11 +45,11 @@ export class Variable {
   @UpdateDateColumn({ name: 'update_time' })
   updateTime: Date;
 
-  @ManyToOne(() => ProcessInstance, (variable) => variable.processInstance)
+  @ManyToOne(() => ProcessInstance, (variable) => variable.variableList)
   @JoinColumn({ name: 'process_instance_id' })
   processInstance: ProcessInstance;
 
-  @ManyToOne(() => Execution, (variable) => variable.execution)
+  @ManyToOne(() => Execution, (variable) => variable.variableList)
   @JoinColumn({ name: 'execution_id' })
   execution: Execution;
 }

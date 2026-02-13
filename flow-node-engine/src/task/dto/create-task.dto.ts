@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsInt, IsDateString, IsEnum, IsObject, ValidateNested } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsDateString, IsObject,  } from 'class-validator';
 
 /**
  * 创建任务DTO

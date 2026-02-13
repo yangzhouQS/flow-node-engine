@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, In, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 
-import { HistoricActivityInstance, ActivityType } from '../entities/historic-activity-instance.entity';
-import { HistoricProcessInstance, HistoricProcessStatus } from '../entities/historic-process-instance.entity';
+import { HistoricActivityInstance,  } from '../entities/historic-activity-instance.entity';
+import { HistoricProcessInstance,  } from '../entities/historic-process-instance.entity';
 import { HistoricTaskInstance, HistoricTaskStatus } from '../entities/historic-task-instance.entity';
 
 /**
@@ -310,5 +310,87 @@ export class HistoryService {
   async deleteHistoricActivityInstance(id: string): Promise<void> {
     const activityInstance = await this.findHistoricActivityInstanceById(id);
     await this.historicActivityInstanceRepository.remove(activityInstance);
+  }
+
+  /**
+   * 创建历史任务实例
+   */
+  async createHistoricTask(params: {
+    taskId: string;
+    taskDefinitionKey: string;
+    taskDefinitionId: string;
+    taskDefinitionVersion: number;
+    processInstanceId: string;
+    processDefinitionId: string;
+    processDefinitionKey: string;
+    processDefinitionVersion: number;
+    executionId?: string;
+    name: string;
+    description?: string;
+    assignee?: string;
+    assigneeFullName?: string;
+    owner?: string;
+    priority?: number;
+    dueDate?: Date;
+    category?: string;
+    tenantId?: string;
+    status?: HistoricTaskStatus;
+    formKey?: string;
+    formData?: Record<string, any>;
+    variables?: Record<string, any>;
+  }): Promise<HistoricTaskInstance> {
+    const historicTask = this.historicTaskInstanceRepository.create({
+      ...params,
+      status: params.status || HistoricTaskStatus.CREATED,
+      createTime: new Date(),
+    });
+    return this.historicTaskInstanceRepository.save(historicTask);
+  }
+
+  /**
+   * 更新历史任务实例状态
+   */
+  async updateHistoricTaskStatus(
+    taskId: string,
+    status: HistoricTaskStatus,
+    options?: {
+      assignee?: string;
+      assigneeFullName?: string;
+      completionTime?: Date;
+      deleteReason?: string;
+    },
+  ): Promise<HistoricTaskInstance> {
+    const historicTask = await this.historicTaskInstanceRepository.findOne({
+      where: { taskId },
+    });
+    if (!historicTask) {
+      throw new NotFoundException(`Historic task with taskId ${taskId} not found`);
+    }
+    
+    historicTask.status = status;
+    if (options?.assignee !== undefined) {
+      historicTask.assignee = options.assignee;
+    }
+    if (options?.assigneeFullName !== undefined) {
+      historicTask.assigneeFullName = options.assigneeFullName;
+    }
+    if (options?.completionTime !== undefined) {
+      historicTask.completionTime = options.completionTime;
+      if (historicTask.createTime) {
+        historicTask.duration = options.completionTime.getTime() - historicTask.createTime.getTime();
+      }
+    }
+    if (options?.deleteReason !== undefined) {
+      historicTask.deleteReason = options.deleteReason;
+    }
+    
+    return this.historicTaskInstanceRepository.save(historicTask);
+  }
+
+  /**
+   * 根据任务ID查询历史任务实例
+   */
+  async findHistoricTaskByTaskId(taskId: string): Promise<HistoricTaskInstance | null> {
+    return this.historicTaskInstanceRepository.findOne({ where: { taskId } });
   }
 }

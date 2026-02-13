@@ -13,8 +13,8 @@ import { TransactionInterceptor } from './interceptors/transaction.interceptor';
 // 导入过滤器
 
 // 导入中间件
-import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { RequestIdMiddleware } from './middlewares/request-id.middleware';
+// import { LoggerMiddleware } from './middlewares/logger.middleware';
+// import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 
 // 导入服务
 import { LoggerService } from './services/logger.service';

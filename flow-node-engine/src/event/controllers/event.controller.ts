@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiParam }
 
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../identity/guards/jwt-auth.guard';
-import { Event, EventType, EventStatus } from '../entities/event.entity';
+import { EventType, EventStatus } from '../entities/event.entity';
 import { EventPublishService } from '../services/event-publish.service';
 import { EventSubscriptionService } from '../services/event-subscription.service';
 
@@ -26,11 +26,7 @@ export class EventController {
     const pageNum = page || 1;
     const size = pageSize || 10;
     const result = await this.eventSubscriptionService.findAll(pageNum, size);
-    return ApiResponseDto.success(result.events, '查询成功', {
-      total: result.total,
-      page: pageNum,
-      pageSize: size,
-    });
+    return ApiResponseDto.page(result.events, result.total, '查询成功');
   }
 
   @Get(':id')

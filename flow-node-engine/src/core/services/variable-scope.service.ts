@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource , Entity, Column, PrimaryColumn, CreateDateColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
+import { Repository, DataSource , Entity, Column, PrimaryColumn, CreateDateColumn, Index, } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 /**

@@ -173,3 +173,8 @@ decisionServiceRef：决策服务 Key
 
 
 ---------------------------
+H:\2026code\demo\doc-flow\source-flowable-engine\new-docs2\06-NestJS开发计划.md
+当前任务完成后，请按照开发计划完成测试阶段工作，测试用例需要覆盖全面，边界定义合理
+### 3.7 阶段6：测试和优化（第 12-14 周）
+
+**目标**：完成单元测试、集成测试和性能优化

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as bpmn from 'bpmn-moddle';
+import bpmn from 'bpmn-moddle';
 
 import { EventBusService } from './event-bus.service';
 
@@ -119,7 +119,10 @@ export class BpmnParserService {
           bpmnXml,
           errors: validation.errors,
         });
-        return validation;
+        return {
+          processDefinition: null as any,
+          ...validation,
+        };
       }
 
       // 解析流程定义
