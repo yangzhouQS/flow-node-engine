@@ -549,4 +549,331 @@ export class CcService {
       updateTime: entity.update_time_,
     };
   }
+
+  // ==================== Controller 所需方法 ====================
+
+  /**
+   * 创建抄送（Controller接口）
+   */
+  async create(params: {
+    taskId?: string;
+    processInstanceId: string;
+    userIds: string[];
+    groupIds?: string[];
+    reason?: string;
+    type?: string;
+    fromUserId: string;
+  }): Promise<CcRecordEntity[]> {
+    return this.batchCreateCcRecords({
+      processInstanceId: params.processInstanceId,
+      taskId: params.taskId,
+      ccFromUserId: params.fromUserId,
+      ccToUserIds: params.userIds,
+      ccReason: params.reason,
+      ccType: params.type as CcType,
+    });
+  }
+
+  /**
+   * 批量创建抄送（Controller接口）
+   */
+  async batchCreate(params: {
+    taskId?: string;
+    processInstanceId: string;
+    userIds: string[];
+    reason?: string;
+    fromUserId: string;
+  }): Promise<CcRecordEntity[]> {
+    return this.batchCreateCcRecords({
+      processInstanceId: params.processInstanceId,
+      taskId: params.taskId,
+      ccFromUserId: params.fromUserId,
+      ccToUserIds: params.userIds,
+      ccReason: params.reason,
+    });
+  }
+
+  /**
+   * 获取我的抄送列表（Controller接口）
+   */
+  async getMyCCList(params: {
+    userId: string;
+    status?: string;
+    type?: string;
+    startTimeAfter?: Date;
+    startTimeBefore?: Date;
+    page: number;
+    pageSize: number;
+  }): Promise<{ total: number; unreadCount: number; list: CcRecordEntity[] }> {
+    const queryBuilder = this.ccRecordRepository
+      .createQueryBuilder('cc')
+      .where('cc.cc_to_user_id_ = :userId', { userId: params.userId });
+
+    if (params.status) {
+      queryBuilder.andWhere('cc.status_ = :status', { status: params.status });
+    }
+    if (params.type) {
+      queryBuilder.andWhere('cc.cc_type_ = :type', { type: params.type });
+    }
+    if (params.startTimeAfter) {
+      queryBuilder.andWhere('cc.create_time_ >= :startTimeAfter', {
+        startTimeAfter: params.startTimeAfter,
+      });
+    }
+    if (params.startTimeBefore) {
+      queryBuilder.andWhere('cc.create_time_ <= :startTimeBefore', {
+        startTimeBefore: params.startTimeBefore,
+      });
+    }
+
+    const total = await queryBuilder.getCount();
+    const list = await queryBuilder
+      .orderBy('cc.create_time_', 'DESC')
+      .skip((params.page - 1) * params.pageSize)
+      .take(params.pageSize)
+      .getMany();
+
+    const unreadCount = await this.getUnreadCountForUser(params.userId);
+
+    return { total, unreadCount, list };
+  }
+
+  /**
+   * 获取抄送统计信息（Controller接口）
+   */
+  async getStatistics(userId: string): Promise<{
+    total: number;
+    unread: number;
+    read: number;
+    archived: number;
+  }> {
+    const total = await this.ccRecordRepository.count({
+      where: { cc_to_user_id_: userId },
+    });
+    const unread = await this.ccRecordRepository.count({
+      where: { cc_to_user_id_: userId, status_: CcStatus.UNREAD },
+    });
+    const read = await this.ccRecordRepository.count({
+      where: { cc_to_user_id_: userId, status_: CcStatus.READ },
+    });
+    const archived = await this.ccRecordRepository.count({
+      where: { cc_to_user_id_: userId, status_: CcStatus.ARCHIVED },
+    });
+
+    return { total, unread, read, archived };
+  }
+
+  /**
+   * 获取抄送详情（Controller接口）
+   */
+  async getDetail(id: string, userId: string): Promise<any> {
+    const record = await this.ccRecordRepository.findOne({
+      where: { id_: id },
+    });
+    if (!record) {
+      throw new NotFoundException(`抄送记录不存在: ${id}`);
+    }
+    // 返回扩展的详情信息
+    return {
+      ...record,
+      task_name_: null,
+      task_description_: null,
+      proc_def_key_: null,
+      proc_def_name_: null,
+      proc_start_time_: null,
+      starter_id_: null,
+      starter_name_: null,
+      user_name_: null,
+      user_email_: null,
+      from_user_name_: record.cc_from_user_name_,
+      type_: record.cc_type_,
+      reason_: record.cc_reason_,
+      comment_: null,
+      handle_time_: null,
+      task_variables_: null,
+      process_variables_: null,
+    };
+  }
+
+  /**
+   * 标记已读（带用户验证）
+   */
+  async markAsReadWithUser(id: string, userId: string): Promise<CcRecordEntity> {
+    const record = await this.ccRecordRepository.findOne({
+      where: { id_: id },
+    });
+    if (!record) {
+      throw new NotFoundException(`抄送记录不存在: ${id}`);
+    }
+    if (record.cc_to_user_id_ !== userId) {
+      throw new NotFoundException(`无权操作此抄送记录`);
+    }
+    record.status_ = CcStatus.READ;
+    record.read_time_ = new Date();
+    return this.ccRecordRepository.save(record);
+  }
+
+  /**
+   * 批量标记已读（带用户验证）
+   */
+  async batchMarkAsReadWithUser(ids: string[], userId: string): Promise<number> {
+    const result = await this.ccRecordRepository.update(
+      { id_: In(ids), cc_to_user_id_: userId },
+      { status_: CcStatus.READ, read_time_: new Date() },
+    );
+    return result.affected || 0;
+  }
+
+  /**
+   * 更新状态（Controller接口）
+   */
+  async updateStatus(params: {
+    id: string;
+    status: string;
+    comment?: string;
+    userId: string;
+  }): Promise<CcRecordEntity> {
+    const record = await this.ccRecordRepository.findOne({
+      where: { id_: params.id },
+    });
+    if (!record) {
+      throw new NotFoundException(`抄送记录不存在: ${params.id}`);
+    }
+    if (record.cc_to_user_id_ !== params.userId) {
+      throw new NotFoundException(`无权操作此抄送记录`);
+    }
+    record.status_ = params.status as CcStatus;
+    return this.ccRecordRepository.save(record);
+  }
+
+  /**
+   * 归档（Controller接口）
+   */
+  async archive(id: string, userId: string): Promise<CcRecordEntity> {
+    const record = await this.ccRecordRepository.findOne({
+      where: { id_: id },
+    });
+    if (!record) {
+      throw new NotFoundException(`抄送记录不存在: ${id}`);
+    }
+    if (record.cc_to_user_id_ !== userId) {
+      throw new NotFoundException(`无权操作此抄送记录`);
+    }
+    record.status_ = CcStatus.ARCHIVED;
+    return this.ccRecordRepository.save(record);
+  }
+
+  /**
+   * 删除（Controller接口）
+   */
+  async deleteWithUser(id: string, userId: string): Promise<void> {
+    const record = await this.ccRecordRepository.findOne({
+      where: { id_: id },
+    });
+    if (!record) {
+      throw new NotFoundException(`抄送记录不存在: ${id}`);
+    }
+    if (record.cc_to_user_id_ !== userId) {
+      throw new NotFoundException(`无权操作此抄送记录`);
+    }
+    await this.ccRecordRepository.delete({ id_: id });
+  }
+
+  /**
+   * 查询（Controller接口）
+   */
+  async query(params: {
+    taskId?: string;
+    processInstanceId?: string;
+    status?: string;
+    type?: string;
+    page: number;
+    pageSize: number;
+  }): Promise<{ total: number; list: CcRecordEntity[] }> {
+    const queryBuilder = this.ccRecordRepository.createQueryBuilder('cc');
+
+    if (params.taskId) {
+      queryBuilder.andWhere('cc.task_id_ = :taskId', { taskId: params.taskId });
+    }
+    if (params.processInstanceId) {
+      queryBuilder.andWhere('cc.proc_inst_id_ = :processInstanceId', {
+        processInstanceId: params.processInstanceId,
+      });
+    }
+    if (params.status) {
+      queryBuilder.andWhere('cc.status_ = :status', { status: params.status });
+    }
+    if (params.type) {
+      queryBuilder.andWhere('cc.cc_type_ = :type', { type: params.type });
+    }
+
+    const total = await queryBuilder.getCount();
+    const list = await queryBuilder
+      .orderBy('cc.create_time_', 'DESC')
+      .skip((params.page - 1) * params.pageSize)
+      .take(params.pageSize)
+      .getMany();
+
+    return { total, list };
+  }
+
+  /**
+   * 创建配置（Controller接口）
+   */
+  async createConfig(params: {
+    processDefinitionKey: string;
+    activityId?: string;
+    userIds?: string[];
+    groupIds?: string[];
+    enabled?: boolean;
+    type?: string;
+  }): Promise<CcConfigEntity> {
+    return this.createCcConfig({
+      processDefinitionId: params.processDefinitionKey,
+      taskDefKey: params.activityId,
+      ccToUsers: params.userIds,
+      ccToGroups: params.groupIds,
+      enabled: params.enabled,
+      ccType: params.type as CcType,
+    });
+  }
+
+  /**
+   * 获取配置（Controller接口）
+   */
+  async getConfig(processDefinitionKey: string, activityId?: string): Promise<any[]> {
+    const configs = await this.getCcConfigsByProcessDefinition(processDefinitionKey);
+    if (activityId) {
+      return configs.filter((c) => c.task_def_key_ === activityId);
+    }
+    return configs.map((c) => this.toCcConfigInfo(c));
+  }
+
+  /**
+   * 更新配置（Controller接口）
+   */
+  async updateConfig(id: string, params: Partial<{
+    processDefinitionKey: string;
+    activityId: string;
+    userIds: string[];
+    groupIds: string[];
+    enabled: boolean;
+    type: string;
+  }>): Promise<void> {
+    await this.updateCcConfig(id, {
+      processDefinitionId: params.processDefinitionKey,
+      taskDefKey: params.activityId,
+      ccToUsers: params.userIds,
+      ccToGroups: params.groupIds,
+      enabled: params.enabled,
+      ccType: params.type as CcType,
+    });
+  }
+
+  /**
+   * 删除配置（Controller接口）
+   */
+  async deleteConfig(id: string): Promise<void> {
+    await this.deleteCcConfig(id);
+  }
 }

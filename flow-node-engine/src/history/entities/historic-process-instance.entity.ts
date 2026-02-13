@@ -66,9 +66,6 @@ export class HistoricProcessInstance {
   @Column({ name: 'variables', type: 'json', nullable: true })
   variables?: Record<string, any>;
 
-  @Column({ name: 'tenant_id', length: 255, nullable: true })
-  tenantId?: string;
-
   @CreateDateColumn({ name: 'create_time', type: 'datetime' })
   createTime: Date;
 }

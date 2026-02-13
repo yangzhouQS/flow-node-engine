@@ -25,7 +25,7 @@ export interface ExecutionHistory {
   elementName?: string;
   startTime: Date;
   endTime?: Date;
-  status: 'RUNNING' | 'COMPLETED' | 'FAILED';
+  status: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SUSPENDED' | 'TERMINATED';
   error?: string;
 }
 

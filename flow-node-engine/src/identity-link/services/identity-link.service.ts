@@ -521,4 +521,120 @@ export class IdentityLinkService {
       createTime: entity.create_time_,
     };
   }
+
+  // ==================== Controller兼容方法别名 ====================
+
+  /**
+   * 创建身份链接 - Controller兼容方法
+   */
+  async create(params: CreateIdentityLinkParams): Promise<IdentityLinkEntity> {
+    return this.createIdentityLink(params);
+  }
+
+  /**
+   * 批量创建身份链接 - Controller兼容方法
+   */
+  async batchCreate(paramsList: CreateIdentityLinkParams[]): Promise<IdentityLinkEntity[]> {
+    return this.createIdentityLinks(paramsList);
+  }
+
+  /**
+   * 查询身份链接 - Controller兼容方法
+   */
+  async query(params: IdentityLinkQueryParams): Promise<IdentityLinkEntity[]> {
+    return this.queryIdentityLinks(params);
+  }
+
+  /**
+   * 获取任务候选人（用户和组）- Controller兼容方法
+   */
+  async getTaskCandidates(taskId: string): Promise<{ users: string[]; groups: string[] }> {
+    const [users, groups] = await Promise.all([
+      this.getCandidateUsersForTask(taskId),
+      this.getCandidateGroupsForTask(taskId),
+    ]);
+    return { users, groups };
+  }
+
+  /**
+   * 添加候选人用户 - Controller兼容方法
+   */
+  async addCandidateUser(taskId: string, userId: string, processInstanceId?: string, tenantId?: string): Promise<IdentityLinkEntity> {
+    return this.addCandidateUserToTask(taskId, userId, processInstanceId, tenantId);
+  }
+
+  /**
+   * 删除候选人用户 - Controller兼容方法
+   */
+  async deleteCandidateUser(taskId: string, userId: string): Promise<void> {
+    return this.deleteCandidateUserFromTask(taskId, userId);
+  }
+
+  /**
+   * 添加候选组 - Controller兼容方法
+   */
+  async addCandidateGroup(taskId: string, groupId: string, processInstanceId?: string, tenantId?: string): Promise<IdentityLinkEntity> {
+    return this.addCandidateGroupToTask(taskId, groupId, processInstanceId, tenantId);
+  }
+
+  /**
+   * 删除候选组 - Controller兼容方法
+   */
+  async deleteCandidateGroup(taskId: string, groupId: string): Promise<void> {
+    return this.deleteCandidateGroupFromTask(taskId, groupId);
+  }
+
+  /**
+   * 设置受让人 - Controller兼容方法
+   */
+  async setAssignee(taskId: string, userId: string, processInstanceId?: string, tenantId?: string): Promise<IdentityLinkEntity> {
+    return this.setTaskAssignee(taskId, userId, processInstanceId, tenantId);
+  }
+
+  /**
+   * 设置拥有者 - Controller兼容方法
+   */
+  async setOwner(taskId: string, userId: string, processInstanceId?: string, tenantId?: string): Promise<IdentityLinkEntity> {
+    return this.setTaskOwner(taskId, userId, processInstanceId, tenantId);
+  }
+
+  /**
+   * 删除身份链接 - Controller兼容方法
+   */
+  async delete(id: string): Promise<void> {
+    return this.deleteIdentityLink(id);
+  }
+
+  /**
+   * 检查用户任务访问权限
+   */
+  async checkTaskAccess(taskId: string, userId: string, groupIds?: string[]): Promise<boolean> {
+    // 检查是否是受让人
+    const assigneeLink = await this.identityLinkRepository.findOne({
+      where: { task_id_: taskId, user_id_: userId, link_type_: IdentityLinkType.ASSIGNEE },
+    });
+    if (assigneeLink) return true;
+
+    // 检查是否是拥有者
+    const ownerLink = await this.identityLinkRepository.findOne({
+      where: { task_id_: taskId, user_id_: userId, link_type_: IdentityLinkType.OWNER },
+    });
+    if (ownerLink) return true;
+
+    // 检查是否是候选人用户
+    const candidateUserLink = await this.identityLinkRepository.findOne({
+      where: { task_id_: taskId, user_id_: userId, link_type_: IdentityLinkType.CANDIDATE },
+    });
+    if (candidateUserLink) return true;
+
+    // 检查是否是候选组成员
+    if (groupIds && groupIds.length > 0) {
+      const candidateGroupLink = await this.identityLinkRepository.findOne({
+        where: { task_id_: taskId, group_id_: In(groupIds), link_type_: IdentityLinkType.CANDIDATE },
+      });
+      if (candidateGroupLink) return true;
+    }
+
+    return false;
+  }
 }

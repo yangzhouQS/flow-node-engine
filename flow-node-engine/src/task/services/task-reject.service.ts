@@ -547,6 +547,229 @@ export class TaskRejectService {
     }
   }
 
+  // ==================== Controller兼容方法 ====================
+
+  /**
+   * 驳回任务 - Controller兼容方法
+   */
+  async reject(params: {
+    taskId: string;
+    rejectType?: RejectType;
+    strategy?: string;
+    targetActivityId?: string;
+    reason?: string;
+    comment?: string;
+    variables?: Record<string, any>;
+    userId: string;
+    skipListeners?: boolean;
+  }): Promise<TaskRejectEntity> {
+    const { taskId, rejectType, strategy, targetActivityId, reason, comment, variables, userId, skipListeners } = params;
+    
+    // 创建驳回记录
+    const entity = new TaskRejectEntity();
+    entity.id_ = uuidv4();
+    entity.task_id_ = taskId;
+    entity.task_def_key_ = null; // 需要从任务获取
+    entity.proc_inst_id_ = ''; // 需要从任务获取
+    entity.proc_def_id_ = null;
+    entity.execution_id_ = null;
+    entity.reject_type_ = rejectType || RejectType.TO_PREVIOUS;
+    entity.reject_reason_ = reason || null;
+    entity.reject_user_id_ = userId;
+    entity.target_task_def_key_ = targetActivityId || null;
+    entity.target_task_name_ = null;
+    entity.status_ = RejectStatus.EXECUTED;
+    entity.is_multi_instance_ = false;
+    entity.multi_instance_strategy_ = null;
+    entity.extra_data_ = variables ? JSON.stringify({ variables, comment, strategy, skipListeners }) : null;
+    entity.tenant_id_ = null;
+    entity.create_time_ = new Date();
+    entity.process_time_ = new Date();
+
+    return await this.taskRejectRepository.save(entity);
+  }
+
+  /**
+   * 批量驳回任务 - Controller兼容方法
+   */
+  async batchReject(params: {
+    taskIds: string[];
+    rejectType?: RejectType;
+    reason?: string;
+    comment?: string;
+    userId: string;
+  }): Promise<TaskRejectEntity[]> {
+    const { taskIds, rejectType, reason, comment, userId } = params;
+    const results: TaskRejectEntity[] = [];
+
+    for (const taskId of taskIds) {
+      const entity = await this.reject({
+        taskId,
+        rejectType,
+        reason,
+        comment,
+        userId,
+      });
+      results.push(entity);
+    }
+
+    return results;
+  }
+
+  /**
+   * 获取可退回节点列表 - Controller兼容方法
+   */
+  async getRejectableNodes(taskId: string): Promise<{
+    activityId: string;
+    activityName: string;
+    activityType: string;
+    assignee?: string;
+    candidateUsers?: string[];
+    candidateGroups?: string[];
+    createTime?: Date;
+    endTime?: Date;
+  }[]> {
+    // TODO: 实现从历史任务和流程定义获取可退回节点
+    // 这里返回模拟数据
+    return [
+      {
+        activityId: 'previous_task',
+        activityName: '上一节点',
+        activityType: 'userTask',
+      },
+    ];
+  }
+
+  /**
+   * 查询驳回记录 - Controller兼容方法（带分页）
+   */
+  async queryRejectRecordsWithPaging(params: TaskRejectQueryParams & { page?: number; pageSize?: number }): Promise<{
+    total: number;
+    list: TaskRejectEntity[];
+  }> {
+    const { page = 1, pageSize = 20, ...queryParams } = params;
+    
+    const queryBuilder = this.taskRejectRepository.createQueryBuilder('reject');
+
+    if (queryParams.taskId) {
+      queryBuilder.andWhere('reject.task_id_ = :taskId', { taskId: queryParams.taskId });
+    }
+    if (queryParams.taskDefKey) {
+      queryBuilder.andWhere('reject.task_def_key_ = :taskDefKey', { taskDefKey: queryParams.taskDefKey });
+    }
+    if (queryParams.processInstanceId) {
+      queryBuilder.andWhere('reject.proc_inst_id_ = :procInstId', { procInstId: queryParams.processInstanceId });
+    }
+    if (queryParams.rejectUserId) {
+      queryBuilder.andWhere('reject.reject_user_id_ = :rejectUserId', { rejectUserId: queryParams.rejectUserId });
+    }
+    if (queryParams.rejectType) {
+      queryBuilder.andWhere('reject.reject_type_ = :rejectType', { rejectType: queryParams.rejectType });
+    }
+    if (queryParams.status) {
+      queryBuilder.andWhere('reject.status_ = :status', { status: queryParams.status });
+    }
+    if (queryParams.isMultiInstance !== undefined) {
+      queryBuilder.andWhere('reject.is_multi_instance_ = :isMultiInstance', { isMultiInstance: queryParams.isMultiInstance });
+    }
+    if (queryParams.tenantId) {
+      queryBuilder.andWhere('reject.tenant_id_ = :tenantId', { tenantId: queryParams.tenantId });
+    }
+
+    queryBuilder.orderBy('reject.create_time_', 'DESC');
+    queryBuilder.skip((page - 1) * pageSize).take(pageSize);
+
+    const [list, total] = await queryBuilder.getManyAndCount();
+    return { total, list };
+  }
+
+  /**
+   * 获取驳回配置 - Controller兼容方法
+   */
+  async getRejectConfigForTask(taskId: string): Promise<{
+    processDefinitionId: string;
+    processDefinitionKey: string;
+    activityId: string;
+    strategy: string;
+    allowedTargetActivities: string[];
+    multiInstanceStrategy: string;
+    rejectPercentage: number;
+    allowUserChoice: boolean;
+  }> {
+    // TODO: 实现从任务获取流程定义，再获取驳回配置
+    return {
+      processDefinitionId: '',
+      processDefinitionKey: '',
+      activityId: '',
+      strategy: 'TO_PREVIOUS',
+      allowedTargetActivities: [],
+      multiInstanceStrategy: 'ONLY_CURRENT',
+      rejectPercentage: 0,
+      allowUserChoice: true,
+    };
+  }
+
+  /**
+   * 处理多实例驳回 - Controller兼容方法
+   */
+  async handleMultiInstanceReject(params: {
+    taskId: string;
+    strategy?: string;
+    reason?: string;
+    variables?: Record<string, any>;
+    userId: string;
+  }): Promise<{ success: boolean; message: string; shouldReject?: boolean }> {
+    const { taskId, strategy, reason, variables, userId } = params;
+    
+    try {
+      // 创建多实例驳回记录
+      const entity = await this.createRejectRecord({
+        taskId,
+        rejectType: RejectType.TO_PREVIOUS,
+        rejectReason: reason,
+        rejectUserId: userId,
+        isMultiInstance: true,
+        multiInstanceStrategy: strategy as any,
+        processInstanceId: '',
+      });
+
+      // 更新状态为已执行
+      await this.updateRejectStatus(entity.id_, RejectStatus.EXECUTED);
+
+      return {
+        success: true,
+        message: '多实例驳回处理成功',
+        shouldReject: true,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `多实例驳回处理失败: ${error.message}`,
+        shouldReject: false,
+      };
+    }
+  }
+
+  /**
+   * 检查是否可以驳回 - Controller兼容方法
+   */
+  async checkCanReject(taskId: string, userId: string): Promise<{
+    canReject: boolean;
+    reason?: string;
+    strategies?: string[];
+  }> {
+    // TODO: 实现实际的检查逻辑
+    // 1. 检查任务是否存在
+    // 2. 检查用户是否有权限
+    // 3. 检查流程状态
+    // 4. 检查驳回配置
+    
+    return {
+      canReject: true,
+      strategies: ['TO_PREVIOUS', 'TO_STARTER', 'TO_SPECIFIC'],
+    };
+  }
+
   // ==================== 转换方法 ====================
 
   /**

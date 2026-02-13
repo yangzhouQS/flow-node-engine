@@ -5,6 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
  * 驳回类型枚举
  */
 export enum RejectType {
+  /** 回滚/退回 */
+  ROLLBACK = 'ROLLBACK',
+  /** 驳回 */
+  REJECT = 'REJECT',
+  /** 拒绝 */
+  DENY = 'DENY',
   /** 退回到上一节点 */
   TO_PREVIOUS = 'TO_PREVIOUS',
   /** 退回到发起人 */

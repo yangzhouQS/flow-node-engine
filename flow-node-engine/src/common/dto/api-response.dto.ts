@@ -24,6 +24,29 @@ export class ApiResponseDto<T = any> {
       this.total = total;
     }
   }
+
+  /**
+   * 创建成功响应
+   */
+  static success<T>(data: T, message: string = 'Success'): ApiResponseDto<T> {
+    return new ApiResponseDto<T>(0, message, data);
+  }
+
+  /**
+   * 创建错误响应
+   */
+  static error<T>(message: string, code: number = -1, data?: T): ApiResponseDto<T> {
+    return new ApiResponseDto<T>(code, message, data);
+  }
+
+  /**
+   * 创建分页响应
+   */
+  static page<T>(items: T[], total: number, message: string = 'Success'): ApiResponseDto<T[]> {
+    const response = new ApiResponseDto<T[]>(0, message, items);
+    response.total = total;
+    return response;
+  }
 }
 
 // 分页请求格式

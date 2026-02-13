@@ -19,6 +19,8 @@ export enum CcStatus {
   UNREAD = 'UNREAD',
   /** 已读 */
   READ = 'READ',
+  /** 已归档 */
+  ARCHIVED = 'ARCHIVED',
 }
 
 /**

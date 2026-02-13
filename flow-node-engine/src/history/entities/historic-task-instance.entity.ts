@@ -97,12 +97,21 @@ export class HistoricTaskInstance {
   @Column({ name: 'variables', type: 'json', nullable: true })
   variables?: Record<string, any>;
 
-  @Column({ name: 'tenant_id', length: 255, nullable: true })
-  tenantId?: string;
-
   @Column({ name: 'delete_reason', length: 255, nullable: true })
   deleteReason?: string;
 
-  @CreateDateColumn({ name: 'create_time', type: 'datetime' })
-  createTime: Date;
+  // Getter属性 - 提供别名访问
+  /**
+   * 开始时间 - createTime的别名
+   */
+  get startTime(): Date {
+    return this.createTime;
+  }
+
+  /**
+   * 结束时间 - completionTime的别名
+   */
+  get endTime(): Date | undefined {
+    return this.completionTime;
+  }
 }

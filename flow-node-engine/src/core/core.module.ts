@@ -32,3 +32,6 @@ import { ProcessExecutorService } from './services/process-executor.service';
   ],
 })
 export class ProcessEngineCoreModule {}
+
+// 别名导出，方便导入
+export { ProcessEngineCoreModule as CoreModule };

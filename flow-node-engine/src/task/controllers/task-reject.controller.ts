@@ -108,13 +108,11 @@ export class TaskRejectController {
   async queryRejectRecords(
     @Query() query: QueryRejectRecordDto,
   ): Promise<{ total: number; list: RejectRecordResponseDto[] }> {
-    const { total, list } = await this.taskRejectService.queryRejectRecords({
+    const { total, list } = await this.taskRejectService.queryRejectRecordsWithPaging({
       taskId: query.taskId,
       processInstanceId: query.processInstanceId,
-      userId: query.userId,
+      rejectUserId: query.userId,
       rejectType: query.rejectType,
-      startTimeAfter: query.startTimeAfter ? new Date(query.startTimeAfter) : undefined,
-      startTimeBefore: query.startTimeBefore ? new Date(query.startTimeBefore) : undefined,
       page: query.page ? parseInt(query.page, 10) : 1,
       pageSize: query.pageSize ? parseInt(query.pageSize, 10) : 20,
     });
@@ -140,7 +138,7 @@ export class TaskRejectController {
    */
   @Get(':taskId/reject-config')
   async getRejectConfig(@Param('taskId') taskId: string): Promise<RejectConfigResponseDto> {
-    const config = await this.taskRejectService.getRejectConfig(taskId);
+    const config = await this.taskRejectService.getRejectConfigForTask(taskId);
     return {
       processDefinitionId: config.processDefinitionId,
       processDefinitionKey: config.processDefinitionKey,

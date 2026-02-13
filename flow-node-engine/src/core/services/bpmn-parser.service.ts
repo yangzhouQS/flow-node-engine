@@ -28,6 +28,37 @@ export interface BpmnElement {
   name?: string;
   type: string;
   properties?: Record<string, any>;
+  // Call Activity 属性
+  calledElement?: string;
+  calledElementBinding?: string;
+  calledElementVersionTag?: string;
+  async?: boolean;
+  asyncBefore?: boolean;
+  // IO Specification
+  ioSpecification?: any;
+  dataInputAssociations?: any[];
+  dataOutputAssociations?: any[];
+  // Sub Process 属性
+  children?: BpmnElement[];
+  flowElements?: BpmnElement[];
+  triggeredByEvent?: boolean;
+  // Event 属性
+  isInterrupting?: boolean;
+  incoming?: string[];
+  outgoing?: string[];
+  // Event Definitions
+  signalRef?: string;
+  signalEventDefinition?: any;
+  messageRef?: string;
+  messageEventDefinition?: any;
+  timerEventDefinition?: any;
+  errorRef?: string;
+  errorEventDefinition?: any;
+  escalationRef?: string;
+  escalationEventDefinition?: any;
+  conditionExpression?: any;
+  conditionalEventDefinition?: any;
+  compensationEventDefinition?: any;
 }
 
 /**

@@ -20,6 +20,18 @@ export class RejectConfigEntity {
   proc_def_id_: string;
 
   /**
+   * 流程定义Key
+   */
+  @Column({ length: 255, nullable: true })
+  proc_def_key_: string;
+
+  /**
+   * 活动节点ID
+   */
+  @Column({ length: 255, nullable: true })
+  activity_id_: string;
+
+  /**
    * 任务定义Key
    */
   @Column({ length: 255 })
@@ -31,6 +43,36 @@ export class RejectConfigEntity {
    */
   @Column({ length: 255, nullable: true })
   task_name_: string;
+
+  /**
+   * 驳回策略
+   */
+  @Column({ length: 30, nullable: true })
+  strategy_: string;
+
+  /**
+   * 允许的目标节点（JSON数组）
+   */
+  @Column({ type: 'text', nullable: true })
+  allowed_target_activities_: string;
+
+  /**
+   * 多实例驳回策略
+   */
+  @Column({ length: 30, nullable: true })
+  multi_instance_strategy_: string;
+
+  /**
+   * 驳回百分比
+   */
+  @Column({ type: 'int', nullable: true })
+  reject_percentage_: number;
+
+  /**
+   * 是否允许用户选择
+   */
+  @Column({ default: true })
+  allow_user_choice_: boolean;
 
   /**
    * 允许的驳回类型（JSON数组）
@@ -85,6 +127,44 @@ export class RejectConfigEntity {
    */
   @UpdateDateColumn()
   update_time_: Date;
+
+  // Getter属性 - 提供驼峰命名访问
+  get processDefinitionId(): string {
+    return this.proc_def_id_;
+  }
+
+  get processDefinitionKey(): string {
+    return this.proc_def_key_;
+  }
+
+  get activityId(): string {
+    return this.activity_id_;
+  }
+
+  get strategy(): string {
+    return this.strategy_;
+  }
+
+  get allowedTargetActivities(): string[] {
+    if (!this.allowed_target_activities_) return [];
+    try {
+      return JSON.parse(this.allowed_target_activities_);
+    } catch {
+      return [];
+    }
+  }
+
+  get multiInstanceStrategy(): string {
+    return this.multi_instance_strategy_;
+  }
+
+  get rejectPercentage(): number {
+    return this.reject_percentage_ || 0;
+  }
+
+  get allowUserChoice(): boolean {
+    return this.allow_user_choice_;
+  }
 }
 
 /**

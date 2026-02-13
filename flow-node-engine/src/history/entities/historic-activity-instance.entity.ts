@@ -70,17 +70,11 @@ export class HistoricActivityInstance {
   @Column({ name: 'duration', type: 'bigint', nullable: true })
   duration?: number;
 
-  @Column({ name: 'activity_type', type: 'enum', enum: ActivityType })
-  activityType: ActivityType;
-
   @Column({ name: 'assignee', length: 255, nullable: true })
   assignee?: string;
 
   @Column({ name: 'variables', type: 'json', nullable: true })
   variables?: Record<string, any>;
-
-  @Column({ name: 'tenant_id', length: 255, nullable: true })
-  tenantId?: string;
 
   @CreateDateColumn({ name: 'create_time', type: 'datetime' })
   createTime: Date;

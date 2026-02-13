@@ -66,5 +66,5 @@ export class ProcessInstance {
   executions: Execution[];
 
   @OneToMany(() => Variable, (variable) => variable.processInstance)
-  variables: Variable[];
+  variableList: Variable[];
 }

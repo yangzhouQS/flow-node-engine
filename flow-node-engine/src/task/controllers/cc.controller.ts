@@ -162,7 +162,7 @@ export class CCController {
     @Param('id') id: string,
     @CurrentUser('userId') userId: string,
   ): Promise<CCRecordResponseDto> {
-    const record = await this.ccService.markAsRead(id, userId);
+    const record = await this.ccService.markAsReadWithUser(id, userId);
     return this.toRecordResponseDto(record);
   }
 
@@ -175,7 +175,7 @@ export class CCController {
     @Body('ids') ids: string[],
     @CurrentUser('userId') userId: string,
   ): Promise<{ success: boolean; count: number }> {
-    const count = await this.ccService.batchMarkAsRead(ids, userId);
+    const count = await this.ccService.batchMarkAsReadWithUser(ids, userId);
     return { success: true, count };
   }
 
@@ -221,7 +221,7 @@ export class CCController {
     @Param('id') id: string,
     @CurrentUser('userId') userId: string,
   ): Promise<void> {
-    await this.ccService.delete(id, userId);
+    await this.ccService.deleteWithUser(id, userId);
   }
 
   /**
