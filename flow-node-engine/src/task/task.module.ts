@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { HistoricActivityInstance } from '../history/entities/historic-activity-instance.entity';
 import { HistoryModule } from '../history/history.module';
 import { IdentityLinkModule } from '../identity-link/identity-link.module';
 
@@ -37,6 +38,7 @@ import { TaskService } from './services/task.service';
       CcRecordEntity,
       CcConfigEntity,
       MultiInstanceConfigEntity,
+      HistoricActivityInstance,
     ]),
     IdentityLinkModule,
     HistoryModule,

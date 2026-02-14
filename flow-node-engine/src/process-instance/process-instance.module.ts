@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { ProcessDefinition } from '../process-definition/entities/process-definition.entity';
 import { ProcessInstanceController } from './controllers/process-instance.controller';
 import { Execution } from './entities/execution.entity';
 import { ProcessInstance } from './entities/process-instance.entity';
@@ -15,6 +16,7 @@ import { VariableService } from './services/variable.service';
       ProcessInstance,
       Execution,
       Variable,
+      ProcessDefinition,
     ]),
   ],
   controllers: [ProcessInstanceController],

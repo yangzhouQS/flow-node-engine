@@ -21,8 +21,11 @@ import { TaskModule } from './task/task.module';
   imports: [
     // 配置模块
     ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      // isGlobal: true,
+      // envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      isGlobal: true, // 全局可用，无需在其他模块重复导入
+      envFilePath: '.env', // 指定.env文件路径（默认就是根目录，可省略）
+      ignoreEnvFile: false, // 开发环境不忽略.env，生产环境可设为true（用系统环境变量）
     }),
 
     // TypeORM 数据库模块

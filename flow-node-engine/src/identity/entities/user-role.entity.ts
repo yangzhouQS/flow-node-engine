@@ -12,7 +12,7 @@ import { Role } from './role.entity';
 import { User } from './user.entity';
 
 @Entity('user_role')
-@Index(['user_id', 'role_id'], { unique: true })
+@Index(['userId', 'roleId'], { unique: true })
 export class UserRole {
   @PrimaryGeneratedColumn('uuid')
   id: string;

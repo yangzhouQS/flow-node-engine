@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import bpmn from 'bpmn-moddle';
+import { BpmnModdle } from 'bpmn-moddle';
 
 import { EventBusService } from './event-bus.service';
 
@@ -89,7 +89,7 @@ export interface BpmnParseResult {
 @Injectable()
 export class BpmnParserService {
   private readonly logger = new Logger(BpmnParserService.name);
-  private readonly moddle = bpmn({
+  private readonly moddle = new BpmnModdle({
     camunda: 'http://camunda.org/schema/1.0/bpmn',
   });
 

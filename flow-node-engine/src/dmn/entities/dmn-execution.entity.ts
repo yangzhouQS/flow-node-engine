@@ -29,7 +29,7 @@ export enum DmnExecutionStatus {
 @Entity('ACT_DMN_EXECUTION')
 @Index('IDX_DMN_EXEC_DECISION_ID', ['decisionId'])
 @Index('IDX_DMN_EXEC_PROCESS_INSTANCE', ['processInstanceId'])
-@Index('IDX_DMN_EXEC_TIME', ['executionTime'])
+@Index('IDX_DMN_EXEC_TIME', ['createTime'])
 export class DmnExecutionEntity {
   /** 执行ID */
   @PrimaryColumn({ name: 'ID_', type: 'varchar', length: 64 })
