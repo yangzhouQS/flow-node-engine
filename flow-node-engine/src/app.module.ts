@@ -39,7 +39,7 @@ import { TaskModule } from './task/task.module';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get('NODE_ENV') === 'development',
+        synchronize: false, // configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
         timezone: '+08:00',
         charset: 'utf8mb4',
