@@ -51,14 +51,13 @@ export default defineConfig({
     outputFile: {
       html: './coverage/test-report.html',
     },
-    setupFiles: ['./test/setup.ts'],
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
   plugins: [
     swc.vite({
-      module: { type: 'commonjs' },
+      module: { type: 'es6' },
       jsc: {
         parser: {
           syntax: 'typescript',
