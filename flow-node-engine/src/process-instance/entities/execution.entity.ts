@@ -6,12 +6,29 @@ import {
   JoinColumn,
   OneToMany,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 import { ProcessInstance } from './process-instance.entity';
 import { Variable } from './variable.entity';
 
+/**
+ * 执行实体
+ * 
+ * 索引策略：
+ * - idx_execution_process_instance: 按流程实例查询执行
+ * - idx_execution_activity: 按活动ID查询执行
+ * - idx_execution_state: 按状态查询执行
+ * - idx_execution_tenant: 多租户查询
+ * - idx_execution_process_activity: 复合索引，流程实例+活动ID查询
+ */
 @Entity('executions')
+@Index('idx_execution_process_instance', ['processInstanceId'])
+@Index('idx_execution_activity', ['activityId'])
+@Index('idx_execution_state', ['state'])
+@Index('idx_execution_tenant', ['tenantId'])
+@Index('idx_execution_process_activity', ['processInstanceId', 'activityId'])
+@Index('idx_execution_process_state', ['processInstanceId', 'state'])
 export class Execution {
   @PrimaryGeneratedColumn('uuid')
   id: string;

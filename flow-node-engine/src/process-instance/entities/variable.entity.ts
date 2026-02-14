@@ -5,12 +5,27 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 
 import { Execution } from './execution.entity';
 import { ProcessInstance } from './process-instance.entity';
 
+/**
+ * 变量实体
+ * 
+ * 索引策略：
+ * - idx_variable_process_instance: 按流程实例查询变量
+ * - idx_variable_execution: 按执行ID查询变量
+ * - idx_variable_name: 按变量名查询
+ * - idx_variable_process_name: 复合索引，流程实例+变量名查询（常用）
+ */
 @Entity('variables')
+@Index('idx_variable_process_instance', ['processInstanceId'])
+@Index('idx_variable_execution', ['executionId'])
+@Index('idx_variable_name', ['name'])
+@Index('idx_variable_process_name', ['processInstanceId', 'name'])
+@Index('idx_variable_scope', ['scope'])
 export class Variable {
   @PrimaryGeneratedColumn('uuid')
   id: string;

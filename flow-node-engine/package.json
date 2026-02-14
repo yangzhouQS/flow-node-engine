@@ -23,7 +23,9 @@
     "test:e2e": "vitest run --config ./vitest-e2e.config.ts",
     "test:e2e:watch": "vitest --config ./vitest-e2e.config.ts",
     "test:debug": "vitest --inspect-brk",
-    "typeorm2": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "typeorm2": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:sync",
+    "typeorm:init": "tsx ./node_modules/typeorm/cli.js init --name flow-engine --database mysql"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.13",
@@ -62,6 +64,7 @@
     "ajv": "^8.17.1"
   },
   "devDependencies": {
+    "tsx": "^4.21.0",
     "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.13",

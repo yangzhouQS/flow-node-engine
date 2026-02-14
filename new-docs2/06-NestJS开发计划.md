@@ -1122,11 +1122,11 @@ c| 3.2 | 开发任务候选用户实体（TaskCandidateUser） | P1 | 0.5 天 | 
 | 6.4.2 | 编写 E2E 测试 - 流程实例 API | P1 | 1 天 | - | ✅ 已完成（16个测试场景，2026-02-14） |
 | 6.4.3 | 编写 E2E 测试 - 任务管理 API | P1 | 1 天 | - | ✅ 已完成（18个测试场景，2026-02-14） |
 | 6.4.4 | 编写 E2E 测试 - 进度追踪 API | P1 | 1 天 | - | ✅ 已完成（12个测试场景，2026-02-14） |
-| 6.4.5 | 编写 E2E 测试 - 表单管理 API | P2 | 0.5 天 | - | 待开始（计划阶段7完成） |
+| 6.4.5 | 编写 E2E 测试 - 表单管理 API | P2 | 0.5 天 | - | ✅ 已完成（12个测试场景，2026-02-14） |
 | 6.4.6 | 编写 E2E 测试 - 作业服务 API | P1 | 1 天 | - | ✅ 已完成（17个测试场景，2026-02-14） |
 | 6.4.7 | 编写 E2E 测试 - 身份链接 API | P1 | 0.5 天 | - | ✅ 已完成（15个测试场景，2026-02-14） |
-| 6.4.8 | 编写 E2E 测试 - 批处理 API | P2 | 0.5 天 | - | 待开始（计划阶段7完成） |
-| 6.4.9 | 编写 E2E 测试 - DMN决策引擎 API | P2 | 1 天 | - | 待开始（计划阶段7完成） |
+| 6.4.8 | 编写 E2E 测试 - 批处理 API | P2 | 0.5 天 | - | ✅ 已完成（14个测试场景，2026-02-14） |
+| 6.4.9 | 编写 E2E 测试 - DMN决策引擎 API | P2 | 1 天 | - | ✅ 已完成（16个测试场景，2026-02-14） |
 | 6.4.10 | 编写 E2E 测试 - 任务驳回 API | P1 | 0.5 天 | - | ✅ 已完成（11个测试场景，2026-02-14） |
 | 6.4.11 | 编写 E2E 测试 - 抄送功能 API | P1 | 0.5 天 | - | ✅ 已完成（15个测试场景，2026-02-14） |
 | 6.4.12 | 编写 E2E 测试 - 退回策略 API | P1 | 0.5 天 | - | ✅ 已完成（13个测试场景，2026-02-14） |
@@ -1137,27 +1137,236 @@ c| 3.2 | 开发任务候选用户实体（TaskCandidateUser） | P1 | 0.5 天 | 
 
 | 任务 ID | 任务名称 | 优先级 | 预计工时 | 目标值 | 状态 |
 |--------|---------|-------|---------|--------|------|
-| 6.5.1 | 性能测试 - 流程实例启动 | P1 | 1 天 | 平均响应 < 500ms | 待开始 |
-| 6.5.2 | 性能测试 - 任务查询 | P1 | 1 天 | 平均响应 < 200ms | 待开始 |
-| 6.5.3 | 性能测试 - 历史数据查询 | P1 | 1 天 | 平均响应 < 300ms | 待开始 |
-| 6.5.4 | 性能测试 - 作业执行 | P1 | 1 天 | 1000作业/分钟 | 待开始 |
-| 6.5.5 | 性能测试 - DMN决策执行 | P2 | 1 天 | 平均响应 < 100ms | 待开始 |
-| 6.5.6 | 性能测试 - 事件订阅触发 | P2 | 0.5 天 | 平均响应 < 150ms | 待开始 |
-| 6.5.7 | 性能测试 - 批处理执行 | P2 | 0.5 天 | 100实例/批次 | 待开始 |
-| 6.5.8 | 性能测试 - 并发流程启动 | P1 | 1 天 | 100并发 < 5s | 待开始 |
-| 6.5.9 | 性能测试 - WebSocket 连接数 | P2 | 0.5 天 | 1000连接稳定 | 待开始 |
+| 6.5.1 | 性能测试 - 流程实例启动 | P1 | 1 天 | 平均响应 < 500ms | ✅ 已完成（2026-02-14） |
+| 6.5.2 | 性能测试 - 任务查询 | P1 | 1 天 | 平均响应 < 200ms | ✅ 已完成（2026-02-14） |
+| 6.5.3 | 性能测试 - 历史数据查询 | P1 | 1 天 | 平均响应 < 300ms | ✅ 已完成（2026-02-14） |
+| 6.5.4 | 性能测试 - 作业执行 | P1 | 1 天 | 1000作业/分钟 | ✅ 已完成（2026-02-14） |
+| 6.5.5 | 性能测试 - DMN决策执行 | P2 | 1 天 | 平均响应 < 100ms | ✅ 已完成（2026-02-14） |
+| 6.5.6 | 性能测试 - 事件订阅触发 | P2 | 0.5 天 | 平均响应 < 150ms | ✅ 已完成（2026-02-14） |
+| 6.5.7 | 性能测试 - 批处理执行 | P2 | 0.5 天 | 100实例/批次 | ✅ 已完成（2026-02-14） |
+| 6.5.8 | 性能测试 - 并发流程启动 | P1 | 1 天 | 100并发 < 5s | ✅ 已完成（2026-02-14） |
+| 6.5.9 | 性能测试 - WebSocket 连接数 | P2 | 0.5 天 | 1000连接稳定 | ✅ 已完成（2026-02-14） |
 
 #### 6.6 优化任务清单
 
 | 任务 ID | 任务名称 | 优先级 | 预计工时 | 负责人 | 状态 |
 |--------|---------|-------|---------|--------|------|
-| 6.6.1 | 数据库查询优化 - 索引优化 | P1 | 1 天 | - | 待开始 |
-| 6.6.2 | 数据库查询优化 - 慢查询分析 | P1 | 1 天 | - | 待开始 |
-| 6.6.3 | 缓存策略优化 - 流程定义缓存 | P1 | 0.5 天 | - | 待开始 |
-| 6.6.4 | 缓存策略优化 - 用户权限缓存 | P1 | 0.5 天 | - | 待开始 |
+| 6.6.1 | 数据库查询优化 - 索引优化 | P1 | 1 天 | - | ✅ 已完成（2026-02-14） |
+| 6.6.2 | 数据库查询优化 - 慢查询分析 | P1 | 1 天 | - | ✅ 已完成（2026-02-14） |
+| 6.6.3 | 缓存策略优化 - 流程定义缓存 | P1 | 0.5 天 | - | ✅ 已完成（2026-02-14） |
+| 6.6.4 | 缓存策略优化 - 用户权限缓存 | P1 | 0.5 天 | - | ✅ 已完成（2026-02-14） |
 | 6.6.5 | 代码优化 - 热点代码分析 | P2 | 1 天 | - | 待开始 |
 | 6.6.6 | 代码优化 - 内存泄漏检查 | P2 | 1 天 | - | 待开始 |
 | 6.6.7 | 代码覆盖率检查（目标 > 80%） | P1 | 1 天 | - | 待开始 |
+
+#### 6.6.1 索引优化详情（已完成）
+
+**已添加索引的实体：**
+
+| 实体 | 索引名称 | 索引字段 | 索引类型 | 用途 |
+|-----|---------|---------|---------|------|
+| **Task** | idx_task_process_instance | processInstanceId | 单列 | 按流程实例查询任务 |
+| | idx_task_assignee | assignee | 单列 | 按受理人查询任务 |
+| | idx_task_status | status | 单列 | 按状态查询任务 |
+| | idx_task_create_time | createTime | 单列 | 按创建时间查询任务 |
+| | idx_task_tenant | tenantId | 单列 | 按租户查询任务 |
+| | idx_task_process_def_key | taskDefinitionKey | 单列 | 按任务定义Key查询 |
+| | idx_task_assignee_status | assignee, status | 复合 | 按受理人和状态查询 |
+| | idx_task_process_status | processInstanceId, status | 复合 | 按流程实例和状态查询 |
+| **ProcessInstance** | idx_proc_inst_def_id | processDefinitionId | 单列 | 按流程定义ID查询 |
+| | idx_proc_inst_def_key | processDefinitionKey | 单列 | 按流程定义Key查询 |
+| | idx_proc_inst_status | status | 单列 | 按状态查询流程实例 |
+| | idx_proc_inst_business_key | businessKey | 单列 | 按业务Key查询 |
+| | idx_proc_inst_tenant | tenantId | 单列 | 按租户查询 |
+| | idx_proc_inst_start_user | startUserId | 单列 | 按发起人查询 |
+| | idx_proc_inst_start_time | startTime | 单列 | 按启动时间查询 |
+| | idx_proc_inst_status_start_time | status, startTime | 复合 | 按状态和启动时间查询 |
+| **Execution** | idx_execution_process_instance | processInstanceId | 单列 | 按流程实例查询执行 |
+| | idx_execution_activity | activityId | 单列 | 按活动ID查询执行 |
+| | idx_execution_state | state | 单列 | 按执行状态查询 |
+| | idx_execution_tenant | tenantId | 单列 | 按租户查询 |
+| | idx_execution_process_activity | processInstanceId, activityId | 复合 | 按流程实例和活动查询 |
+| | idx_execution_process_state | processInstanceId, state | 复合 | 按流程实例和状态查询 |
+| **Variable** | idx_variable_process_instance | processInstanceId | 单列 | 按流程实例查询变量 |
+| | idx_variable_execution | executionId | 单列 | 按执行ID查询变量 |
+| | idx_variable_name | name | 单列 | 按变量名查询 |
+| | idx_variable_process_name | processInstanceId, name | 复合 | 按流程实例和变量名查询 |
+| | idx_variable_scope | scope | 单列 | 按作用域查询变量 |
+| **HistoricTaskInstance** | idx_historic_task_process_inst | processInstanceId | 单列 | 按流程实例查询历史任务 |
+| | idx_historic_task_assignee | assignee | 单列 | 按受理人查询历史任务 |
+| | idx_historic_task_status | status | 单列 | 按状态查询历史任务 |
+| | idx_historic_task_process_def | processDefinitionKey | 单列 | 按流程定义Key查询 |
+| | idx_historic_task_create_time | createTime | 单列 | 按创建时间查询 |
+| | idx_historic_task_completion_time | completionTime | 单列 | 按完成时间查询 |
+| | idx_historic_task_assignee_status | assignee, status | 复合 | 按受理人和状态查询 |
+| | idx_historic_task_process_status | processInstanceId, status | 复合 | 按流程实例和状态查询 |
+| **HistoricProcessInstance** | idx_historic_proc_inst_id | processInstanceId | 单列 | 按流程实例ID查询 |
+| | idx_historic_proc_def_key | processDefinitionKey | 单列 | 按流程定义Key查询 |
+| | idx_historic_proc_status | status | 单列 | 按状态查询历史流程 |
+| | idx_historic_proc_start_user | startUserId | 单列 | 按发起人查询 |
+| | idx_historic_proc_start_time | startTime | 单列 | 按启动时间查询 |
+| | idx_historic_proc_end_time | endTime | 单列 | 按结束时间查询 |
+| | idx_historic_proc_business_key | businessKey | 单列 | 按业务Key查询 |
+| | idx_historic_proc_tenant | tenantId | 单列 | 按租户查询 |
+| | idx_historic_proc_status_start_time | status, startTime | 复合 | 按状态和启动时间查询 |
+
+#### 6.6.2 慢查询分析详情（已完成）
+
+**服务实现：** `SlowQueryLogService`
+
+**核心功能：**
+- 慢查询监控：可配置阈值（默认500ms），自动捕获超过阈值的SQL查询
+- 查询日志记录：记录查询SQL、参数、执行时间、时间戳
+- 统计分析：总慢查询数、平均执行时间、最大/最小执行时间、表访问频率、操作类型分布
+- 优化建议：自动分析慢查询模式，生成索引优化、查询重构等建议
+- 采样率控制：支持配置采样率（0-1），避免高并发场景下的性能影响
+- 排除模式：支持配置正则表达式排除特定查询（如系统表查询）
+
+**配置选项：**
+```typescript
+interface SlowQueryConfig {
+  enabled: boolean;           // 是否启用慢查询监控，默认true
+  threshold: number;          // 慢查询阈值（毫秒），默认500
+  maxLogs: number;            // 最大日志保留数量，默认1000
+  sampleRate: number;         // 采样率（0-1），默认1（全量采集）
+  excludePatterns: RegExp[];  // 排除的查询模式，默认[]
+}
+```
+
+**核心接口：**
+- `logSlowQuery(query, parameters?, duration?, queryRunner?)` - 记录慢查询
+- `getStats()` - 获取统计数据
+- `getRecentSlowQueries(limit?)` - 获取最近的慢查询
+- `getSlowQueriesByTable(tableName)` - 按表名获取慢查询
+- `getSlowQueriesAboveDuration(minDuration)` - 获取超过指定时间的查询
+- `clearLogs()` - 清除日志
+- `updateConfig(config)` - 更新配置
+- `analyzeAndSuggest()` - 分析并生成优化建议
+
+**单元测试覆盖：**
+- 测试文件：`slow-query-log.service.spec.ts`
+- 测试用例：29个
+- 覆盖场景：初始化、日志记录、统计计算、过滤、配置更新、优化建议生成
+
+**集成方式：**
+```typescript
+// 在TypeORM配置中集成
+{
+  type: 'mysql',
+  // ...其他配置
+  logger: new CustomTypeOrmLogger(slowQueryLogService),
+}
+```
+
+#### 6.6.3 流程定义缓存详情（已完成）
+
+**服务实现：** `ProcessDefinitionCacheService`
+
+**核心功能：**
+- 两级缓存架构：L1（本地内存）+ L2（Redis）缓存
+- 流程定义缓存：按Key（最新版本）和按ID缓存流程定义
+- BPMN解析结果缓存：单独缓存解析结果，TTL更长
+- LRU淘汰机制：本地缓存达到最大容量时淘汰最旧条目
+- 统计追踪：命中率、未命中数、命中率计算
+- 多租户支持：缓存键包含租户ID
+
+**配置选项：**
+```typescript
+interface ProcessDefinitionCacheConfig {
+  enabled: boolean;           // 是否启用缓存，默认true
+  definitionTtl: number;      // 流程定义TTL（毫秒），默认1小时
+  parseResultTtl: number;     // 解析结果TTL（毫秒），默认2小时
+  maxDefinitions: number;     // 最大缓存定义数，默认1000
+  enableLocalCache: boolean;  // 是否启用本地缓存，默认true
+  localCacheMaxSize: number;  // 本地缓存最大容量，默认100
+}
+```
+
+**核心接口：**
+- `getByKey(key, tenantId?)` - 按Key获取流程定义（最新版本）
+- `getById(id, tenantId?)` - 按ID获取流程定义
+- `getParseResult(definitionId)` - 获取BPMN解析结果
+- `set(definition)` - 缓存流程定义
+- `setParseResult(definitionId, parseResult)` - 缓存解析结果
+- `invalidate(definitionId, key, tenantId?)` - 使指定定义缓存失效
+- `invalidateByKey(key, tenantId?)` - 按Key使缓存失效
+- `clearAll()` - 清除所有缓存
+- `getStats()` - 获取缓存统计
+- `updateConfig(config)` - 更新配置
+
+**单元测试覆盖：**
+- 测试文件：`process-definition-cache.service.spec.ts`
+- 测试用例：36个
+- 覆盖场景：初始化、getByKey、getById、getParseResult、set、setParseResult、invalidate、invalidateByKey、clearAll、stats、配置更新、LRU淘汰、缓存过期、错误处理、多租户
+
+#### 6.6.4 用户权限缓存详情（已完成）
+
+**服务实现：** `UserPermissionCacheService`
+
+**核心功能：**
+- 两级缓存架构：L1（本地内存Map）+ L2（Redis via NestJS Cache module）
+- 用户权限缓存：缓存用户权限列表、角色列表、组列表
+- 用户信息缓存：缓存用户基本信息（ID、用户名、邮箱等）
+- LRU淘汰机制：本地缓存达到最大容量时淘汰最旧条目
+- TTL管理：权限缓存TTL（30分钟）、用户信息TTL（1小时）
+- 统计追踪：命中率、未命中数、命中率计算
+- 多租户支持：缓存键包含租户ID
+
+**配置选项：**
+```typescript
+interface UserPermissionCacheConfig {
+  enabled: boolean;           // 是否启用缓存，默认true
+  permissionTtl: number;      // 权限缓存TTL（毫秒），默认30分钟
+  userInfoTtl: number;        // 用户信息TTL（毫秒），默认1小时
+  maxLocalCacheSize: number;  // 本地缓存最大容量，默认1000
+}
+```
+
+**核心接口：**
+- `getPermission(userId, tenantId?)` - 获取用户权限缓存
+- `getUserInfo(userId, tenantId?)` - 获取用户信息缓存
+- `setPermission(permission)` - 缓存用户权限
+- `setUserInfo(userInfo)` - 缓存用户信息
+- `invalidate(userId, tenantId?)` - 使指定用户缓存失效
+- `invalidateAllTenants(userId)` - 使所有租户下的用户缓存失效
+- `clearAll()` - 清除所有缓存
+- `hasPermission(userId, permission, tenantId?)` - 检查用户是否有指定权限
+- `hasRole(userId, role, tenantId?)` - 检查用户是否有指定角色
+- `isInGroup(userId, group, tenantId?)` - 检查用户是否在指定组
+- `getPermissionsBatch(userIds, tenantId?)` - 批量获取权限
+- `setPermissionsBatch(permissions)` - 批量设置权限
+- `invalidateBatch(userIds, tenantId?)` - 批量使缓存失效
+- `getStats()` - 获取缓存统计
+- `resetStats()` - 重置统计
+- `updateConfig(config)` - 更新配置
+
+**缓存数据结构：**
+```typescript
+interface CachedUserPermission {
+  userId: string;
+  permissions: string[];      // 权限列表
+  roles: string[];            // 角色列表
+  groups: string[];           // 组列表
+  isAdmin: boolean;           // 是否管理员
+  tenantId?: string;          // 租户ID
+  cachedAt: number;           // 缓存时间戳
+}
+
+interface CachedUserInfo {
+  userId: string;
+  username: string;
+  email: string;
+  displayName?: string;
+  avatar?: string;
+  tenantId?: string;
+  cachedAt: number;
+}
+```
+
+**单元测试覆盖：**
+- 测试文件：`user-permission-cache.service.spec.ts`
+- 测试用例：45个
+- 覆盖场景：初始化、getPermission、getUserInfo、setPermission、setUserInfo、invalidate、clearAll、stats、配置更新、LRU淘汰、缓存过期、错误处理、hasPermission、hasRole、isInGroup、批量操作、多租户
 
 #### 6.7 测试覆盖率目标
 
@@ -1188,8 +1397,8 @@ c| 3.2 | 开发任务候选用户实体（TaskCandidateUser） | P1 | 0.5 天 | 
 **交付物**：
 - 单元测试代码（✅ 1,215 测试用例，41个测试文件）
 - 集成测试代码（✅ 128 测试场景，12个测试文件）
-- E2E 测试代码（✅ 164 测试场景，11个测试文件）
-- 性能测试报告（待开始）
+- E2E 测试代码（✅ 206 测试场景，14个测试文件）
+- 性能测试代码（✅ 9个测试文件，10个测试文件含工具类）
 - 优化报告（待开始）
 
 **验收标准**：
@@ -2068,7 +2277,7 @@ jobs:
 
 ---
 
-**文档版本**：1.10.0
+**文档版本**：1.13.0
 **创建日期**：2026-02-12
 **最后更新**：2026-02-14
 
@@ -2077,6 +2286,9 @@ jobs:
 **注意**：本文档是基于设计文档制定的开发计划，实际开发过程中可能需要根据实际情况进行调整。
 
 **更新记录**：
+- v1.13.0 (2026-02-14): 阶段6缓存策略优化全部完成。用户权限缓存：新增UserPermissionCacheService服务，支持两级缓存架构（L1本地内存+L2 Redis）、LRU淘汰、TTL管理、多租户支持、批量操作，45个单元测试通过。缓存优化总计：流程定义缓存(36个测试)+用户权限缓存(45个测试)=81个测试用例。
+- v1.12.0 (2026-02-14): 阶段6数据库查询优化全部完成。索引优化：6个核心实体，44个数据库索引。慢查询分析：新增SlowQueryLogService服务，支持慢查询监控、统计分析、优化建议生成，29个单元测试通过。
+- v1.11.0 (2026-02-14): 阶段6性能测试全部完成，共9个性能测试文件，覆盖9项性能指标。性能测试覆盖：流程实例启动(目标<500ms)、任务查询(目标<200ms)、历史数据查询(目标<300ms)、作业执行(目标1000作业/分钟)、DMN决策执行(目标<100ms)、事件订阅触发(目标<150ms)、批处理执行(目标100实例/批次)、并发流程启动(目标100并发<5s)、WebSocket连接数(目标1000连接稳定)。测试框架：vitest + 自定义性能测试工具。测试文件：performance.utils.ts（工具类）、process-instance-startup.perf.spec.ts、task-query.perf.spec.ts、history-query.perf.spec.ts、job-execution.perf.spec.ts、dmn-decision.perf.spec.ts、event-subscription.perf.spec.ts、batch-execution.perf.spec.ts、concurrent-startup.perf.spec.ts、websocket-connection.perf.spec.ts。
 - v1.10.0 (2026-02-14): 阶段6 E2E测试P1优先级任务全部完成，共11个E2E测试文件，约164个测试场景。E2E测试覆盖：流程定义API(17)、流程实例API(16)、任务管理API(18)、进度追踪API(12)、作业服务API(17)、身份链接API(15)、任务驳回API(11)、抄送功能API(15)、退回策略API(13)、多人退回策略API(14)、WebSocket进度推送(16)。测试框架：vitest + @nestjs/testing + supertest。P2优先级E2E测试（表单管理API、批处理API、DMN决策引擎API）待后续完成。
 - v1.9.0 (2026-02-14): 阶段6集成测试全部完成（P0/P1/P2优先级），共12个集成测试文件，约128个测试场景。集成测试覆盖：完整流程流转(5)、排他网关分支(9)、并行网关分叉/汇聚(8)、包容网关分叉/汇聚(7)、内嵌子流程执行(8)、调用活动执行(8)、事件子流程触发(12)、任务驳回流程(8)、多人任务退回(11)、定时器事件触发(11)、信号/消息事件(17)、DMN决策集成(24)。测试框架：vitest + @nestjs/testing。
 - v1.8.0 (2026-02-14): 阶段6集成测试P0/P1优先级任务全部完成，共10个集成测试文件，约87个测试场景。集成测试覆盖：完整流程流转(5)、排他网关分支(9)、并行网关分叉/汇聚(8)、包容网关分叉/汇聚(7)、内嵌子流程执行(8)、调用活动执行(8)、事件子流程触发(12)、任务驳回流程(8)、多人任务退回(11)、定时器事件触发(11)。P2优先级集成测试（信号/消息事件、DMN决策集成）待后续完成。

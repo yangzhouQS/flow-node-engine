@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 /**
  * 历史任务状态枚举
@@ -13,8 +13,25 @@ export enum HistoricTaskStatus {
 
 /**
  * 历史任务实例实体
+ * 
+ * 索引策略：
+ * - idx_historic_task_process_inst: 按流程实例查询历史任务
+ * - idx_historic_task_assignee: 按受让人查询历史任务
+ * - idx_historic_task_status: 按状态查询历史任务
+ * - idx_historic_task_process_def: 按流程定义查询历史任务
+ * - idx_historic_task_create_time: 按创建时间排序查询
+ * - idx_historic_task_completion_time: 按完成时间排序查询
+ * - idx_historic_task_assignee_status: 复合索引，用户历史任务查询优化
  */
 @Entity('historic_task_instance')
+@Index('idx_historic_task_process_inst', ['processInstanceId'])
+@Index('idx_historic_task_assignee', ['assignee'])
+@Index('idx_historic_task_status', ['status'])
+@Index('idx_historic_task_process_def', ['processDefinitionKey'])
+@Index('idx_historic_task_create_time', ['createTime'])
+@Index('idx_historic_task_completion_time', ['completionTime'])
+@Index('idx_historic_task_assignee_status', ['assignee', 'status'])
+@Index('idx_historic_task_process_status', ['processInstanceId', 'status'])
 export class HistoricTaskInstance {
   @PrimaryGeneratedColumn('uuid')
   id: string;

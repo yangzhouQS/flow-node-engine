@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
 
 /**
  * 历史流程实例状态枚举
@@ -12,8 +12,27 @@ export enum HistoricProcessStatus {
 
 /**
  * 历史流程实例实体
+ * 
+ * 索引策略：
+ * - idx_historic_proc_inst_id: 按流程实例ID查询历史
+ * - idx_historic_proc_def_key: 按流程定义Key查询历史
+ * - idx_historic_proc_status: 按状态查询历史
+ * - idx_historic_proc_start_user: 按发起人查询历史
+ * - idx_historic_proc_start_time: 按开始时间排序查询
+ * - idx_historic_proc_end_time: 按结束时间排序查询
+ * - idx_historic_proc_business_key: 按业务键查询历史
+ * - idx_historic_proc_tenant: 多租户查询
  */
 @Entity('historic_process_instance')
+@Index('idx_historic_proc_inst_id', ['processInstanceId'])
+@Index('idx_historic_proc_def_key', ['processDefinitionKey'])
+@Index('idx_historic_proc_status', ['status'])
+@Index('idx_historic_proc_start_user', ['startUserId'])
+@Index('idx_historic_proc_start_time', ['startTime'])
+@Index('idx_historic_proc_end_time', ['endTime'])
+@Index('idx_historic_proc_business_key', ['businessKey'])
+@Index('idx_historic_proc_tenant', ['tenantId'])
+@Index('idx_historic_proc_status_start_time', ['status', 'startTime'])
 export class HistoricProcessInstance {
   @PrimaryGeneratedColumn('uuid')
   id: string;

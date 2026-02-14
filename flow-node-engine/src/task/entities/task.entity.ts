@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 
 import { ProcessInstance } from '../../process-instance/entities/process-instance.entity';
 
@@ -15,8 +15,25 @@ export enum TaskStatus {
 
 /**
  * 任务实体
+ * 
+ * 索引策略：
+ * - idx_task_process_instance: 按流程实例查询任务
+ * - idx_task_assignee: 按受让人查询任务（常用查询）
+ * - idx_task_status: 按状态查询任务
+ * - idx_task_create_time: 按创建时间排序查询
+ * - idx_task_tenant: 多租户查询
+ * - idx_task_process_def_key: 按流程定义键查询
+ * - idx_task_assignee_status: 复合索引，用户待办任务查询优化
  */
 @Entity('task')
+@Index('idx_task_process_instance', ['processInstanceId'])
+@Index('idx_task_assignee', ['assignee'])
+@Index('idx_task_status', ['status'])
+@Index('idx_task_create_time', ['createTime'])
+@Index('idx_task_tenant', ['tenantId'])
+@Index('idx_task_process_def_key', ['taskDefinitionKey'])
+@Index('idx_task_assignee_status', ['assignee', 'status'])
+@Index('idx_task_process_status', ['processInstanceId', 'status'])
 export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;

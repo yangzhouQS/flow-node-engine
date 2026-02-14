@@ -22,3 +22,5 @@ k8s/index.yaml
 /k8s/*.tgz
 dist
 node_modules
+coverage
+
