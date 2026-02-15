@@ -1022,8 +1022,8 @@ c| 3.2 | 开发任务候选用户实体（TaskCandidateUser） | P1 | 0.5 天 | 
 | ⭐6.1.12 | 编写 IdentityLinkModule 单元测试 | P1 | 1 天 | - | ✅ 已完成（48个测试用例，2026-02-14） |
 | ⭐6.1.13 | 编写 EventSubscriptionModule 单元测试 | P2 | 1 天 | - | ✅ 已完成（40个测试用例，2026-02-14） |
 | ⭐6.1.14 | 编写 BatchModule 单元测试 | P2 | 1 天 | - | ✅ 已完成（42个测试用例，2026-02-14） |
-| ⭐6.1.15 | 编写 ContentModule 单元测试 | P3 | 0.5 天 | - | 待开始（模块代码尚未实现，计划阶段7完成） |
-| ⭐6.1.16 | 编写 CommentModule 单元测试 | P3 | 0.5 天 | - | 待开始（模块代码尚未实现，计划阶段7完成） |
+| ⭐6.1.15 | 编写 ContentModule 单元测试 | P3 | 0.5 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐6.1.16 | 编写 CommentModule 单元测试 | P3 | 0.5 天 | - | ✅ 已完成（15个测试用例，2026-02-15） |
 | ⭐6.1.17 | 编写 DmnModule 单元测试 | P2 | 2 天 | - | ✅ 已完成（34个测试用例，2026-02-14） |
 | ⭐6.1.18 | 编写 TaskRejectModule 单元测试 | P1 | 1.5 天 | - | ✅ 已完成（47个测试用例，2026-02-14） |
 | ⭐6.1.19 | 编写 CcModule 单元测试 | P1 | 1 天 | - | ✅ 已完成（48个测试用例，2026-02-14） |
@@ -1418,29 +1418,31 @@ interface CachedUserInfo {
 
 | 任务 ID | 任务名称 | 优先级 | 预计工时 | 负责人 | 状态 |
 |--------|---------|-------|---------|--------|------|
-| ⭐7.1 | 开发内容项实体（ContentItem） | P3 | 0.5 天 | - | 待开始 |
-| ⭐7.2 | 开发附件实体（Attachment） | P3 | 0.5 天 | - | 待开始 |
-| ⭐7.3 | 开发内容服务（ContentService） | P3 | 2 天 | - | 待开始 |
-| ⭐7.4 | 开发存储服务（本地/云存储） | P3 | 2 天 | - | 待开始 |
-| ⭐7.5 | 开发内容控制器（ContentController） | P3 | 1 天 | - | 待开始 |
-| ⭐7.6 | 开发内容 DTO | P3 | 0.5 天 | - | 待开始 |
-| ⭐7.7 | 开发评论实体（Comment） | P3 | 0.5 天 | - | 待开始 |
-| ⭐7.8 | 开发评论服务（CommentService） | P3 | 2 天 | - | 待开始 |
-| ⭐7.9 | 开发评论控制器（CommentController） | P3 | 1 天 | - | 待开始 |
-| ⭐7.10 | 开发评论 DTO | P3 | 0.5 天 | - | 待开始 |
-| ⭐7.11 | 集成评论到任务和流程实例 | P3 | 1 天 | - | 待开始 |
+| ⭐7.1 | 开发内容项实体（ContentItem） | P3 | 0.5 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.2 | 开发附件实体（Attachment） | P3 | 0.5 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.3 | 开发内容服务（ContentService） | P3 | 2 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.4 | 开发存储服务（本地/云存储） | P3 | 2 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.5 | 开发内容控制器（ContentController） | P3 | 1 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.6 | 开发内容 DTO | P3 | 0.5 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.7 | 开发评论实体（Comment） | P3 | 0.5 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.8 | 开发评论服务（CommentService） | P3 | 2 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.9 | 开发评论控制器（CommentController） | P3 | 1 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.10 | 开发评论 DTO | P3 | 0.5 天 | - | ✅ 已完成（2026-02-15） |
+| ⭐7.11 | 集成评论到任务和流程实例 | P3 | 1 天 | - | ✅ 已完成（2026-02-15） |
 
 **交付物**：
-- 内容服务模块代码
-- 评论服务模块代码
-- 存储服务实现
+- ✅ 内容服务模块代码（ContentItem、Attachment、ContentService、StorageService、ContentController）
+- ✅ 评论服务模块代码（Comment、CommentService、CommentController）
+- ✅ 存储服务实现（本地存储 + 云存储S3/OSS/COS）
+- ✅ 集成服务（TaskCommentIntegrationService、ProcessCommentIntegrationService）
+- ✅ 评论模块单元测试
 
 **验收标准**：
-- 可以上传附件
-- 可以下载附件
-- 可以添加评论
-- 可以查询评论
-- 可以删除评论
+- ✅ 可以上传附件
+- ✅ 可以下载附件
+- ✅ 可以添加评论
+- ✅ 可以查询评论
+- ✅ 可以删除评论
 
 ---
 
@@ -2277,15 +2279,16 @@ jobs:
 
 ---
 
-**文档版本**：1.13.0
+**文档版本**：1.14.0
 **创建日期**：2026-02-12
-**最后更新**：2026-02-14
+**最后更新**：2026-02-15
 
 ---
 
 **注意**：本文档是基于设计文档制定的开发计划，实际开发过程中可能需要根据实际情况进行调整。
 
 **更新记录**：
+- v1.14.0 (2026-02-15): 阶段7可选功能全部完成。内容服务模块：ContentItem实体、Attachment实体、ContentService、StorageService（支持本地/S3/OSS/COS云存储）、ContentController、ContentDTO。评论服务模块：Comment实体（支持6种评论类型）、CommentService、CommentController、CommentDTO。集成服务：TaskCommentIntegrationService（任务评论集成）、ProcessCommentIntegrationService（流程实例评论集成）。评论模块单元测试：15个测试用例。
 - v1.13.0 (2026-02-14): 阶段6缓存策略优化全部完成。用户权限缓存：新增UserPermissionCacheService服务，支持两级缓存架构（L1本地内存+L2 Redis）、LRU淘汰、TTL管理、多租户支持、批量操作，45个单元测试通过。缓存优化总计：流程定义缓存(36个测试)+用户权限缓存(45个测试)=81个测试用例。
 - v1.12.0 (2026-02-14): 阶段6数据库查询优化全部完成。索引优化：6个核心实体，44个数据库索引。慢查询分析：新增SlowQueryLogService服务，支持慢查询监控、统计分析、优化建议生成，29个单元测试通过。
 - v1.11.0 (2026-02-14): 阶段6性能测试全部完成，共9个性能测试文件，覆盖9项性能指标。性能测试覆盖：流程实例启动(目标<500ms)、任务查询(目标<200ms)、历史数据查询(目标<300ms)、作业执行(目标1000作业/分钟)、DMN决策执行(目标<100ms)、事件订阅触发(目标<150ms)、批处理执行(目标100实例/批次)、并发流程启动(目标100并发<5s)、WebSocket连接数(目标1000连接稳定)。测试框架：vitest + 自定义性能测试工具。测试文件：performance.utils.ts（工具类）、process-instance-startup.perf.spec.ts、task-query.perf.spec.ts、history-query.perf.spec.ts、job-execution.perf.spec.ts、dmn-decision.perf.spec.ts、event-subscription.perf.spec.ts、batch-execution.perf.spec.ts、concurrent-startup.perf.spec.ts、websocket-connection.perf.spec.ts。
