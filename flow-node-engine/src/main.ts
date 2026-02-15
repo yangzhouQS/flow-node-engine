@@ -22,15 +22,21 @@ async function bootstrap() {
   // API 前缀
   app.setGlobalPrefix('api/v1');
 
-  // Swagger 文档
-  const config = new DocumentBuilder()
-    .setTitle('Flow Node Engine API')
-    .setDescription('A complete workflow engine implemented with Node.js + NestJS + MySQL')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  // Swagger 文档 - 使用 try-catch 避免枚举循环依赖问题
+  try {
+    const config = new DocumentBuilder()
+      .setTitle('Flow Node Engine API')
+      .setDescription('A complete workflow engine implemented with Node.js + NestJS + MySQL')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+    console.log('Swagger documentation initialized successfully');
+  } catch (error) {
+    console.warn('Swagger documentation initialization failed:', error.message);
+    console.warn('Application will continue without Swagger documentation');
+  }
 
   console.log(' process.env = ',  process.env)
   const port = process.env.PORT || 3000;

@@ -7,6 +7,10 @@ import { EventType, EventStatus } from '../entities/event.entity';
 import { EventPublishService } from '../services/event-publish.service';
 import { EventSubscriptionService } from '../services/event-subscription.service';
 
+// 获取枚举值数组用于Swagger
+const eventTypeValues = Object.values(EventType);
+const eventStatusValues = Object.values(EventStatus);
+
 @ApiTags('events')
 @Controller('events')
 @UseGuards(JwtAuthGuard)
@@ -59,7 +63,7 @@ export class EventController {
   @Get('type/:eventType')
   @ApiOperation({ summary: '根据事件类型查询事件' })
   @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
-  @ApiParam({ name: 'eventType', description: '事件类型', enum: EventType })
+  @ApiParam({ name: 'eventType', description: '事件类型', enum: eventTypeValues })
   async findByEventType(@Param('eventType') eventType: EventType) {
     const events = await this.eventSubscriptionService.findByEventType(eventType);
     return ApiResponseDto.success(events);
@@ -68,7 +72,7 @@ export class EventController {
   @Get('status/:eventStatus')
   @ApiOperation({ summary: '根据事件状态查询事件' })
   @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
-  @ApiParam({ name: 'eventStatus', description: '事件状态', enum: EventStatus })
+  @ApiParam({ name: 'eventStatus', description: '事件状态', enum: eventStatusValues })
   async findByEventStatus(@Param('eventStatus') eventStatus: EventStatus) {
     const events = await this.eventSubscriptionService.findByEventStatus(eventStatus);
     return ApiResponseDto.success(events);

@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum EventType {
   PROCESS_INSTANCE_START = 'PROCESS_INSTANCE_START',
@@ -32,6 +33,10 @@ export enum EventStatus {
   FAILED = 'FAILED',
 }
 
+// 获取枚举值数组用于Swagger
+const eventTypeValues = Object.values(EventType);
+const eventStatusValues = Object.values(EventStatus);
+
 @Entity('events')
 @Index(['eventType'])
 @Index(['eventStatus'])
@@ -39,9 +44,15 @@ export enum EventStatus {
 @Index(['taskId'])
 @Index(['createTime'])
 export class Event {
+  @ApiProperty({ description: '事件ID' })
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({ 
+    description: '事件类型', 
+    enum: eventTypeValues,
+    example: EventType.PROCESS_INSTANCE_START 
+  })
   @Column({
     type: 'enum',
     enum: EventType,
@@ -49,6 +60,11 @@ export class Event {
   })
   eventType: EventType;
 
+  @ApiProperty({ 
+    description: '事件状态', 
+    enum: eventStatusValues,
+    example: EventStatus.PENDING 
+  })
   @Column({
     type: 'enum',
     enum: EventStatus,

@@ -38,7 +38,8 @@ import { TaskModule } from './task/task.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        // 使用 autoLoadEntities 自动加载模块中注册的实体
+        autoLoadEntities: true,
         synchronize: false, // configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
         timezone: '+08:00',

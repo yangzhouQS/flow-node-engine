@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { FeelFunction, FEEL_BUILTIN_FUNCTIONS } from '../interfaces/feel-expression.interface';
+import { FeelFunction, FEEL_BUILTIN_FUNCTIONS, FeelDataType } from '../interfaces/feel-expression.interface';
 
 /**
  * FEEL内置函数服务
@@ -73,8 +73,8 @@ export class FeelBuiltinFunctionsService {
     // abs - 绝对值
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.ABS,
-      parameters: [{ name: 'n', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'n', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (n: number) => Math.abs(n),
       description: '返回数字的绝对值',
     });
@@ -82,8 +82,8 @@ export class FeelBuiltinFunctionsService {
     // ceiling - 向上取整
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.CEILING,
-      parameters: [{ name: 'n', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'n', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (n: number) => Math.ceil(n),
       description: '返回大于或等于n的最小整数',
     });
@@ -91,8 +91,8 @@ export class FeelBuiltinFunctionsService {
     // floor - 向下取整
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.FLOOR,
-      parameters: [{ name: 'n', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'n', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (n: number) => Math.floor(n),
       description: '返回小于或等于n的最大整数',
     });
@@ -100,8 +100,8 @@ export class FeelBuiltinFunctionsService {
     // integer - 取整
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.INTEGER,
-      parameters: [{ name: 'n', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'n', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (n: number) => Math.trunc(n),
       description: '返回n的整数部分',
     });
@@ -109,8 +109,8 @@ export class FeelBuiltinFunctionsService {
     // modulo - 取模
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MODULO,
-      parameters: [{ name: 'dividend', type: 'number' }, { name: 'divisor', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'dividend', type: FeelDataType.NUMBER }, { name: 'divisor', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (dividend: number, divisor: number) => {
         if (divisor === 0) throw new Error('除数不能为零');
         return ((dividend % divisor) + divisor) % divisor;
@@ -121,8 +121,8 @@ export class FeelBuiltinFunctionsService {
     // power - 幂运算
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.POWER,
-      parameters: [{ name: 'base', type: 'number' }, { name: 'exponent', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'base', type: FeelDataType.NUMBER }, { name: 'exponent', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (base: number, exponent: number) => Math.pow(base, exponent),
       description: '返回base的exponent次幂',
     });
@@ -130,8 +130,8 @@ export class FeelBuiltinFunctionsService {
     // round - 四舍五入
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.ROUND,
-      parameters: [{ name: 'n', type: 'number' }, { name: 'scale', type: 'number', optional: true }],
-      returnType: 'number',
+      parameters: [{ name: 'n', type: FeelDataType.NUMBER }, { name: 'scale', type: FeelDataType.NUMBER, optional: true }],
+      returnType: FeelDataType.NUMBER,
       implementation: (n: number, scale?: number) => {
         if (scale === undefined) return Math.round(n);
         const factor = Math.pow(10, scale);
@@ -143,8 +143,8 @@ export class FeelBuiltinFunctionsService {
     // sqrt - 平方根
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SQRT,
-      parameters: [{ name: 'n', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'n', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (n: number) => {
         if (n < 0) throw new Error('不能对负数求平方根');
         return Math.sqrt(n);
@@ -155,8 +155,8 @@ export class FeelBuiltinFunctionsService {
     // number - 转换为数字
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.NUMBER,
-      parameters: [{ name: 'from', type: 'string' }],
-      returnType: 'number',
+      parameters: [{ name: 'from', type: FeelDataType.STRING }],
+      returnType: FeelDataType.NUMBER,
       implementation: (from: string) => {
         const num = parseFloat(from);
         if (isNaN(num)) throw new Error(`无法将 "${from}" 转换为数字`);
@@ -168,8 +168,8 @@ export class FeelBuiltinFunctionsService {
     // decimal - 小数格式化
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.DECIMAL,
-      parameters: [{ name: 'n', type: 'number' }, { name: 'scale', type: 'number' }],
-      returnType: 'number',
+      parameters: [{ name: 'n', type: FeelDataType.NUMBER }, { name: 'scale', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.NUMBER,
       implementation: (n: number, scale: number) => {
         const factor = Math.pow(10, scale);
         return Math.round(n * factor) / factor;
@@ -186,11 +186,11 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SUBSTRING,
       parameters: [
-        { name: 'string', type: 'string' },
-        { name: 'start', type: 'number' },
-        { name: 'length', type: 'number', optional: true },
+        { name: 'string', type: FeelDataType.STRING },
+        { name: 'start', type: FeelDataType.NUMBER },
+        { name: 'length', type: FeelDataType.NUMBER, optional: true },
       ],
-      returnType: 'string',
+      returnType: FeelDataType.STRING,
       implementation: (string: string, start: number, length?: number) => {
         // FEEL索引从1开始
         const startIndex = start - 1;
@@ -205,8 +205,8 @@ export class FeelBuiltinFunctionsService {
     // string length - 字符串长度
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.STRING_LENGTH,
-      parameters: [{ name: 'string', type: 'string' }],
-      returnType: 'number',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }],
+      returnType: FeelDataType.NUMBER,
       implementation: (string: string) => string.length,
       description: '返回字符串的长度',
     });
@@ -214,8 +214,8 @@ export class FeelBuiltinFunctionsService {
     // upper case - 大写
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.UPPER_CASE,
-      parameters: [{ name: 'string', type: 'string' }],
-      returnType: 'string',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }],
+      returnType: FeelDataType.STRING,
       implementation: (string: string) => string.toUpperCase(),
       description: '返回字符串的大写形式',
     });
@@ -223,8 +223,8 @@ export class FeelBuiltinFunctionsService {
     // lower case - 小写
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.LOWER_CASE,
-      parameters: [{ name: 'string', type: 'string' }],
-      returnType: 'string',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }],
+      returnType: FeelDataType.STRING,
       implementation: (string: string) => string.toLowerCase(),
       description: '返回字符串的小写形式',
     });
@@ -232,8 +232,8 @@ export class FeelBuiltinFunctionsService {
     // substring before - 子串之前
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SUBSTRING_BEFORE,
-      parameters: [{ name: 'string', type: 'string' }, { name: 'match', type: 'string' }],
-      returnType: 'string',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }, { name: 'match', type: FeelDataType.STRING }],
+      returnType: FeelDataType.STRING,
       implementation: (string: string, match: string) => {
         const index = string.indexOf(match);
         return index === -1 ? '' : string.substring(0, index);
@@ -244,8 +244,8 @@ export class FeelBuiltinFunctionsService {
     // substring after - 子串之后
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SUBSTRING_AFTER,
-      parameters: [{ name: 'string', type: 'string' }, { name: 'match', type: 'string' }],
-      returnType: 'string',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }, { name: 'match', type: FeelDataType.STRING }],
+      returnType: FeelDataType.STRING,
       implementation: (string: string, match: string) => {
         const index = string.indexOf(match);
         return index === -1 ? '' : string.substring(index + match.length);
@@ -257,12 +257,12 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.REPLACE,
       parameters: [
-        { name: 'input', type: 'string' },
-        { name: 'pattern', type: 'string' },
-        { name: 'replacement', type: 'string' },
-        { name: 'flags', type: 'string', optional: true },
+        { name: 'input', type: FeelDataType.STRING },
+        { name: 'pattern', type: FeelDataType.STRING },
+        { name: 'replacement', type: FeelDataType.STRING },
+        { name: 'flags', type: FeelDataType.STRING, optional: true },
       ],
-      returnType: 'string',
+      returnType: FeelDataType.STRING,
       implementation: (input: string, pattern: string, replacement: string, flags?: string) => {
         const regex = new RegExp(pattern, flags || 'g');
         return input.replace(regex, replacement);
@@ -273,8 +273,8 @@ export class FeelBuiltinFunctionsService {
     // contains - 包含
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.CONTAINS,
-      parameters: [{ name: 'string', type: 'string' }, { name: 'match', type: 'string' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }, { name: 'match', type: FeelDataType.STRING }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (string: string, match: string) => string.includes(match),
       description: '检查字符串是否包含match',
     });
@@ -282,8 +282,8 @@ export class FeelBuiltinFunctionsService {
     // starts with - 以...开始
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.STARTS_WITH,
-      parameters: [{ name: 'string', type: 'string' }, { name: 'match', type: 'string' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }, { name: 'match', type: FeelDataType.STRING }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (string: string, match: string) => string.startsWith(match),
       description: '检查字符串是否以match开始',
     });
@@ -291,8 +291,8 @@ export class FeelBuiltinFunctionsService {
     // ends with - 以...结束
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.ENDS_WITH,
-      parameters: [{ name: 'string', type: 'string' }, { name: 'match', type: 'string' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }, { name: 'match', type: FeelDataType.STRING }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (string: string, match: string) => string.endsWith(match),
       description: '检查字符串是否以match结束',
     });
@@ -301,11 +301,11 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MATCHES,
       parameters: [
-        { name: 'input', type: 'string' },
-        { name: 'pattern', type: 'string' },
-        { name: 'flags', type: 'string', optional: true },
+        { name: 'input', type: FeelDataType.STRING },
+        { name: 'pattern', type: FeelDataType.STRING },
+        { name: 'flags', type: FeelDataType.STRING, optional: true },
       ],
-      returnType: 'boolean',
+      returnType: FeelDataType.BOOLEAN,
       implementation: (input: string, pattern: string, flags?: string) => {
         const regex = new RegExp(pattern, flags);
         return regex.test(input);
@@ -316,8 +316,8 @@ export class FeelBuiltinFunctionsService {
     // split - 分割
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SPLIT,
-      parameters: [{ name: 'string', type: 'string' }, { name: 'delimiter', type: 'string' }],
-      returnType: 'list',
+      parameters: [{ name: 'string', type: FeelDataType.STRING }, { name: 'delimiter', type: FeelDataType.STRING }],
+      returnType: FeelDataType.LIST,
       implementation: (string: string, delimiter: string) => string.split(delimiter),
       description: '使用分隔符分割字符串',
     });
@@ -325,8 +325,8 @@ export class FeelBuiltinFunctionsService {
     // concat - 连接
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.CONCAT,
-      parameters: [{ name: 'strings', type: 'list' }],
-      returnType: 'string',
+      parameters: [{ name: 'strings', type: FeelDataType.LIST }],
+      returnType: FeelDataType.STRING,
       implementation: (strings: string[]) => strings.join(''),
       description: '连接字符串列表',
     });
@@ -339,8 +339,8 @@ export class FeelBuiltinFunctionsService {
     // list contains - 列表包含
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.LIST_CONTAINS,
-      parameters: [{ name: 'list', type: 'list' }, { name: 'element', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }, { name: 'element', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (list: any[], element: any) => list.includes(element),
       description: '检查列表是否包含元素',
     });
@@ -348,8 +348,8 @@ export class FeelBuiltinFunctionsService {
     // count - 计数
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.COUNT,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: any[]) => list.length,
       description: '返回列表的元素数量',
     });
@@ -357,8 +357,8 @@ export class FeelBuiltinFunctionsService {
     // min - 最小值
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MIN,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: number[]) => {
         if (list.length === 0) return null;
         return Math.min(...list);
@@ -369,8 +369,8 @@ export class FeelBuiltinFunctionsService {
     // max - 最大值
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MAX,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: number[]) => {
         if (list.length === 0) return null;
         return Math.max(...list);
@@ -381,8 +381,8 @@ export class FeelBuiltinFunctionsService {
     // sum - 求和
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SUM,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: number[]) => {
         if (list.length === 0) return null;
         return list.reduce((sum, n) => sum + (n || 0), 0);
@@ -393,8 +393,8 @@ export class FeelBuiltinFunctionsService {
     // product - 乘积
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.PRODUCT,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: number[]) => {
         if (list.length === 0) return null;
         return list.reduce((prod, n) => prod * (n || 1), 1);
@@ -405,8 +405,8 @@ export class FeelBuiltinFunctionsService {
     // mean - 平均值
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MEAN,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: number[]) => {
         if (list.length === 0) return null;
         return list.reduce((sum, n) => sum + (n || 0), 0) / list.length;
@@ -417,8 +417,8 @@ export class FeelBuiltinFunctionsService {
     // median - 中位数
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MEDIAN,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: number[]) => {
         if (list.length === 0) return null;
         const sorted = [...list].sort((a, b) => a - b);
@@ -431,8 +431,8 @@ export class FeelBuiltinFunctionsService {
     // stddev - 标准差
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.STDDEV,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'number',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.NUMBER,
       implementation: (list: number[]) => {
         if (list.length === 0) return null;
         const mean = list.reduce((sum, n) => sum + (n || 0), 0) / list.length;
@@ -446,8 +446,8 @@ export class FeelBuiltinFunctionsService {
     // mode - 众数
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MODE,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[]) => {
         if (list.length === 0) return [];
         const counts = new Map<any, number>();
@@ -463,8 +463,8 @@ export class FeelBuiltinFunctionsService {
     // and - 逻辑与
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.AND,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (list: boolean[]) => list.every((b) => b === true),
       description: '如果列表中所有元素都为true则返回true',
     });
@@ -472,8 +472,8 @@ export class FeelBuiltinFunctionsService {
     // or - 逻辑或
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.OR,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (list: boolean[]) => list.some((b) => b === true),
       description: '如果列表中有任何元素为true则返回true',
     });
@@ -482,11 +482,11 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SUBLIST,
       parameters: [
-        { name: 'list', type: 'list' },
-        { name: 'start', type: 'number' },
-        { name: 'length', type: 'number', optional: true },
+        { name: 'list', type: FeelDataType.LIST },
+        { name: 'start', type: FeelDataType.NUMBER },
+        { name: 'length', type: FeelDataType.NUMBER, optional: true },
       ],
-      returnType: 'list',
+      returnType: FeelDataType.LIST,
       implementation: (list: any[], start: number, length?: number) => {
         // FEEL索引从1开始
         const startIndex = start - 1;
@@ -501,8 +501,8 @@ export class FeelBuiltinFunctionsService {
     // append - 追加
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.APPEND,
-      parameters: [{ name: 'list', type: 'list' }, { name: 'items', type: 'any' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }, { name: 'items', type: FeelDataType.ANY }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[], ...items: any[]) => [...list, ...items],
       description: '返回追加了元素的新列表',
     });
@@ -510,8 +510,8 @@ export class FeelBuiltinFunctionsService {
     // concatenate - 连接列表
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.CONCATENATE,
-      parameters: [{ name: 'lists', type: 'list' }],
-      returnType: 'list',
+      parameters: [{ name: 'lists', type: FeelDataType.LIST }],
+      returnType: FeelDataType.LIST,
       implementation: (...lists: any[][]) => lists.flat(),
       description: '连接多个列表',
     });
@@ -519,8 +519,8 @@ export class FeelBuiltinFunctionsService {
     // insert before - 在之前插入
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.INSERT_BEFORE,
-      parameters: [{ name: 'list', type: 'list' }, { name: 'position', type: 'number' }, { name: 'newItem', type: 'any' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }, { name: 'position', type: FeelDataType.NUMBER }, { name: 'newItem', type: FeelDataType.ANY }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[], position: number, newItem: any) => {
         // FEEL索引从1开始
         const index = position - 1;
@@ -532,8 +532,8 @@ export class FeelBuiltinFunctionsService {
     // remove - 移除
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.REMOVE,
-      parameters: [{ name: 'list', type: 'list' }, { name: 'position', type: 'number' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }, { name: 'position', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[], position: number) => {
         // FEEL索引从1开始
         const index = position - 1;
@@ -545,8 +545,8 @@ export class FeelBuiltinFunctionsService {
     // reverse - 反转
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.REVERSE,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[]) => [...list].reverse(),
       description: '反转列表',
     });
@@ -554,8 +554,8 @@ export class FeelBuiltinFunctionsService {
     // index of - 索引
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.INDEX_OF,
-      parameters: [{ name: 'list', type: 'list' }, { name: 'match', type: 'any' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }, { name: 'match', type: FeelDataType.ANY }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[], match: any) => {
         const indices: number[] = [];
         list.forEach((item, index) => {
@@ -572,8 +572,8 @@ export class FeelBuiltinFunctionsService {
     // union - 并集
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.UNION,
-      parameters: [{ name: 'lists', type: 'list' }],
-      returnType: 'list',
+      parameters: [{ name: 'lists', type: FeelDataType.LIST }],
+      returnType: FeelDataType.LIST,
       implementation: (...lists: any[][]) => [...new Set(lists.flat())],
       description: '返回多个列表的并集',
     });
@@ -581,8 +581,8 @@ export class FeelBuiltinFunctionsService {
     // distinct values - 去重
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.DISTINCT_VALUES,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[]) => [...new Set(list)],
       description: '返回去重后的列表',
     });
@@ -590,8 +590,8 @@ export class FeelBuiltinFunctionsService {
     // flatten - 扁平化
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.FLATTEN,
-      parameters: [{ name: 'list', type: 'list' }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[]) => list.flat(Infinity),
       description: '返回扁平化后的列表',
     });
@@ -599,8 +599,8 @@ export class FeelBuiltinFunctionsService {
     // sort - 排序
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.SORT,
-      parameters: [{ name: 'list', type: 'list' }, { name: 'precedenceFunction', type: 'function', optional: true }],
-      returnType: 'list',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }, { name: 'precedenceFunction', type: FeelDataType.FUNCTION, optional: true }],
+      returnType: FeelDataType.LIST,
       implementation: (list: any[], precedenceFunction?: (a: any, b: any) => number) => {
         if (precedenceFunction) {
           return [...list].sort(precedenceFunction);
@@ -617,8 +617,8 @@ export class FeelBuiltinFunctionsService {
     // join - 连接
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.JOIN,
-      parameters: [{ name: 'list', type: 'list' }, { name: 'delimiter', type: 'string' }],
-      returnType: 'string',
+      parameters: [{ name: 'list', type: FeelDataType.LIST }, { name: 'delimiter', type: FeelDataType.STRING }],
+      returnType: FeelDataType.STRING,
       implementation: (list: string[], delimiter: string) => list.join(delimiter),
       description: '使用分隔符连接列表元素',
     });
@@ -632,7 +632,7 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.NOW,
       parameters: [],
-      returnType: 'date-time',
+      returnType: FeelDataType.DATE_TIME,
       implementation: () => new Date(),
       description: '返回当前日期时间',
     });
@@ -641,7 +641,7 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.TODAY,
       parameters: [],
-      returnType: 'date',
+      returnType: FeelDataType.DATE,
       implementation: () => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -652,8 +652,8 @@ export class FeelBuiltinFunctionsService {
     // date - 创建日期
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.DATE,
-      parameters: [{ name: 'year', type: 'number' }, { name: 'month', type: 'number' }, { name: 'day', type: 'number' }],
-      returnType: 'date',
+      parameters: [{ name: 'year', type: FeelDataType.NUMBER }, { name: 'month', type: FeelDataType.NUMBER }, { name: 'day', type: FeelDataType.NUMBER }],
+      returnType: FeelDataType.DATE,
       implementation: (year: number, month: number, day: number) => new Date(year, month - 1, day),
       description: '创建日期',
     });
@@ -662,12 +662,12 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.TIME,
       parameters: [
-        { name: 'hour', type: 'number' },
-        { name: 'minute', type: 'number' },
-        { name: 'second', type: 'number' },
-        { name: 'offset', type: 'any', optional: true },
+        { name: 'hour', type: FeelDataType.NUMBER },
+        { name: 'minute', type: FeelDataType.NUMBER },
+        { name: 'second', type: FeelDataType.NUMBER },
+        { name: 'offset', type: FeelDataType.ANY, optional: true },
       ],
-      returnType: 'time',
+      returnType: FeelDataType.TIME,
       implementation: (hour: number, minute: number, second: number) => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
@@ -678,8 +678,8 @@ export class FeelBuiltinFunctionsService {
     // date and time - 创建日期时间
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.DATE_TIME,
-      parameters: [{ name: 'date', type: 'any' }, { name: 'time', type: 'any', optional: true }],
-      returnType: 'date-time',
+      parameters: [{ name: 'date', type: FeelDataType.ANY }, { name: 'time', type: FeelDataType.ANY, optional: true }],
+      returnType: FeelDataType.DATE_TIME,
       implementation: (date: any, time?: any) => {
         if (typeof date === 'string') {
           return new Date(date);
@@ -702,8 +702,8 @@ export class FeelBuiltinFunctionsService {
     // duration - 创建持续时间
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.DURATION,
-      parameters: [{ name: 'duration', type: 'string' }],
-      returnType: 'duration',
+      parameters: [{ name: 'duration', type: FeelDataType.STRING }],
+      returnType: FeelDataType.DURATION,
       implementation: (duration: string) => {
         // 解析ISO 8601持续时间格式
         const match = duration.match(/P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?/);
@@ -724,8 +724,8 @@ export class FeelBuiltinFunctionsService {
     // years and months duration - 年月持续时间
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.YEARS_AND_MONTHS_DURATION,
-      parameters: [{ name: 'from', type: 'date' }, { name: 'to', type: 'date' }],
-      returnType: 'duration',
+      parameters: [{ name: 'from', type: FeelDataType.DATE }, { name: 'to', type: FeelDataType.DATE }],
+      returnType: FeelDataType.DURATION,
       implementation: (from: Date, to: Date) => {
         const years = to.getFullYear() - from.getFullYear();
         const months = to.getMonth() - from.getMonth();
@@ -750,8 +750,8 @@ export class FeelBuiltinFunctionsService {
     // string - 转换为字符串
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.STRING,
-      parameters: [{ name: 'from', type: 'any' }],
-      returnType: 'string',
+      parameters: [{ name: 'from', type: FeelDataType.ANY }],
+      returnType: FeelDataType.STRING,
       implementation: (from: any) => {
         if (from === null) return 'null';
         if (from instanceof Date) return from.toISOString();
@@ -763,8 +763,8 @@ export class FeelBuiltinFunctionsService {
     // boolean - 转换为布尔值
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.BOOLEAN,
-      parameters: [{ name: 'from', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'from', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (from: any) => {
         if (from === null || from === undefined) return false;
         if (typeof from === 'boolean') return from;
@@ -786,8 +786,8 @@ export class FeelBuiltinFunctionsService {
     // get entries - 获取条目
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.GET_ENTRIES,
-      parameters: [{ name: 'context', type: 'context' }],
-      returnType: 'list',
+      parameters: [{ name: 'context', type: FeelDataType.CONTEXT }],
+      returnType: FeelDataType.LIST,
       implementation: (context: Record<string, any>) => {
         return Object.entries(context).map(([key, value]) => ({ key, value }));
       },
@@ -797,8 +797,8 @@ export class FeelBuiltinFunctionsService {
     // get value - 获取值
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.GET_VALUE,
-      parameters: [{ name: 'context', type: 'context' }, { name: 'key', type: 'string' }],
-      returnType: 'any',
+      parameters: [{ name: 'context', type: FeelDataType.CONTEXT }, { name: 'key', type: FeelDataType.STRING }],
+      returnType: FeelDataType.ANY,
       implementation: (context: Record<string, any>, key: string) => context[key],
       description: '返回上下文中指定键的值',
     });
@@ -807,11 +807,11 @@ export class FeelBuiltinFunctionsService {
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.CONTEXT_PUT,
       parameters: [
-        { name: 'context', type: 'context' },
-        { name: 'key', type: 'string' },
-        { name: 'value', type: 'any' },
+        { name: 'context', type: FeelDataType.CONTEXT },
+        { name: 'key', type: FeelDataType.STRING },
+        { name: 'value', type: FeelDataType.ANY },
       ],
-      returnType: 'context',
+      returnType: FeelDataType.CONTEXT,
       implementation: (context: Record<string, any>, key: string, value: any) => ({
         ...context,
         [key]: value,
@@ -822,8 +822,8 @@ export class FeelBuiltinFunctionsService {
     // context merge - 合并上下文
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.CONTEXT_MERGE,
-      parameters: [{ name: 'contexts', type: 'list' }],
-      returnType: 'context',
+      parameters: [{ name: 'contexts', type: FeelDataType.LIST }],
+      returnType: FeelDataType.CONTEXT,
       implementation: (contexts: Record<string, any>[]) => {
         return contexts.reduce((result, ctx) => ({ ...result, ...ctx }), {});
       },
@@ -838,8 +838,8 @@ export class FeelBuiltinFunctionsService {
     // before - 在之前
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.BEFORE,
-      parameters: [{ name: 'point1', type: 'any' }, { name: 'point2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'point1', type: FeelDataType.ANY }, { name: 'point2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (point1: any, point2: any) => point1 < point2,
       description: '检查point1是否在point2之前',
     });
@@ -847,8 +847,8 @@ export class FeelBuiltinFunctionsService {
     // after - 在之后
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.AFTER,
-      parameters: [{ name: 'point1', type: 'any' }, { name: 'point2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'point1', type: FeelDataType.ANY }, { name: 'point2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (point1: any, point2: any) => point1 > point2,
       description: '检查point1是否在point2之后',
     });
@@ -856,8 +856,8 @@ export class FeelBuiltinFunctionsService {
     // meets - 相接
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MEETS,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         if (range1.end !== undefined && range2.start !== undefined) {
           return range1.end === range2.start;
@@ -870,8 +870,8 @@ export class FeelBuiltinFunctionsService {
     // met by - 被相接
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.MET_BY,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         if (range1.start !== undefined && range2.end !== undefined) {
           return range1.start === range2.end;
@@ -884,8 +884,8 @@ export class FeelBuiltinFunctionsService {
     // overlaps - 重叠
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.OVERLAPS,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         const start1 = range1.start !== undefined ? range1.start : range1;
         const end1 = range1.end !== undefined ? range1.end : range1;
@@ -899,8 +899,8 @@ export class FeelBuiltinFunctionsService {
     // overlaps before - 在之前重叠
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.OVERLAPPED_BY,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         const start1 = range1.start !== undefined ? range1.start : range1;
         const end1 = range1.end !== undefined ? range1.end : range1;
@@ -914,8 +914,8 @@ export class FeelBuiltinFunctionsService {
     // finishes - 完成
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.FINISHES,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         const end1 = range1.end !== undefined ? range1.end : range1;
         const end2 = range2.end !== undefined ? range2.end : range2;
@@ -927,8 +927,8 @@ export class FeelBuiltinFunctionsService {
     // finished by - 被完成
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.FINISHED_BY,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         const end1 = range1.end !== undefined ? range1.end : range1;
         const end2 = range2.end !== undefined ? range2.end : range2;
@@ -940,8 +940,8 @@ export class FeelBuiltinFunctionsService {
     // includes - 包含
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.INCLUDES,
-      parameters: [{ name: 'range', type: 'any' }, { name: 'point', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range', type: FeelDataType.ANY }, { name: 'point', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range: any, point: any) => {
         const start = range.start !== undefined ? range.start : range;
         const end = range.end !== undefined ? range.end : range;
@@ -953,8 +953,8 @@ export class FeelBuiltinFunctionsService {
     // during - 在期间
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.DURING,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         const start1 = range1.start !== undefined ? range1.start : range1;
         const end1 = range1.end !== undefined ? range1.end : range1;
@@ -968,8 +968,8 @@ export class FeelBuiltinFunctionsService {
     // starts - 开始
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.STARTS,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         const start1 = range1.start !== undefined ? range1.start : range1;
         const start2 = range2.start !== undefined ? range2.start : range2;
@@ -981,8 +981,8 @@ export class FeelBuiltinFunctionsService {
     // started by - 被开始
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.STARTED_BY,
-      parameters: [{ name: 'range1', type: 'any' }, { name: 'range2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'range1', type: FeelDataType.ANY }, { name: 'range2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (range1: any, range2: any) => {
         const start1 = range1.start !== undefined ? range1.start : range1;
         const start2 = range2.start !== undefined ? range2.start : range2;
@@ -994,8 +994,8 @@ export class FeelBuiltinFunctionsService {
     // coincides - 重合
     this.register({
       name: FEEL_BUILTIN_FUNCTIONS.COINCIDES,
-      parameters: [{ name: 'point1', type: 'any' }, { name: 'point2', type: 'any' }],
-      returnType: 'boolean',
+      parameters: [{ name: 'point1', type: FeelDataType.ANY }, { name: 'point2', type: FeelDataType.ANY }],
+      returnType: FeelDataType.BOOLEAN,
       implementation: (point1: any, point2: any) => point1 === point2,
       description: '检查两个点是否重合',
     });

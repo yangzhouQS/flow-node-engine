@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import {
   MultiInstanceType,
@@ -42,7 +42,7 @@ export class MultiInstanceService implements OnModuleInit {
     },
   };
 
-  constructor(config?: MultiInstanceServiceConfig) {
+  constructor(@Optional() config?: MultiInstanceServiceConfig) {
     this.config = {
       maxParallelInstances: config?.maxParallelInstances ?? 0,
       instanceTimeout: config?.instanceTimeout ?? 300000, // 5 minutes

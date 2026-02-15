@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CompensationEventType,
@@ -53,7 +53,7 @@ export class CompensationService implements OnModuleInit {
     byActivityType: {},
   };
 
-  constructor(config?: CompensationServiceConfig) {
+  constructor(@Optional() config?: CompensationServiceConfig) {
     this.config = {
       enableAsync: config?.enableAsync ?? false,
       defaultRetryCount: config?.defaultRetryCount ?? 3,
