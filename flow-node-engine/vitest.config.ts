@@ -40,13 +40,13 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 10000,
     pool: 'threads',
-    poolOptions: {
+    /*poolOptions: {
       threads: {
         singleThread: false,
         minThreads: 1,
         maxThreads: 4,
       },
-    },
+    },*/
     reporters: ['default', 'html'],
     outputFile: {
       html: './coverage/test-report.html',

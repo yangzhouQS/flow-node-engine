@@ -367,7 +367,7 @@ export class HitPolicyCollect extends AbstractHitPolicy {
 
   /**
    * 组装决策结果
-   * 支持无聚合器和有聚合器两种模式
+   * 支持无聚合器和有聚合器两种模式（与Flowable实现保持一致）
    */
   composeDecisionResults(executionContext: RuleExecutionContext): void {
     const decisionResults: Record<string, any>[] = [];
@@ -380,96 +380,145 @@ export class HitPolicyCollect extends AbstractHitPolicy {
         // 无聚合器：返回所有匹配结果
         decisionResults.push(...Array.from(ruleResults.values()));
       } else {
-        // 有聚合器：执行聚合计算
+        // 有聚合器：执行聚合计算（使用BuiltinAggregator枚举比较）
         const outputValuesEntry = this.composeOutputValues(executionContext);
         
-        if (outputValuesEntry) {
+        if (outputValuesEntry !== null) {
           const [outputName, values] = outputValuesEntry;
           let aggregatedValue: number;
           
-          switch (aggregator) {
-            case 'SUM':
-              aggregatedValue = this.aggregateSum(values);
-              break;
-            case 'MIN':
-              aggregatedValue = this.aggregateMin(values);
-              break;
-            case 'MAX':
-              aggregatedValue = this.aggregateMax(values);
-              break;
-            case 'COUNT':
-              aggregatedValue = this.aggregateCount(values);
-              break;
-            default:
-              throw new FlowableException(`Unknown aggregator: ${aggregator}`);
+          // 与Flowable保持一致，使用枚举值比较
+          if (aggregator === BuiltinAggregator.SUM) {
+            aggregatedValue = this.aggregateSum(values);
+            decisionResults.push(this.createDecisionResult(outputName, aggregatedValue));
+          } else if (aggregator === BuiltinAggregator.MIN) {
+            aggregatedValue = this.aggregateMin(values);
+            decisionResults.push(this.createDecisionResult(outputName, aggregatedValue));
+          } else if (aggregator === BuiltinAggregator.MAX) {
+            aggregatedValue = this.aggregateMax(values);
+            decisionResults.push(this.createDecisionResult(outputName, aggregatedValue));
+          } else if (aggregator === BuiltinAggregator.COUNT) {
+            aggregatedValue = this.aggregateCount(values);
+            decisionResults.push(this.createDecisionResult(outputName, aggregatedValue));
           }
-          
-          decisionResults.push({ [outputName]: aggregatedValue });
         }
       }
     }
 
     this.updateStackWithDecisionResults(decisionResults, executionContext);
     
-    executionContext.getAuditContainer().decisionResult = decisionResults;
-    // 无聚合器时返回多个结果
-    executionContext.getAuditContainer().multipleResults = 
-      (aggregator === null || aggregator === undefined);
+    // 与Flowable保持一致：使用setDecisionResult方法
+    executionContext.getAuditContainer().setDecisionResult(decisionResults);
+    // multipleResults标志取决于是否有聚合器（与Flowable的isMultipleResults方法对应）
+    executionContext.getAuditContainer().setMultipleResults(
+      this.isMultipleResults(executionContext.getAggregator())
+    );
   }
 
   /**
-   * 组装输出值列表
+   * 判断是否返回多个结果（与Flowable isMultipleResults对应）
    */
-  private composeOutputValues(executionContext: RuleExecutionContext): [string, number[]] | null {
-    let ruleResults = Array.from(executionContext.getRuleResults().values());
+  protected isMultipleResults(aggregator: BuiltinAggregator | null): boolean {
+    return aggregator === null;
+  }
+
+  /**
+   * 组装输出值列表（与Flowable composeOutputValues对应）
+   */
+  protected composeOutputValues(executionContext: RuleExecutionContext): [string, number[]] | null {
+    let ruleResultsCollection: Collection<Record<string, any>> =
+      new Collection(Array.from(executionContext.getRuleResults().values()));
     
     if (executionContext.isForceDMN11()) {
-      // DMN 1.1模式：去重
-      const uniqueResults = new Set(ruleResults.map(r => JSON.stringify(r)));
-      ruleResults = Array.from(uniqueResults).map(s => JSON.parse(s));
+      // DMN 1.1模式：使用HashSet去重（与Flowable保持一致）
+      const uniqueSet = new Set<string>();
+      const uniqueResults: Record<string, any>[] = [];
+      
+      for (const result of ruleResultsCollection.toArray()) {
+        const key = JSON.stringify(result);
+        if (!uniqueSet.has(key)) {
+          uniqueSet.add(key);
+          uniqueResults.push(result);
+        }
+      }
+      ruleResultsCollection = new Collection(uniqueResults);
     }
     
-    return this.createOutputDoubleValues(ruleResults);
+    return this.createOutputDoubleValues(ruleResultsCollection.toArray());
   }
 
   /**
-   * 创建输出数值列表
+   * 创建输出数值列表（与Flowable createOutputDoubleValues对应）
+   * 返回Double类型数组（与Flowable保持一致）
    */
-  private createOutputDoubleValues(ruleResults: Record<string, any>[]): [string, number[]] | null {
-    const distinctOutputValues: Map<string, number[]> = new Map();
+  protected createOutputDoubleValues(ruleResults: Record<string, any>[]): [string, number[]] | null {
+    const distinctOutputDoubleValues: Map<string, number[]> = new Map();
     
     for (const ruleResult of ruleResults) {
       for (const [key, value] of Object.entries(ruleResult)) {
-        if (!distinctOutputValues.has(key)) {
-          distinctOutputValues.set(key, []);
+        if (distinctOutputDoubleValues.has(key) && distinctOutputDoubleValues.get(key) !== null) {
+          distinctOutputDoubleValues.get(key)!.push(value as number);
+        } else {
+          const valuesList: number[] = [];
+          valuesList.push(value as number);
+          distinctOutputDoubleValues.set(key, valuesList);
         }
-        distinctOutputValues.get(key)!.push(value as number);
       }
     }
     
-    // 返回第一个输出子句的值
-    if (distinctOutputValues.size > 0) {
-      const firstEntry = distinctOutputValues.entries().next().value;
-      return [firstEntry[0], firstEntry[1]];
+    // 获取第一个条目（与Flowable保持一致）
+    let firstEntry: [string, number[]] | null = null;
+    if (distinctOutputDoubleValues.size > 0) {
+      const iterator = distinctOutputDoubleValues.entries();
+      const first = iterator.next();
+      if (first.value) {
+        firstEntry = first.value;
+      }
     }
     
-    return null;
+    return firstEntry;
   }
 
-  private aggregateSum(values: number[]): number {
-    return values.reduce((sum, val) => sum + val, 0);
+  /**
+   * 聚合求和（与Flowable aggregateSum对应）
+   */
+  protected aggregateSum(values: number[]): number {
+    let aggregate = 0;
+    for (const value of values) {
+      aggregate += value;
+    }
+    return aggregate;
   }
 
-  private aggregateMin(values: number[]): number {
+  /**
+   * 聚合最小值（与Flowable aggregateMin对应）
+   */
+  protected aggregateMin(values: number[]): number {
     return Math.min(...values);
   }
 
-  private aggregateMax(values: number[]): number {
+  /**
+   * 聚合最大值（与Flowable aggregateMax对应）
+   */
+  protected aggregateMax(values: number[]): number {
     return Math.max(...values);
   }
 
-  private aggregateCount(values: number[]): number {
-    return values.length;
+  /**
+   * 聚合计数（与Flowable aggregateCount对应）
+   * 返回Double类型（与Flowable保持一致）
+   */
+  protected aggregateCount(values: number[]): number {
+    return values.length;  // Flowable返回 (double) values.size()
+  }
+
+  /**
+   * 创建决策结果（与Flowable createDecisionResults对应）
+   */
+  protected createDecisionResult(outputName: string, outputValue: number): Record<string, any> {
+    const ruleResult: Record<string, any> = {};
+    ruleResult[outputName] = outputValue;
+    return ruleResult;
   }
 }
 ```
@@ -493,45 +542,51 @@ export class HitPolicyAny extends AbstractHitPolicy {
     const ruleResults = executionContext.getRuleResults();
     let validationFailed = false;
     
-    // 检查所有匹配规则的输出是否相同
-    const ruleResultsArray = Array.from(ruleResults.entries());
-    
-    for (let i = 0; i < ruleResultsArray.length; i++) {
-      for (let j = i + 1; j < ruleResultsArray.length; j++) {
-        const [ruleNumber1, outputValues1] = ruleResultsArray[i];
-        const [ruleNumber2, outputValues2] = ruleResultsArray[j];
+    // 检查所有匹配规则的输出是否相同（与Flowable实现保持一致）
+    for (const [ruleNumber1, outputValues1] of ruleResults.entries()) {
+      for (const [ruleNumber2, outputValues2] of ruleResults.entries()) {
+        // 跳过相同的规则
+        if (ruleNumber1 === ruleNumber2) {
+          continue;
+        }
         
-        // 比较输出值
-        for (const [outputName, value1] of Object.entries(outputValues1)) {
-          const value2 = outputValues2[outputName];
+        // 比较输出值（检查outputValues2中的每个输出是否在outputValues1中存在且值相同）
+        for (const [outputName, value2] of Object.entries(outputValues2)) {
+          const value1 = outputValues1[outputName];
           
-          if (value1 !== value2) {
-            const hitPolicyViolatedMessage = 
-              `HitPolicy ANY violated; both rule ${ruleNumber1} and ${ruleNumber2} are valid but output ${outputName} has different values.`;
+          // 如果outputValues1不包含该输出，或者值不相等
+          if (!(outputName in outputValues1) || value1 !== value2) {
+            const hitPolicyViolatedMessage =
+              `HitPolicy ANY violated; both rule ${ruleNumber2} and ${ruleNumber1} are valid but output ${outputName} has different values.`;
             
             if (executionContext.isStrictMode()) {
-              executionContext.getAuditContainer().ruleExecutions[ruleNumber1].exceptionMessage = hitPolicyViolatedMessage;
               executionContext.getAuditContainer().ruleExecutions[ruleNumber2].exceptionMessage = hitPolicyViolatedMessage;
+              executionContext.getAuditContainer().ruleExecutions[ruleNumber1].exceptionMessage = hitPolicyViolatedMessage;
               throw new FlowableException('HitPolicy ANY violated.');
             } else {
-              executionContext.getAuditContainer().ruleExecutions[ruleNumber1].validationMessage = hitPolicyViolatedMessage;
               executionContext.getAuditContainer().ruleExecutions[ruleNumber2].validationMessage = hitPolicyViolatedMessage;
+              executionContext.getAuditContainer().ruleExecutions[ruleNumber1].validationMessage = hitPolicyViolatedMessage;
               validationFailed = true;
+              break;
             }
           }
         }
       }
     }
     
+    const ruleResultsArray = Array.from(ruleResults.values());
+    
     // 非严格模式下，取最后一个有效结果
     if (!executionContext.isStrictMode() && validationFailed) {
-      executionContext.getAuditContainer().validationMessage = 
+      executionContext.getAuditContainer().validationMessage =
         'HitPolicy ANY violated; multiple valid rules with different outcomes. Setting last valid rule result as final result.';
     }
     
-    const decisionResults = [ruleResultsArray[ruleResultsArray.length - 1]?.[1] || {}];
-    this.updateStackWithDecisionResults(decisionResults, executionContext);
-    executionContext.getAuditContainer().decisionResult = decisionResults;
+    if (ruleResultsArray.length > 0) {
+      const decisionResults = [ruleResultsArray[ruleResultsArray.length - 1]];
+      this.updateStackWithDecisionResults(decisionResults, executionContext);
+      executionContext.getAuditContainer().decisionResult = decisionResults;
+    }
   }
 }
 ```
@@ -557,7 +612,37 @@ export class HitPolicyRuleOrder extends AbstractHitPolicy {
 }
 ```
 
-#### 3.5.6 OUTPUT ORDER策略
+#### 3.5.6 UNORDERED策略
+
+```typescript
+// dmn/services/hit-policy/hit-policy-unordered.ts
+
+/**
+ * UNORDERED命中策略（与Flowable保持一致）
+ * 返回所有匹配结果，无特定顺序
+ *
+ * 注意：Flowable中UNORDERED策略没有专门的实现类，
+ * 它直接使用AbstractHitPolicy的默认行为。
+ * 这里提供明确的实现以便于理解。
+ */
+export class HitPolicyUnordered extends AbstractHitPolicy {
+  
+  constructor() {
+    super(true); // 多结果模式
+  }
+
+  getHitPolicyName(): string {
+    return 'UNORDERED';
+  }
+  
+  // 使用AbstractHitPolicy的默认实现：
+  // - shouldContinueEvaluating() 返回 true（继续评估所有规则）
+  // - composeRuleResult() 添加到规则结果集合
+  // - composeDecisionResults() 返回所有匹配结果
+}
+```
+
+#### 3.5.7 OUTPUT ORDER策略
 
 ```typescript
 // dmn/services/hit-policy/hit-policy-output-order.ts
@@ -635,6 +720,7 @@ export class HitPolicyOutputOrder extends AbstractHitPolicy {
 /**
  * PRIORITY命中策略（与Flowable HitPolicyPriority保持一致）
  * 按输出优先级返回最高优先级结果
+ * 使用Flowable的OutputOrderComparator进行排序
  */
 export class HitPolicyPriority extends AbstractHitPolicy {
   
@@ -646,50 +732,70 @@ export class HitPolicyPriority extends AbstractHitPolicy {
     const ruleResults = Array.from(executionContext.getRuleResults().values());
     
     if (ruleResults.length === 0) {
-      this.updateStackWithDecisionResults([], executionContext);
-      executionContext.getAuditContainer().decisionResult = [];
       return;
     }
     
-    // 获取输出值优先级列表
-    const outputValues = executionContext.getOutputClauseOutputValues();
-    const outputValuesPresent = outputValues && outputValues.length > 0;
+    // 获取输出值优先级映射（与Flowable的getOutputValues()对应）
+    // 结构: Map<string, List<Object>> - 输出名称到输出值列表的映射
+    const outputValuesMap = executionContext.getOutputValues();
+    let noOutputValuesPresent = true;
     
-    if (!outputValuesPresent) {
-      const hitPolicyViolatedMessage = 'HitPolicy PRIORITY violated; no output values present';
-      
-      if (executionContext.isStrictMode()) {
-        throw new FlowableException(hitPolicyViolatedMessage);
-      } else {
-        executionContext.getAuditContainer().validationMessage = 
-          `${hitPolicyViolatedMessage}. Setting first valid result as final result.`;
-        this.updateStackWithDecisionResults([ruleResults[0]], executionContext);
-        executionContext.getAuditContainer().decisionResult = [ruleResults[0]];
-        return;
+    // 检查是否有输出值定义
+    if (outputValuesMap && outputValuesMap.size > 0) {
+      for (const [, values] of outputValuesMap) {
+        if (values && values.length > 0) {
+          noOutputValuesPresent = false;
+          break;
+        }
       }
     }
     
-    // 按优先级排序，取最高优先级结果
-    const sortedResults = this.sortByOutputValues(ruleResults, outputValues!);
-    const decisionResults = [sortedResults[0]];
+    // 按优先级排序（使用与Flowable相同的比较逻辑）
+    const sortedResults = ruleResults.sort((a, b) => {
+      const compareToBuilder: number[] = [];
+      
+      for (const [outputName, outputValues] of outputValuesMap.entries()) {
+        if (outputValues && outputValues.length > 0) {
+          noOutputValuesPresent = false;
+          const aValue = a[outputName];
+          const bValue = b[outputName];
+          const comparison = this.compareByOutputOrder(aValue, bValue, outputValues);
+          compareToBuilder.push(comparison);
+        }
+      }
+      
+      if (!noOutputValuesPresent) {
+        // 累加所有比较结果
+        return compareToBuilder.reduce((sum, val) => sum + val, 0);
+      } else {
+        // 没有输出值定义
+        if (executionContext.isStrictMode()) {
+          throw new FlowableException('HitPolicy PRIORITY violated; no output values present.');
+        } else {
+          executionContext.getAuditContainer().validationMessage =
+            'HitPolicy PRIORITY violated; no output values present. Setting first valid result as final result.';
+        }
+        return 0;
+      }
+    });
     
-    this.updateStackWithDecisionResults(decisionResults, executionContext);
-    executionContext.getAuditContainer().decisionResult = decisionResults;
+    // 取排序后的第一个结果（最高优先级）
+    if (sortedResults.length > 0) {
+      // 使用addDecisionResultObject方法（与Flowable保持一致）
+      executionContext.getAuditContainer().addDecisionResultObject(sortedResults[0]);
+    }
   }
 
-  private sortByOutputValues(
-    results: Record<string, any>[], 
-    outputValues: any[]
-  ): Record<string, any>[] {
-    return results.sort((a, b) => {
-      const aValue = Object.values(a)[0];
-      const bValue = Object.values(b)[0];
-      
-      const aIndex = outputValues.indexOf(aValue);
-      const bIndex = outputValues.indexOf(bValue);
-      
-      return aIndex - bIndex;
-    });
+  /**
+   * 按输出值顺序比较（与Flowable的OutputOrderComparator对应）
+   * 返回: 负数表示a优先级高，正数表示b优先级高，0表示相等
+   */
+  private compareByOutputOrder(a: any, b: any, outputValues: any[]): number {
+    const aIndex = outputValues.indexOf(a);
+    const bIndex = outputValues.indexOf(b);
+    
+    // 索引越小，优先级越高
+    return aIndex - bIndex;
   }
 }
 ```
@@ -718,18 +824,29 @@ export interface RuleExecutionContext {
   stackVariables: Map<string, any>;
   auditContainer: DecisionExecutionAuditContainer;
   ruleResults: Map<number, Record<string, any>>;
-  aggregator: string | null;
+  aggregator: BuiltinAggregator | null;  // 与Flowable保持一致，使用枚举类型
   strictMode: boolean;
   forceDMN11: boolean;
+  outputValues: Map<string, any[]>;  // 与Flowable的getOutputValues()对应
   
   addRuleResult(ruleNumber: number, outputName: string, outputValue: any): void;
   getRuleResults(): Map<number, Record<string, any>>;
   getStackVariables(): Map<string, any>;
   getAuditContainer(): DecisionExecutionAuditContainer;
-  getAggregator(): string | null;
+  getAggregator(): BuiltinAggregator | null;
   isStrictMode(): boolean;
   isForceDMN11(): boolean;
-  getOutputClauseOutputValues(): any[] | null;
+  getOutputValues(): Map<string, any[]>;  // 与Flowable的getOutputValues()对应
+}
+
+/**
+ * 内置聚合器枚举（与Flowable BuiltinAggregator对应）
+ */
+export enum BuiltinAggregator {
+  SUM = 'SUM',
+  COUNT = 'COUNT',
+  MIN = 'MIN',
+  MAX = 'MAX'
 }
 
 /**

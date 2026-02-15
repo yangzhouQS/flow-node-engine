@@ -14,6 +14,25 @@ import { InclusiveGatewayStateService } from './services/inclusive-gateway-state
 import { ProcessEngineService } from './services/process-engine.service';
 import { ProcessExecutorService } from './services/process-executor.service';
 
+// 导入监听器服务
+import { ListenerRegistryService } from './services/listener-registry.service';
+import { BuiltinListenerFactory } from './services/builtin-listeners.service';
+
+// 导入补偿服务
+import { CompensationService } from './services/compensation.service';
+
+// 导入多实例服务
+import { MultiInstanceService } from './services/multi-instance.service';
+
+// 导入事务子流程服务
+import {
+  TransactionSubProcessService,
+  TransactionSubProcessExecutor,
+} from './services/transaction-subprocess.service';
+
+// 导入动态流程修改服务
+import { DynamicProcessService } from './services/dynamic-modification.service';
+
 @Global()
 @Module({
   imports: [
@@ -28,6 +47,18 @@ import { ProcessExecutorService } from './services/process-executor.service';
     ProcessExecutorService,
     GatewayExecutorService,
     InclusiveGatewayStateService,
+    // 监听器服务
+    ListenerRegistryService,
+    BuiltinListenerFactory,
+    // 补偿服务
+    CompensationService,
+    // 多实例服务
+    MultiInstanceService,
+    // 事务子流程服务
+    TransactionSubProcessService,
+    TransactionSubProcessExecutor,
+    // 动态流程修改服务
+    DynamicProcessService,
   ],
   exports: [
     ProcessEngineService,
@@ -37,6 +68,18 @@ import { ProcessExecutorService } from './services/process-executor.service';
     ProcessExecutorService,
     GatewayExecutorService,
     InclusiveGatewayStateService,
+    // 监听器服务
+    ListenerRegistryService,
+    BuiltinListenerFactory,
+    // 补偿服务
+    CompensationService,
+    // 多实例服务
+    MultiInstanceService,
+    // 事务子流程服务
+    TransactionSubProcessService,
+    TransactionSubProcessExecutor,
+    // 动态流程修改服务
+    DynamicProcessService,
   ],
 })
 export class ProcessEngineCoreModule {}

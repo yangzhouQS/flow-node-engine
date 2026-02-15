@@ -1,9 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 
 import { BpmnProcessDefinition, BpmnElement,  } from './bpmn-parser.service';
 import { EventBusService } from './event-bus.service';
 import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { GatewayExecutorService } from './gateway-executor.service';
+import { ListenerRegistryService } from './listener-registry.service';
+import {
+  ExecutionListenerEvent,
+  ListenerContext,
+} from '../interfaces/listener.interface';
 
 /**
  * 执行上下文
@@ -11,6 +16,7 @@ import { GatewayExecutorService } from './gateway-executor.service';
 export interface ExecutionContext {
   processInstanceId: string;
   processDefinition: BpmnProcessDefinition;
+  processDefinitionKey?: string;
   currentElementId: string;
   variables: Record<string, any>;
   history: ExecutionHistory[];
@@ -42,6 +48,7 @@ export class ProcessExecutorService {
     private readonly eventBusService: EventBusService,
     private readonly expressionEvaluator: ExpressionEvaluatorService,
     private readonly gatewayExecutor: GatewayExecutorService,
+    @Optional() private readonly listenerRegistryService?: ListenerRegistryService,
   ) {}
 
   /**
@@ -298,6 +305,9 @@ export class ProcessExecutorService {
     context.currentElementId = element.id;
 
     try {
+      // 调度START事件监听器
+      await this.dispatchListeners(context, element, ExecutionListenerEvent.START);
+
       // 根据元素类型执行不同的逻辑
       switch (element.type) {
         case 'bpmn:StartEvent':
@@ -317,6 +327,9 @@ export class ProcessExecutorService {
           await this.executeNext(context, element);
           break;
       }
+
+      // 调度END事件监听器
+      await this.dispatchListeners(context, element, ExecutionListenerEvent.END);
 
       // 更新历史记录
       history.status = 'COMPLETED';
@@ -503,5 +516,53 @@ export class ProcessExecutorService {
    */
   private generateProcessInstanceId(): string {
     return `pi-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * 调度执行监听器
+   * @param context 执行上下文
+   * @param element 当前元素
+   * @param event 事件类型
+   */
+  private async dispatchListeners(
+    context: ExecutionContext,
+    element: BpmnElement,
+    event: ExecutionListenerEvent,
+  ): Promise<void> {
+    if (!this.listenerRegistryService) {
+      return;
+    }
+
+    const listenerContext: ListenerContext = {
+      processInstanceId: context.processInstanceId,
+      executionId: context.processInstanceId, // 简化处理，使用流程实例ID
+      processDefinitionKey: context.processDefinitionKey,
+      activityId: element.id,
+      activityName: element.name,
+      event,
+      timestamp: new Date(),
+      variables: context.variables,
+    };
+
+    const result = await this.listenerRegistryService.dispatchExecutionListeners(
+      listenerContext,
+      context.processDefinitionKey,
+      element.id,
+    );
+
+    // 应用监听器修改的变量
+    if (result.modifiedVariables && Object.keys(result.modifiedVariables).length > 0) {
+      Object.assign(context.variables, result.modifiedVariables);
+    }
+
+    // 处理终止请求
+    if (result.shouldTerminate) {
+      await this.terminate(context.processInstanceId, 'Listener requested termination');
+    }
+
+    // 处理BPMN错误
+    if (result.bpmnError) {
+      throw new Error(`BPMN Error: ${result.bpmnError.errorCode} - ${result.bpmnError.errorMessage || ''}`);
+    }
   }
 }
