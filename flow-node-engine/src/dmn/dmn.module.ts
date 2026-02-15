@@ -17,6 +17,8 @@ import { HitPolicyHandlerFactory ,
   UnorderedHitPolicyHandler,
 } from './services/hit-policy-handlers.service';
 import { RuleEngineExecutorService } from './services/rule-engine-executor.service';
+import { DmnXmlParserService } from './services/dmn-xml-parser.service';
+import { DmnXmlExporterService } from './services/dmn-xml-exporter.service';
 
 
 @Module({
@@ -27,6 +29,10 @@ import { RuleEngineExecutorService } from './services/rule-engine-executor.servi
     DmnService,
     RuleEngineExecutorService,
     ConditionEvaluatorService,
+
+    // XML导入导出服务
+    DmnXmlParserService,
+    DmnXmlExporterService,
 
     // Hit Policy处理器（与Flowable保持一致，支持8种策略）
     UniqueHitPolicyHandler,
@@ -44,6 +50,8 @@ import { RuleEngineExecutorService } from './services/rule-engine-executor.servi
     RuleEngineExecutorService,
     HitPolicyHandlerFactory,
     ConditionEvaluatorService,
+    DmnXmlParserService,
+    DmnXmlExporterService,
   ],
 })
 export class DmnModule {}
