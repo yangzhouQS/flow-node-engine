@@ -25,7 +25,6 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { Response } from 'express';
-import { ContentService } from '../services/content.service';
 import {
   CreateContentItemDto,
   UpdateContentItemDto,
@@ -37,6 +36,7 @@ import {
   ContentPageResponseDto,
   UploadFileResponseDto,
 } from '../dto/content.dto';
+import { ContentService } from '../services/content.service';
 
 @ApiTags('内容管理')
 @ApiBearerAuth()

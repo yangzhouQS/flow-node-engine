@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { BpmnElement, BpmnSequenceFlow } from './bpmn-parser.service';
+import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import {
   GatewayExecutorService,
   GatewayType,
   GatewayExecutionResult,
 } from './gateway-executor.service';
-import { BpmnElement, BpmnSequenceFlow } from './bpmn-parser.service';
-import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { InclusiveGatewayStateService } from './inclusive-gateway-state.service';
 
 describe('GatewayExecutorService', () => {

@@ -5,9 +5,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, In } from 'typeorm';
-import { ContentItem, ContentItemStatus, ContentItemType } from '../entities/content-item.entity';
-import { Attachment, AttachmentType } from '../entities/attachment.entity';
-import { StorageService } from './storage.service';
 import {
   CreateContentItemDto,
   UpdateContentItemDto,
@@ -19,6 +16,9 @@ import {
   ContentPageResponseDto,
   UploadFileResponseDto,
 } from '../dto/content.dto';
+import { Attachment, AttachmentType } from '../entities/attachment.entity';
+import { ContentItem, ContentItemStatus, ContentItemType } from '../entities/content-item.entity';
+import { StorageService } from './storage.service';
 
 /**
  * 内容服务

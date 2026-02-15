@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { EventBusService } from './event-bus.service';
+import { ExpressionEvaluatorService } from './expression-evaluator.service';
 
 describe('ExpressionEvaluatorService', () => {
   let service: ExpressionEvaluatorService;

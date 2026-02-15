@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { CcService } from './cc.service';
-import { CcRecordEntity, CcType, CcStatus } from '../entities/cc-record.entity';
 import { CcConfigEntity } from '../entities/cc-config.entity';
+import { CcRecordEntity, CcType, CcStatus } from '../entities/cc-record.entity';
+import { CcService } from './cc.service';
 
 describe('CcService', () => {
   let service: CcService;

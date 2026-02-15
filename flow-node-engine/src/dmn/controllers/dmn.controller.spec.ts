@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DmnController } from './dmn.controller';
-import { DmnService } from '../services/dmn.service';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   CreateDecisionDto,
   UpdateDecisionDto,
   QueryDecisionDto,
   ExecuteDecisionDto,
 } from '../dto/dmn.dto';
+import { DmnService } from '../services/dmn.service';
+import { DmnController } from './dmn.controller';
 
 describe('DmnController', () => {
   let controller: DmnController;

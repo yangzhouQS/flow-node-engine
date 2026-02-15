@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { HistoryController } from './history.controller';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { HistoryService } from '../services/history.service';
+import { HistoryController } from './history.controller';
 
 describe('HistoryController', () => {
   let controller: HistoryController;

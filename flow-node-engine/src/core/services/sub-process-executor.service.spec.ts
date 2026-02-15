@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { BpmnParserService, BpmnElement } from './bpmn-parser.service';
+import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import {
   SubProcessExecutorService,
   SubProcessExecutionContext,
   SubProcessExecutionResult,
   SubProcessType,
 } from './sub-process-executor.service';
-import { BpmnParserService, BpmnElement } from './bpmn-parser.service';
-import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { VariableScopeService } from './variable-scope.service';
 
 describe('SubProcessExecutorService', () => {

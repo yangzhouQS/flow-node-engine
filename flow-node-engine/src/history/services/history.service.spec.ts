@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { HistoryService } from './history.service';
 import { HistoricActivityInstance } from '../entities/historic-activity-instance.entity';
 import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
 import { HistoricTaskInstance, HistoricTaskStatus } from '../entities/historic-task-instance.entity';
+import { HistoryService } from './history.service';
 
 describe('HistoryService', () => {
   let service: HistoryService;

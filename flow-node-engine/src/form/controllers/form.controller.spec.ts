@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { FormController } from './form.controller';
-import { FormService } from '../services/form.service';
-import { FormValidationService } from '../services/form-validation.service';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CreateFormDto } from '../dto/create-form.dto';
-import { UpdateFormDto } from '../dto/update-form.dto';
-import { QueryFormDto } from '../dto/query-form.dto';
 import { ValidateFormDto, ValidateSingleFieldDto } from '../dto/form-validation.dto';
+import { QueryFormDto } from '../dto/query-form.dto';
+import { UpdateFormDto } from '../dto/update-form.dto';
+import { FormValidationService } from '../services/form-validation.service';
+import { FormService } from '../services/form.service';
+import { FormController } from './form.controller';
 
 describe('FormController', () => {
   let controller: FormController;

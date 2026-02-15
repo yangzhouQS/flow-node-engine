@@ -2,20 +2,20 @@
  * EventSubscriptionService 单元测试
  * 测试事件订阅服务的核心功能
  */
-import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, Repository } from 'typeorm';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-import {
-  EventSubscriptionService,
-  CreateEventSubscriptionOptions,
-} from './event-subscription.service';
 import {
   EventSubscription,
   EventSubscriptionType,
   EventSubscriptionConfigType,
 } from '../entities/event-subscription.entity';
+import {
+  EventSubscriptionService,
+  CreateEventSubscriptionOptions,
+} from './event-subscription.service';
 
 // Mock 数据
 const mockSubscription: EventSubscription = {

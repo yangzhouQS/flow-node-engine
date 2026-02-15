@@ -16,7 +16,6 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { CommentService } from '../services/comment.service';
 import {
   AddCommentDto,
   UpdateCommentDto,
@@ -27,6 +26,7 @@ import {
   PinCommentDto,
   CommentStatsDto,
 } from '../dto/comment.dto';
+import { CommentService } from '../services/comment.service';
 
 @Controller('comments')
 export class CommentController {

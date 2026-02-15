@@ -7,18 +7,18 @@ import { Repository, In } from 'typeorm';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import {
-  IdentityLinkService,
-  IdentityLinkQueryParams,
-} from './identity-link.service';
+  HistoricIdentityLinkEntity,
+  CreateHistoricIdentityLinkParams,
+} from '../entities/historic-identity-link.entity';
 import {
   IdentityLinkEntity,
   IdentityLinkType,
   CreateIdentityLinkParams,
 } from '../entities/identity-link.entity';
 import {
-  HistoricIdentityLinkEntity,
-  CreateHistoricIdentityLinkParams,
-} from '../entities/historic-identity-link.entity';
+  IdentityLinkService,
+  IdentityLinkQueryParams,
+} from './identity-link.service';
 
 // Mock 数据
 const mockIdentityLink: IdentityLinkEntity = {

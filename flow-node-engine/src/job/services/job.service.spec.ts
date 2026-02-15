@@ -2,16 +2,16 @@
  * JobService 单元测试
  * 测试作业服务的核心功能
  */
-import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, Repository } from 'typeorm';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-import { JobService, JobEventType, JobEvent } from './job.service';
 import { DeadLetterJob } from '../entities/dead-letter-job.entity';
 import { ExternalWorkerJob, ExternalWorkerJobStatus } from '../entities/external-worker-job.entity';
 import { Job, JobType, JobStatus } from '../entities/job.entity';
 import { TimerJob, TimerType, TimerJobStatus } from '../entities/timer-job.entity';
+import { JobService, JobEventType, JobEvent } from './job.service';
 
 // Mock 数据
 const mockJob: Job = {

@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CCController } from './cc.controller';
-import { CcService } from '../services/cc.service';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CCStatus, CCType } from '../dto/cc.dto';
+import { CcService } from '../services/cc.service';
+import { CCController } from './cc.controller';
 
 describe('CCController', () => {
   let controller: CCController;

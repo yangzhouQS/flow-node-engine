@@ -1,7 +1,7 @@
-  import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { RoleController } from './role.controller';
+ import { Test, TestingModule } from '@nestjs/testing';
+ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoleService } from '../services/role.service';
+import { RoleController } from './role.controller';
 
 describe('RoleController', () => {
   let controller: RoleController;

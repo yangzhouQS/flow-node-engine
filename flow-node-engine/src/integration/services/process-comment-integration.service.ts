@@ -3,10 +3,10 @@
  * 将评论功能集成到流程实例操作中
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { ProcessInstanceService } from '../../process-instance/services/process-instance.service';
-import { CommentService } from '../../comment/services/comment.service';
 import { CommentType } from '../../comment/entities/comment.entity';
+import { CommentService } from '../../comment/services/comment.service';
 import { ProcessInstance } from '../../process-instance/entities/process-instance.entity';
+import { ProcessInstanceService } from '../../process-instance/services/process-instance.service';
 
 /**
  * 流程实例评论集成服务
@@ -164,7 +164,7 @@ export class ProcessCommentIntegrationService {
    */
   async getProcessInstanceCommentTree(
     processInstanceId: string,
-    includeInternal: boolean = false
+    includeInternal = false
   ) {
     const processInstance = await this.processInstanceService.findById(processInstanceId);
     const comments = await this.commentService.getCommentTree(

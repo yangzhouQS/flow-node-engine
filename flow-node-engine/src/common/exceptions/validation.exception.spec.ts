@@ -1,6 +1,6 @@
+import { HttpStatus } from '@nestjs/common';
 import { describe, it, expect } from 'vitest';
 import { ValidationException } from './validation.exception';
-import { HttpStatus } from '@nestjs/common';
 
 describe('ValidationException', () => {
   it('should be defined', () => {

@@ -1,13 +1,13 @@
 /**
  * EventSubscriptionService 单元测试
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
-import { EventSubscriptionService } from './event-subscription.service';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventBusService } from '../../core/services/event-bus.service';
 import { Event, EventStatus, EventType } from '../entities/event.entity';
+import { EventSubscriptionService } from './event-subscription.service';
 
 describe('EventSubscriptionService', () => {
   let service: EventSubscriptionService;

@@ -10,17 +10,19 @@ import {
   EvaluateRuleValidityBehavior,
   ComposeRuleResultBehavior,
   ComposeDecisionResultBehavior,
+  ContinueEvaluatingResult,
+  RuleValidityResult,
 } from '../interfaces/hit-policy.interface';
 
 /**
  * 抽象命中策略基类（与Flowable AbstractHitPolicy对应）
  */
-export abstract class AbstractHitPolicy implements 
-  ContinueEvaluatingBehavior, 
-  ComposeRuleResultBehavior, 
+export abstract class AbstractHitPolicy implements
+  ContinueEvaluatingBehavior,
+  ComposeRuleResultBehavior,
   ComposeDecisionResultBehavior {
   
-  protected multipleResults: boolean = false;
+  protected multipleResults = false;
   protected readonly logger = new Logger(this.constructor.name);
 
   constructor();
@@ -44,7 +46,7 @@ export abstract class AbstractHitPolicy implements
   /**
    * 处理规则评估结果（默认实现）
    */
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     // 默认实现，子类可以覆盖
     const matchedResults = results.filter((r) => r.matched);
     
@@ -53,44 +55,57 @@ export abstract class AbstractHitPolicy implements
       matchedRuleIds: matchedResults.map((r) => r.ruleId),
       output: matchedResults.map((r) => r.outputs),
       needsAggregation: this.multipleResults,
+      multipleResults: this.multipleResults,
     };
   }
 
   /**
    * 默认继续评估行为：继续评估所有规则
    */
-  shouldContinueEvaluating(ruleResult: boolean): boolean {
-    return true;
+  shouldContinueEvaluating(_ruleResult: boolean): ContinueEvaluatingResult {
+    return { shouldContinue: true };
   }
 
   /**
    * 默认规则结果组装：添加到规则结果集合
    */
   composeRuleResult(ruleNumber: number, outputName: string, outputValue: any, context: RuleExecutionContext): void {
-    context.addRuleResult(ruleNumber, outputName, outputValue);
+    if (context.addRuleResult) {
+      context.addRuleResult(ruleNumber, outputName, outputValue);
+    }
   }
 
   /**
    * 默认决策结果组装：将所有规则结果转为决策结果
    */
-  composeDecisionResults(context: RuleExecutionContext): void {
-    const decisionResults = Array.from(context.getRuleResults().values());
+  composeDecisionResults(context: RuleExecutionContext): Record<string, any> | Record<string, any>[] {
+    const ruleResults = context.ruleResults || new Map();
+    const decisionResults = Array.from(ruleResults.values());
     this.updateStackWithDecisionResults(decisionResults, context);
     
-    const auditContainer = context.getAuditContainer();
-    auditContainer.decisionResult = decisionResults;
-    auditContainer.multipleResults = this.multipleResults;
+    context.auditContainer.decisionResult = decisionResults;
+    context.auditContainer.multipleResults = this.multipleResults;
+    
+    return decisionResults;
   }
 
   /**
    * 更新执行堆栈变量
    */
   updateStackWithDecisionResults(decisionResults: Record<string, any>[], context: RuleExecutionContext): void {
+    const stackVariables = context.stackVariables || new Map();
     decisionResults.forEach(result => {
       Object.entries(result).forEach(([key, value]) => {
-        context.getStackVariables().set(key, value);
+        stackVariables.set(key, value);
       });
     });
+  }
+  
+  /**
+   * 是否返回多个结果
+   */
+  isMultipleResults(): boolean {
+    return this.multipleResults;
   }
 }
 
@@ -107,43 +122,31 @@ export class UniqueHitPolicyHandler extends AbstractHitPolicy implements Evaluat
    * 评估规则有效性
    * 检查是否有多条规则匹配
    */
-  evaluateRuleValidity(ruleNumber: number, context: RuleExecutionContext): void {
-    const ruleExecutions = context.getAuditContainer().ruleExecutions;
-    
-    for (const [entryRuleNumber, ruleExecution] of Object.entries(ruleExecutions)) {
-      const entryRuleNum = parseInt(entryRuleNumber);
-      if (entryRuleNum !== ruleNumber && ruleExecution.isValid) {
-        const hitPolicyViolatedMessage = 
-          `HitPolicy UNIQUE violated; at least rule ${ruleNumber} and rule ${entryRuleNum} are valid.`;
-        
-        if (context.isStrictMode()) {
-          // 严格模式：抛出异常
-          ruleExecutions[ruleNumber].exceptionMessage = hitPolicyViolatedMessage;
-          ruleExecutions[entryRuleNum].exceptionMessage = hitPolicyViolatedMessage;
-          throw new Error('HitPolicy UNIQUE violated.');
-        } else {
-          // 非严格模式：记录验证消息
-          ruleExecutions[ruleNumber].validationMessage = hitPolicyViolatedMessage;
-          ruleExecutions[entryRuleNum].validationMessage = hitPolicyViolatedMessage;
-          break;
-        }
-      }
+  evaluateRuleValidity(matchedResults: RuleEvaluationResult[], _strictMode: boolean): RuleValidityResult {
+    if (matchedResults.length <= 1) {
+      return { valid: true };
     }
+    
+    const ruleIds = matchedResults.map(r => r.ruleId).join(', ');
+    const errorMessage = `UNIQUE hit policy violation: ${matchedResults.length} rules matched (${ruleIds}), but only one is allowed`;
+    
+    return { valid: false, errorMessage };
   }
 
   /**
    * 组装决策结果
    * 非严格模式下，多条匹配时取最后一个有效结果
    */
-  composeDecisionResults(context: RuleExecutionContext): void {
-    const ruleResults = Array.from(context.getRuleResults().values());
+  composeDecisionResults(context: RuleExecutionContext): Record<string, any> | Record<string, any>[] {
+    const ruleResults = context.ruleResults || new Map();
+    const ruleResultsArray = Array.from(ruleResults.values());
     let decisionResults: Record<string, any>[];
 
-    if (ruleResults.length > 1 && !context.isStrictMode()) {
+    if (ruleResultsArray.length > 1 && !context.strictMode) {
       // 非严格模式：合并所有结果，取最后一个有效值
       const lastResult: Record<string, any> = {};
       
-      for (const ruleResult of ruleResults) {
+      for (const ruleResult of ruleResultsArray) {
         for (const [key, value] of Object.entries(ruleResult)) {
           if (value !== null && value !== undefined) {
             lastResult[key] = value;
@@ -151,18 +154,20 @@ export class UniqueHitPolicyHandler extends AbstractHitPolicy implements Evaluat
         }
       }
       
-      context.getAuditContainer().validationMessage = 
+      context.auditContainer.validationMessage = 
         'HitPolicy UNIQUE violated; multiple valid rules. Setting last valid rule result as final result.';
       decisionResults = [lastResult];
     } else {
-      decisionResults = ruleResults;
+      decisionResults = ruleResultsArray;
     }
 
     this.updateStackWithDecisionResults(decisionResults, context);
-    context.getAuditContainer().decisionResult = decisionResults;
+    context.auditContainer.decisionResult = decisionResults;
+    
+    return decisionResults;
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results.filter((r) => r.matched);
 
     if (matchedResults.length === 0) {
@@ -171,6 +176,7 @@ export class UniqueHitPolicyHandler extends AbstractHitPolicy implements Evaluat
         matchedRuleIds: [],
         output: {},
         needsAggregation: false,
+        multipleResults: false,
       };
     }
 
@@ -186,6 +192,7 @@ export class UniqueHitPolicyHandler extends AbstractHitPolicy implements Evaluat
       matchedRuleIds: [matched.ruleId],
       output: matched.outputs,
       needsAggregation: false,
+      multipleResults: false,
     };
   }
 }
@@ -202,11 +209,14 @@ export class FirstHitPolicyHandler extends AbstractHitPolicy {
   /**
    * 找到匹配规则后停止评估
    */
-  shouldContinueEvaluating(ruleResult: boolean): boolean {
-    return !ruleResult; // 如果规则匹配，停止评估
+  shouldContinueEvaluating(ruleResult: boolean): ContinueEvaluatingResult {
+    if (ruleResult) {
+      return { shouldContinue: false, reason: 'First matching rule found' };
+    }
+    return { shouldContinue: true };
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResult = results.find((r) => r.matched);
 
     if (!matchedResult) {
@@ -215,6 +225,7 @@ export class FirstHitPolicyHandler extends AbstractHitPolicy {
         matchedRuleIds: [],
         output: {},
         needsAggregation: false,
+        multipleResults: false,
       };
     }
 
@@ -223,6 +234,7 @@ export class FirstHitPolicyHandler extends AbstractHitPolicy {
       matchedRuleIds: [matchedResult.ruleId],
       output: matchedResult.outputs,
       needsAggregation: false,
+      multipleResults: false,
     };
   }
 }
@@ -236,39 +248,42 @@ export class PriorityHitPolicyHandler extends AbstractHitPolicy {
   readonly name = 'PRIORITY';
   readonly type = HitPolicy.PRIORITY;
 
-  composeDecisionResults(context: RuleExecutionContext): void {
-    const ruleResults = Array.from(context.getRuleResults().values());
+  composeDecisionResults(context: RuleExecutionContext): Record<string, any> | Record<string, any>[] {
+    const ruleResults = context.ruleResults || new Map();
+    const ruleResultsArray = Array.from(ruleResults.values());
     
-    if (ruleResults.length === 0) {
+    if (ruleResultsArray.length === 0) {
       this.updateStackWithDecisionResults([], context);
-      context.getAuditContainer().decisionResult = [];
-      return;
+      context.auditContainer.decisionResult = [];
+      return [];
     }
     
     // 获取输出值优先级列表
-    const outputValues = context.getOutputClauseOutputValues();
+    const outputValues = context.outputClauseOutputValues;
     const outputValuesPresent = outputValues && outputValues.length > 0;
     
     if (!outputValuesPresent) {
       const hitPolicyViolatedMessage = 'HitPolicy PRIORITY violated; no output values present';
       
-      if (context.isStrictMode()) {
+      if (context.strictMode) {
         throw new Error(hitPolicyViolatedMessage);
       } else {
-        context.getAuditContainer().validationMessage = 
+        context.auditContainer.validationMessage = 
           `${hitPolicyViolatedMessage}. Setting first valid result as final result.`;
-        this.updateStackWithDecisionResults([ruleResults[0]], context);
-        context.getAuditContainer().decisionResult = [ruleResults[0]];
-        return;
+        this.updateStackWithDecisionResults([ruleResultsArray[0]], context);
+        context.auditContainer.decisionResult = [ruleResultsArray[0]];
+        return [ruleResultsArray[0]];
       }
     }
     
     // 按优先级排序，取最高优先级结果
-    const sortedResults = this.sortByOutputValues(ruleResults, outputValues!);
+    const sortedResults = this.sortByOutputValues(ruleResultsArray, outputValues!);
     const decisionResults = [sortedResults[0]];
     
     this.updateStackWithDecisionResults(decisionResults, context);
-    context.getAuditContainer().decisionResult = decisionResults;
+    context.auditContainer.decisionResult = decisionResults;
+    
+    return decisionResults;
   }
 
   private sortByOutputValues(
@@ -286,7 +301,7 @@ export class PriorityHitPolicyHandler extends AbstractHitPolicy {
     });
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results
       .filter((r) => r.matched)
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
@@ -297,6 +312,7 @@ export class PriorityHitPolicyHandler extends AbstractHitPolicy {
         matchedRuleIds: [],
         output: {},
         needsAggregation: false,
+        multipleResults: false,
       };
     }
 
@@ -306,6 +322,7 @@ export class PriorityHitPolicyHandler extends AbstractHitPolicy {
       matchedRuleIds: [highestPriority.ruleId],
       output: highestPriority.outputs,
       needsAggregation: false,
+      multipleResults: false,
     };
   }
 }
@@ -319,8 +336,8 @@ export class AnyHitPolicyHandler extends AbstractHitPolicy {
   readonly name = 'ANY';
   readonly type = HitPolicy.ANY;
 
-  composeDecisionResults(context: RuleExecutionContext): void {
-    const ruleResults = context.getRuleResults();
+  composeDecisionResults(context: RuleExecutionContext): Record<string, any> | Record<string, any>[] {
+    const ruleResults = context.ruleResults || new Map();
     let validationFailed = false;
     
     // 检查所有匹配规则的输出是否相同
@@ -339,13 +356,19 @@ export class AnyHitPolicyHandler extends AbstractHitPolicy {
             const hitPolicyViolatedMessage = 
               `HitPolicy ANY violated; both rule ${ruleNumber1} and ${ruleNumber2} are valid but output ${outputName} has different values.`;
             
-            if (context.isStrictMode()) {
-              context.getAuditContainer().ruleExecutions[ruleNumber1].exceptionMessage = hitPolicyViolatedMessage;
-              context.getAuditContainer().ruleExecutions[ruleNumber2].exceptionMessage = hitPolicyViolatedMessage;
+            if (context.strictMode) {
+              const ruleExec = context.auditContainer.ruleExecutions;
+              const rule1Exec = ruleExec.find(r => r.ruleNumber === ruleNumber1);
+              const rule2Exec = ruleExec.find(r => r.ruleNumber === ruleNumber2);
+              if (rule1Exec) rule1Exec.exceptionMessage = hitPolicyViolatedMessage;
+              if (rule2Exec) rule2Exec.exceptionMessage = hitPolicyViolatedMessage;
               throw new Error('HitPolicy ANY violated.');
             } else {
-              context.getAuditContainer().ruleExecutions[ruleNumber1].validationMessage = hitPolicyViolatedMessage;
-              context.getAuditContainer().ruleExecutions[ruleNumber2].validationMessage = hitPolicyViolatedMessage;
+              const ruleExec = context.auditContainer.ruleExecutions;
+              const rule1Exec = ruleExec.find(r => r.ruleNumber === ruleNumber1);
+              const rule2Exec = ruleExec.find(r => r.ruleNumber === ruleNumber2);
+              if (rule1Exec) rule1Exec.validationMessage = hitPolicyViolatedMessage;
+              if (rule2Exec) rule2Exec.validationMessage = hitPolicyViolatedMessage;
               validationFailed = true;
             }
           }
@@ -354,17 +377,19 @@ export class AnyHitPolicyHandler extends AbstractHitPolicy {
     }
     
     // 非严格模式下，取最后一个有效结果
-    if (!context.isStrictMode() && validationFailed) {
-      context.getAuditContainer().validationMessage = 
+    if (!context.strictMode && validationFailed) {
+      context.auditContainer.validationMessage = 
         'HitPolicy ANY violated; multiple valid rules with different outcomes. Setting last valid rule result as final result.';
     }
     
     const decisionResults = [ruleResultsArray[ruleResultsArray.length - 1]?.[1] || {}];
     this.updateStackWithDecisionResults(decisionResults, context);
-    context.getAuditContainer().decisionResult = decisionResults;
+    context.auditContainer.decisionResult = decisionResults;
+    
+    return decisionResults;
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results.filter((r) => r.matched);
 
     if (matchedResults.length === 0) {
@@ -373,6 +398,7 @@ export class AnyHitPolicyHandler extends AbstractHitPolicy {
         matchedRuleIds: [],
         output: {},
         needsAggregation: false,
+        multipleResults: false,
       };
     }
 
@@ -393,6 +419,7 @@ export class AnyHitPolicyHandler extends AbstractHitPolicy {
       matchedRuleIds: matchedResults.map((r) => r.ruleId),
       output: matchedResults[0].outputs,
       needsAggregation: false,
+      multipleResults: false,
     };
   }
 }
@@ -410,12 +437,12 @@ export class CollectHitPolicyHandler extends AbstractHitPolicy {
     super(true); // 多结果模式
   }
 
-  composeDecisionResults(context: RuleExecutionContext): void {
+  composeDecisionResults(context: RuleExecutionContext): Record<string, any> | Record<string, any>[] {
     const decisionResults: Record<string, any>[] = [];
-    const ruleResults = context.getRuleResults();
+    const ruleResults = context.ruleResults || new Map();
     
     if (ruleResults && ruleResults.size > 0) {
-      const aggregator = context.getAggregator();
+      const aggregator = context.aggregator;
       
       if (aggregator === null || aggregator === undefined) {
         // 无聚合器：返回所有匹配结果
@@ -452,19 +479,22 @@ export class CollectHitPolicyHandler extends AbstractHitPolicy {
 
     this.updateStackWithDecisionResults(decisionResults, context);
     
-    context.getAuditContainer().decisionResult = decisionResults;
+    context.auditContainer.decisionResult = decisionResults;
     // 无聚合器时返回多个结果
-    context.getAuditContainer().multipleResults = 
-      (context.getAggregator() === null || context.getAggregator() === undefined);
+    context.auditContainer.multipleResults = 
+      (context.aggregator === null || context.aggregator === undefined);
+    
+    return decisionResults;
   }
 
   /**
    * 组装输出值列表
    */
   private composeOutputValues(context: RuleExecutionContext): [string, number[]] | null {
-    let ruleResults = Array.from(context.getRuleResults().values());
+    const ruleResultsMap = context.ruleResults || new Map();
+    let ruleResults = Array.from(ruleResultsMap.values());
     
-    if (context.isForceDMN11()) {
+    if (context.forceDMN11) {
       // DMN 1.1模式：去重
       const uniqueResults = new Set(ruleResults.map(r => JSON.stringify(r)));
       ruleResults = Array.from(uniqueResults).map(s => JSON.parse(s));
@@ -513,7 +543,7 @@ export class CollectHitPolicyHandler extends AbstractHitPolicy {
     return values.length;
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results.filter((r) => r.matched);
 
     if (matchedResults.length === 0) {
@@ -522,6 +552,7 @@ export class CollectHitPolicyHandler extends AbstractHitPolicy {
         matchedRuleIds: [],
         output: [],
         needsAggregation: true,
+        multipleResults: true,
       };
     }
 
@@ -532,6 +563,7 @@ export class CollectHitPolicyHandler extends AbstractHitPolicy {
       matchedRuleIds: matchedResults.map((r) => r.ruleId),
       output: outputs,
       needsAggregation: true,
+      multipleResults: true,
     };
   }
 
@@ -578,7 +610,7 @@ export class RuleOrderHitPolicyHandler extends AbstractHitPolicy {
     super(true); // 多结果模式
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results.filter((r) => r.matched);
 
     if (matchedResults.length === 0) {
@@ -587,6 +619,7 @@ export class RuleOrderHitPolicyHandler extends AbstractHitPolicy {
         matchedRuleIds: [],
         output: [],
         needsAggregation: true,
+        multipleResults: true,
       };
     }
 
@@ -600,6 +633,7 @@ export class RuleOrderHitPolicyHandler extends AbstractHitPolicy {
       matchedRuleIds: sortedResults.map((r) => r.ruleId),
       output: sortedResults.map((r) => r.outputs),
       needsAggregation: true,
+      multipleResults: true,
     };
   }
 }
@@ -617,22 +651,23 @@ export class OutputOrderHitPolicyHandler extends AbstractHitPolicy {
     super(true); // 多结果模式
   }
 
-  composeDecisionResults(context: RuleExecutionContext): void {
+  composeDecisionResults(context: RuleExecutionContext): Record<string, any> | Record<string, any>[] {
     const decisionResults: Record<string, any>[] = [];
-    const ruleResults = Array.from(context.getRuleResults().values());
+    const ruleResultsMap = context.ruleResults || new Map();
+    const ruleResults = Array.from(ruleResultsMap.values());
     
     if (ruleResults.length > 0) {
       // 获取输出值优先级列表
-      const outputValues = context.getOutputClauseOutputValues();
+      const outputValues = context.outputClauseOutputValues;
       const outputValuesPresent = outputValues && outputValues.length > 0;
       
       if (!outputValuesPresent) {
         const hitPolicyViolatedMessage = 'HitPolicy OUTPUT ORDER violated; no output values present';
         
-        if (context.isStrictMode()) {
+        if (context.strictMode) {
           throw new Error(hitPolicyViolatedMessage);
         } else {
-          context.getAuditContainer().validationMessage = 
+          context.auditContainer.validationMessage = 
             `${hitPolicyViolatedMessage}. Setting first valid result as final result.`;
           decisionResults.push(...ruleResults);
         }
@@ -644,7 +679,9 @@ export class OutputOrderHitPolicyHandler extends AbstractHitPolicy {
     }
 
     this.updateStackWithDecisionResults(decisionResults, context);
-    context.getAuditContainer().decisionResult = decisionResults;
+    context.auditContainer.decisionResult = decisionResults;
+    
+    return decisionResults;
   }
 
   /**
@@ -666,7 +703,7 @@ export class OutputOrderHitPolicyHandler extends AbstractHitPolicy {
     });
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results.filter((r) => r.matched);
 
     if (matchedResults.length === 0) {
@@ -675,6 +712,7 @@ export class OutputOrderHitPolicyHandler extends AbstractHitPolicy {
         matchedRuleIds: [],
         output: [],
         needsAggregation: true,
+        multipleResults: true,
       };
     }
 
@@ -688,6 +726,7 @@ export class OutputOrderHitPolicyHandler extends AbstractHitPolicy {
       matchedRuleIds: sortedResults.map((r) => r.ruleId),
       output: sortedResults.map((r) => r.outputs),
       needsAggregation: true,
+      multipleResults: true,
     };
   }
 }
@@ -705,7 +744,7 @@ export class UnorderedHitPolicyHandler extends AbstractHitPolicy {
     super(true); // 多结果模式
   }
 
-  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult {
+  handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results.filter((r) => r.matched);
 
     if (matchedResults.length === 0) {
@@ -714,6 +753,7 @@ export class UnorderedHitPolicyHandler extends AbstractHitPolicy {
         matchedRuleIds: [],
         output: [],
         needsAggregation: true,
+        multipleResults: true,
       };
     }
 
@@ -723,6 +763,7 @@ export class UnorderedHitPolicyHandler extends AbstractHitPolicy {
       matchedRuleIds: matchedResults.map((r) => r.ruleId),
       output: matchedResults.map((r) => r.outputs),
       needsAggregation: true,
+      multipleResults: true,
     };
   }
 }
@@ -771,7 +812,7 @@ export class HitPolicyHandlerFactory {
   /**
    * 获取聚合处理器
    */
-  getCollectHandler(aggregationType?: AggregationType): CollectHitPolicyHandler {
+  getCollectHandler(_aggregationType?: AggregationType): CollectHitPolicyHandler {
     return this.collectHandler;
   }
 

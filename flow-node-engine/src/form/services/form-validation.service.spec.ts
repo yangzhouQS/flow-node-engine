@@ -1,17 +1,17 @@
 /**
  * FormValidationService 单元测试
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { FormValidationService } from './form-validation.service';
-import { FormService } from './form.service';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Form } from '../entities/form.entity';
 import {
   FormDefinition,
   FormFieldDefinition,
   FormFieldType,
   FieldValidationRule,
 } from '../interfaces/form-validation.interface';
-import { Form } from '../entities/form.entity';
+import { FormValidationService } from './form-validation.service';
+import { FormService } from './form.service';
 
 describe('FormValidationService', () => {
   let service: FormValidationService;

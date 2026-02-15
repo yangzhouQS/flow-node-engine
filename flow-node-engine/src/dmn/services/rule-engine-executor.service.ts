@@ -124,9 +124,13 @@ export class RuleEngineExecutorService {
       decisionId: decision.id,
       decisionKey: decision.decisionKey,
       decisionName: decision.name,
-      ruleExecutions: [],
+      decisionVersion: decision.version,
+      hitPolicy: decision.hitPolicy,
       strictMode,
       forceDMN11,
+      ruleExecutions: [],
+      startTime: new Date(),
+      failed: false,
     };
 
     try {
@@ -144,6 +148,8 @@ export class RuleEngineExecutorService {
         strictMode,
         forceDMN11,
         handler,
+        ruleResults: new Map(),
+        stackVariables: new Map(),
       };
 
       // 评估规则（使用行为接口）
@@ -160,7 +166,7 @@ export class RuleEngineExecutorService {
       // 组合决策结果（如果处理器支持）
       let finalOutput = hitPolicyResult.output;
       if (this.hasComposeDecisionResultBehavior(handler)) {
-        finalOutput = handler.composeDecisionResults(evaluationResults, decisionTable.outputs);
+        finalOutput = handler.composeDecisionResults(ruleContext);
       } else if (hitPolicyResult.needsAggregation && decision.aggregation !== AggregationType.NONE) {
         finalOutput = this.applyAggregation(
           hitPolicyResult.output as Record<string, any>[],
@@ -260,7 +266,7 @@ export class RuleEngineExecutorService {
     strictMode: boolean,
   ): void {
     const matchedResults = results.filter(r => r.matched);
-    const validityResult = handler.evaluateRuleValidity(matchedResults);
+    const validityResult = handler.evaluateRuleValidity(matchedResults, strictMode);
 
     if (!validityResult.valid) {
       const message = validityResult.errorMessage || 'Rule validity check failed';
@@ -278,17 +284,25 @@ export class RuleEngineExecutorService {
    */
   private evaluateRulesWithContext(context: RuleExecutionContext): RuleEvaluationResult[] {
     const results: RuleEvaluationResult[] = [];
-    const { decisionTable, inputData, auditContainer, strictMode, handler } = context;
-    const hasContinueBehavior = this.hasContinueEvaluatingBehavior(handler);
+    const decisionTable = context.decisionTable;
+    const inputData = context.inputData;
+    const auditContainer = context.auditContainer;
+    const handler = context.handler;
+    
+    if (!decisionTable) {
+      return results;
+    }
+    
+    const hasContinueBehavior = handler ? this.hasContinueEvaluatingBehavior(handler) : false;
 
     for (let i = 0; i < decisionTable.rules.length; i++) {
       const rule = decisionTable.rules[i];
-      const result = this.evaluateRuleWithAudit(rule, inputData, i, decisionTable.inputs, auditContainer);
+      const result = this.evaluateRuleWithAudit(rule, inputData || {}, i, decisionTable.inputs, auditContainer);
       results.push(result);
 
       // 检查是否应该继续评估（如果处理器支持）
-      if (hasContinueBehavior && result.matched) {
-        const continueResult = (handler as ContinueEvaluatingBehavior).shouldContinueEvaluating(results);
+      if (hasContinueBehavior && handler && result.matched) {
+        const continueResult = (handler as ContinueEvaluatingBehavior).shouldContinueEvaluating(result.matched);
         if (!continueResult.shouldContinue) {
           this.logger.debug(`Stopping rule evaluation at rule ${i}: ${continueResult.reason || 'Hit policy requires stop'}`);
           break;
@@ -356,6 +370,7 @@ export class RuleEngineExecutorService {
   ): RuleEvaluationResult {
     const ruleAudit: RuleExecutionAudit = {
       ruleId: rule.id,
+      ruleNumber: ruleIndex + 1,
       ruleIndex,
       matched: false,
       inputEntries: [],
@@ -382,8 +397,9 @@ export class RuleEngineExecutorService {
 
       // 记录输入条目审计
       const inputEntryAudit: InputEntryAudit = {
+        id: `input_${condition.inputId}`,
         inputId: condition.inputId,
-        inputName: inputDef?.name || condition.inputId,
+        inputName: inputDef?.name || inputDef?.label || condition.inputId,
         inputValue,
         operator: condition.operator,
         conditionValue: condition.value,
@@ -406,6 +422,7 @@ export class RuleEngineExecutorService {
 
         // 记录输出条目审计
         const outputEntryAudit: OutputEntryAudit = {
+          id: `output_${output.outputId}`,
           outputId: output.outputId,
           outputName: output.outputId,
           outputValue: output.value,

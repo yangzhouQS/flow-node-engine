@@ -1,13 +1,13 @@
 /**
  * ProgressTrackingService 单元测试
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
-import { ProgressTrackingService, ProgressEventType, ProgressEvent, ProcessInstanceEvent, TaskEvent } from './progress-tracking.service';
-import { Progress, ProgressStatus, ProgressType } from '../entities/progress.entity';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ProgressMetric, MetricType, MetricCategory } from '../entities/progress-metric.entity';
+import { Progress, ProgressStatus, ProgressType } from '../entities/progress.entity';
+import { ProgressTrackingService, ProgressEventType, ProgressEvent, ProcessInstanceEvent, TaskEvent } from './progress-tracking.service';
 
 describe('ProgressTrackingService', () => {
   let service: ProgressTrackingService;

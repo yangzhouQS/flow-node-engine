@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as bcrypt from 'bcrypt';
 
-import { IdentityService } from './identity.service';
-import { User } from '../entities/user.entity';
-import { Role } from '../entities/role.entity';
-import { Group } from '../entities/group.entity';
-import { UserRole } from '../entities/user-role.entity';
-import { UserGroup } from '../entities/user-group.entity';
 import { BusinessException } from '../../common/exceptions/business.exception';
+import { Group } from '../entities/group.entity';
+import { Role } from '../entities/role.entity';
+import { UserGroup } from '../entities/user-group.entity';
+import { UserRole } from '../entities/user-role.entity';
+import { User } from '../entities/user.entity';
+import { IdentityService } from './identity.service';
 
 describe('IdentityService', () => {
   let service: IdentityService;

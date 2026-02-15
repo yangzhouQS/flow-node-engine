@@ -1,6 +1,7 @@
 /**
  * 内容模块 DTO 定义
  */
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsOptional,
@@ -9,14 +10,12 @@ import {
   IsNumber,
   IsObject,
   IsBoolean,
-  IsDateString,
   MaxLength,
   Min,
   IsUrl,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ContentItemType, ContentItemStatus } from '../entities/content-item.entity';
 import { AttachmentType } from '../entities/attachment.entity';
+import { ContentItemType, ContentItemStatus } from '../entities/content-item.entity';
 
 /**
  * 创建内容项 DTO

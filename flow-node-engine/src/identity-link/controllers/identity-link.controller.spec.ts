@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IdentityLinkController } from './identity-link.controller';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { IdentityLinkService } from '../services/identity-link.service';
+import { IdentityLinkController } from './identity-link.controller';
 
 describe('IdentityLinkController', () => {
   let controller: IdentityLinkController;

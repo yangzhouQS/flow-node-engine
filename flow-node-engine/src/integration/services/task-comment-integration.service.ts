@@ -3,11 +3,11 @@
  * 将评论功能集成到任务操作中
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { TaskService } from '../../task/services/task.service';
-import { CommentService } from '../../comment/services/comment.service';
 import { CommentType } from '../../comment/entities/comment.entity';
+import { CommentService } from '../../comment/services/comment.service';
 import { CompleteTaskDto } from '../../task/dto/complete-task.dto';
 import { Task, TaskStatus } from '../../task/entities/task.entity';
+import { TaskService } from '../../task/services/task.service';
 
 /**
  * 任务评论集成服务

@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TaskRejectController } from './task-reject.controller';
-import { TaskRejectService } from '../services/task-reject.service';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RejectType, RejectStrategy, MultiInstanceRejectStrategy } from '../dto/task-reject.dto';
+import { TaskRejectService } from '../services/task-reject.service';
+import { TaskRejectController } from './task-reject.controller';
 
 describe('TaskRejectController', () => {
   let controller: TaskRejectController;

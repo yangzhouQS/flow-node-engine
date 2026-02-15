@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { UserPermissionCacheService, CachedUserPermission, CachedUserInfo } from './user-permission-cache.service';
 
 describe('UserPermissionCacheService', () => {

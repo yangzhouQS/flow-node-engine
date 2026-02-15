@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { BatchController } from './batch.controller';
-import { BatchService } from '../services/batch.service';
-import { BatchEntity } from '../entities/batch.entity';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BatchPartEntity } from '../entities/batch-part.entity';
+import { BatchEntity } from '../entities/batch.entity';
+import { BatchService } from '../services/batch.service';
+import { BatchController } from './batch.controller';
 
 describe('BatchController', () => {
   let controller: BatchController;

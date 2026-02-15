@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ProcessDefinitionCacheService, CachedProcessDefinition, CachedBpmnParseResult } from './process-definition-cache.service';
 
 describe('ProcessDefinitionCacheService', () => {

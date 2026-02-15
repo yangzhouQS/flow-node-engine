@@ -5,7 +5,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
-import { Comment, CommentType } from '../entities/comment.entity';
 import {
   AddCommentDto,
   UpdateCommentDto,
@@ -14,6 +13,7 @@ import {
   CommentPageResponseDto,
   CommentStatsDto,
 } from '../dto/comment.dto';
+import { Comment, CommentType } from '../entities/comment.entity';
 
 /**
  * 评论服务
@@ -99,7 +99,7 @@ export class CommentService {
   /**
    * 根据ID查找评论
    */
-  async findCommentById(id: string, includeDeleted: boolean = false): Promise<Comment> {
+  async findCommentById(id: string, includeDeleted = false): Promise<Comment> {
     const queryBuilder = this.commentRepository.createQueryBuilder('comment');
     queryBuilder.where('comment.id = :id', { id });
     
@@ -275,7 +275,7 @@ export class CommentService {
   /**
    * 点赞评论
    */
-  async likeComment(id: string, unlike: boolean = false): Promise<Comment> {
+  async likeComment(id: string, unlike = false): Promise<Comment> {
     const comment = await this.findCommentById(id);
 
     if (unlike) {
@@ -290,7 +290,7 @@ export class CommentService {
   /**
    * 置顶评论
    */
-  async pinComment(id: string, pinned: boolean = true): Promise<Comment> {
+  async pinComment(id: string, pinned = true): Promise<Comment> {
     const comment = await this.findCommentById(id);
     comment.isPinned = pinned;
     return this.commentRepository.save(comment);

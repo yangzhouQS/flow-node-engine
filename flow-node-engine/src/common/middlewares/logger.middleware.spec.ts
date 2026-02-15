@@ -1,6 +1,6 @@
+import { Request, Response } from 'express';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { LoggerMiddleware } from './logger.middleware';
-import { Request, Response } from 'express';
 
 describe('LoggerMiddleware', () => {
   let middleware: LoggerMiddleware;

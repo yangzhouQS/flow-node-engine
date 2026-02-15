@@ -1,19 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import {
+  HistoricVariableInstanceEntity,
+  HistoricVariableType,
+} from '../entities/historic-variable-instance.entity';
 import {
   HistoricVariableInstanceService,
   QueryHistoricVariableDto,
   CreateHistoricVariableDto,
   UpdateHistoricVariableDto,
 } from './historic-variable-instance.service';
-import {
-  HistoricVariableInstanceEntity,
-  HistoricVariableType,
-} from '../entities/historic-variable-instance.entity';
 
 describe('HistoricVariableInstanceService', () => {
   let service: HistoricVariableInstanceService;

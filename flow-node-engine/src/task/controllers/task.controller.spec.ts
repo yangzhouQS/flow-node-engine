@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TaskController } from './task.controller';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TaskService } from '../services/task.service';
+import { TaskController } from './task.controller';
 
 describe('TaskController', () => {
   let controller: TaskController;

@@ -2,15 +2,15 @@
  * BatchService 单元测试
  * 测试批处理服务的核心功能
  */
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, Repository, QueryRunner } from 'typeorm';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
 
-import { BatchService, BatchExecutor, BatchConfig } from './batch.service';
-import { BatchEntity, BatchStatus, BatchType } from '../entities/batch.entity';
-import { BatchPartEntity, BatchPartStatus } from '../entities/batch-part.entity';
 import { CreateBatchDto, BatchPartItemDto } from '../dto/batch.dto';
+import { BatchPartEntity, BatchPartStatus } from '../entities/batch-part.entity';
+import { BatchEntity, BatchStatus, BatchType } from '../entities/batch.entity';
+import { BatchService, BatchExecutor, BatchConfig } from './batch.service';
 
 // Mock 数据
 const mockBatch: BatchEntity = {

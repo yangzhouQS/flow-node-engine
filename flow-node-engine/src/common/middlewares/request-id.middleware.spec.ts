@@ -1,6 +1,6 @@
+import { Request, Response } from 'express';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RequestIdMiddleware } from './request-id.middleware';
-import { Request, Response } from 'express';
 
 describe('RequestIdMiddleware', () => {
   let middleware: RequestIdMiddleware;

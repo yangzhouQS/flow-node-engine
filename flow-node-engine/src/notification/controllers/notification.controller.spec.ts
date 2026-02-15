@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotificationController } from './notification.controller';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { InAppNotificationService } from '../services/in-app-notification.service';
 import { NotificationService } from '../services/notification.service';
+import { NotificationController } from './notification.controller';
 
 describe('NotificationController', () => {
   let controller: NotificationController;

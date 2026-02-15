@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventController } from './event.controller';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { EventType, EventStatus } from '../entities/event.entity';
 import { EventPublishService } from '../services/event-publish.service';
 import { EventSubscriptionService } from '../services/event-subscription.service';
-import { EventType, EventStatus } from '../entities/event.entity';
+import { EventController } from './event.controller';
 
 describe('EventController', () => {
   let controller: EventController;

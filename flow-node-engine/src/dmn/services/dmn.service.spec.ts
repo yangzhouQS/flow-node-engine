@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { DmnService } from './dmn.service';
-import { RuleEngineExecutorService } from './rule-engine-executor.service';
 import { DmnDecisionEntity, DmnDecisionStatus, AggregationType } from '../entities/dmn-decision.entity';
 import { DmnExecutionEntity, DmnExecutionStatus } from '../entities/dmn-execution.entity';
+import { DmnService } from './dmn.service';
+import { RuleEngineExecutorService } from './rule-engine-executor.service';
 
 describe('DmnService', () => {
   let service: DmnService;

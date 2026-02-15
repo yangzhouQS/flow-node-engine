@@ -1,6 +1,7 @@
 /**
  * 评论模块 DTO 定义
  */
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsOptional,
@@ -13,7 +14,6 @@ import {
   Min,
   IsNotEmpty,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { CommentType } from '../entities/comment.entity';
 
 /**

@@ -4,9 +4,9 @@
  */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CommentController } from './controllers/comment.controller';
 import { Comment } from './entities/comment.entity';
 import { CommentService } from './services/comment.service';
-import { CommentController } from './controllers/comment.controller';
 
 @Module({
   imports: [

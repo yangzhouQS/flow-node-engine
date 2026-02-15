@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { ProgressController } from './progress.controller';
-import { ProgressTrackingService } from '../services/progress-tracking.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProgressGateway } from '../gateways/progress.gateway';
+import { ProgressTrackingService } from '../services/progress-tracking.service';
+import { ProgressController } from './progress.controller';
 
 describe('ProgressController', () => {
   let controller: ProgressController;

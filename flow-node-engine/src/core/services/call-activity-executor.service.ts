@@ -78,7 +78,7 @@ export class CallActivityExecutorService {
       `Executing call activity: ${context.callActivityElement.id}`,
     );
 
-    const { callActivityElement, variables, processInstanceId, tenantId } = context;
+    const { callActivityElement, variables, tenantId } = context;
 
     // 1. 获取被调用的流程定义Key
     const calledElementKey = await this.getCalledElementKey(

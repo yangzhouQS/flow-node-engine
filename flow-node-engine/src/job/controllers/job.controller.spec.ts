@@ -1,8 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { JobController } from './job.controller';
-import { JobService } from '../services/job.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   CreateJobDto,
   JobQueryDto,
@@ -16,6 +14,8 @@ import {
   DeadLetterJobQueryDto,
   ProcessDeadLetterJobDto,
 } from '../dto/job.dto';
+import { JobService } from '../services/job.service';
+import { JobController } from './job.controller';
 
 describe('JobController', () => {
   let controller: JobController;

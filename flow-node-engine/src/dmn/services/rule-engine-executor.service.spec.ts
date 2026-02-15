@@ -1,23 +1,27 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { RuleEngineExecutorService, ExecuteDecisionOptions } from './rule-engine-executor.service';
+import { DmnDecisionEntity, DmnDecisionStatus, HitPolicy, AggregationType } from '../entities/dmn-decision.entity';
+import { DmnExecutionEntity } from '../entities/dmn-execution.entity';
 import { ConditionEvaluatorService } from './condition-evaluator.service';
 import { HitPolicyHandlerFactory, UniqueHitPolicyHandler, FirstHitPolicyHandler } from './hit-policy-handlers.service';
-import { DmnDecisionEntity, DmnDecisionStatus, HitPolicy, AggregationType } from '../entities/dmn-decision.entity';
-import { DmnExecutionEntity, DmnExecutionStatus } from '../entities/dmn-execution.entity';
+import { RuleEngineExecutorService, ExecuteDecisionOptions } from './rule-engine-executor.service';
 
 describe('RuleEngineExecutorService', () => {
   let service: RuleEngineExecutorService;
-  let decisionRepository: vi.Mocked<Repository<DmnDecisionEntity>>;
-  let executionRepository: vi.Mocked<Repository<DmnExecutionEntity>>;
-  let conditionEvaluator: vi.Mocked<ConditionEvaluatorService>;
-  let hitPolicyHandlerFactory: vi.Mocked<HitPolicyHandlerFactory>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let decisionRepository: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let executionRepository: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let conditionEvaluator: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let hitPolicyHandlerFactory: any;
 
-  const mockDecision: DmnDecisionEntity = {
+  const mockDecision: Partial<DmnDecisionEntity> = {
     id: 'decision-1',
     decisionKey: 'test-decision',
     name: '测试决策',
@@ -60,6 +64,12 @@ describe('RuleEngineExecutorService', () => {
     createTime: new Date(),
     updateTime: null,
     publishTime: new Date(),
+    decisionTable: null,
+    deploymentId: null,
+    resourceName: null,
+    drdId: null,
+    decisionServiceId: null,
+    createUser: null,
   };
 
   beforeEach(async () => {
@@ -69,7 +79,7 @@ describe('RuleEngineExecutorService', () => {
       save: vi.fn(),
       create: vi.fn(),
       createQueryBuilder: vi.fn(),
-    } as unknown as vi.Mocked<Repository<DmnDecisionEntity>>;
+    };
 
     executionRepository = {
       findOne: vi.fn(),
@@ -77,21 +87,23 @@ describe('RuleEngineExecutorService', () => {
       save: vi.fn(),
       create: vi.fn(),
       createQueryBuilder: vi.fn(),
-    } as unknown as vi.Mocked<Repository<DmnExecutionEntity>>;
+    };
 
     conditionEvaluator = {
       evaluate: vi.fn(),
-    } as unknown as vi.Mocked<ConditionEvaluatorService>;
+    };
 
     const uniqueHandler = new UniqueHitPolicyHandler();
     const firstHandler = new FirstHitPolicyHandler();
 
     hitPolicyHandlerFactory = {
       getHandler: vi.fn().mockReturnValue(firstHandler),
-      hasContinueEvaluatingBehavior: vi.fn().mockReturnValue(true),
-      hasEvaluateRuleValidityBehavior: vi.fn().mockReturnValue(false),
-      hasComposeDecisionResultBehavior: vi.fn().mockReturnValue(false),
-    } as unknown as vi.Mocked<HitPolicyHandlerFactory>;
+      isContinueEvaluatingBehavior: vi.fn().mockReturnValue(true),
+      isEvaluateRuleValidityBehavior: vi.fn().mockReturnValue(false),
+      isComposeDecisionResultBehavior: vi.fn().mockReturnValue(false),
+      getCollectHandler: vi.fn().mockReturnValue(firstHandler),
+      isComposeRuleResultBehavior: vi.fn().mockReturnValue(false),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -372,7 +384,7 @@ describe('RuleEngineExecutorService', () => {
 
       const result = await service.validateDecision('decision-1');
 
-      expect(result.errors.some(e => e.includes('references unknown input'))).toBe(true);
+      expect(result.errors.some((e: string) => e.includes('references unknown input'))).toBe(true);
     });
 
     it('当规则引用不存在的输出时应该返回错误', async () => {
@@ -393,22 +405,22 @@ describe('RuleEngineExecutorService', () => {
 
       const result = await service.validateDecision('decision-1');
 
-      expect(result.errors.some(e => e.includes('references unknown output'))).toBe(true);
+      expect(result.errors.some((e: string) => e.includes('references unknown output'))).toBe(true);
     });
   });
 
   describe('行为接口检查', () => {
-    it('hasContinueEvaluatingBehavior应该正确检测', () => {
+    it('isContinueEvaluatingBehavior应该正确检测', () => {
       // 通过factory mock测试
-      expect(hitPolicyHandlerFactory.hasContinueEvaluatingBehavior).toBeDefined();
+      expect(hitPolicyHandlerFactory.isContinueEvaluatingBehavior).toBeDefined();
     });
 
-    it('hasEvaluateRuleValidityBehavior应该正确检测', () => {
-      expect(hitPolicyHandlerFactory.hasEvaluateRuleValidityBehavior).toBeDefined();
+    it('isEvaluateRuleValidityBehavior应该正确检测', () => {
+      expect(hitPolicyHandlerFactory.isEvaluateRuleValidityBehavior).toBeDefined();
     });
 
-    it('hasComposeDecisionResultBehavior应该正确检测', () => {
-      expect(hitPolicyHandlerFactory.hasComposeDecisionResultBehavior).toBeDefined();
+    it('isComposeDecisionResultBehavior应该正确检测', () => {
+      expect(hitPolicyHandlerFactory.isComposeDecisionResultBehavior).toBeDefined();
     });
   });
 

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { BpmnProcessDefinition, BpmnElement } from './bpmn-parser.service';
+import { EventBusService } from './event-bus.service';
+import { ExpressionEvaluatorService } from './expression-evaluator.service';
+import { GatewayExecutorService } from './gateway-executor.service';
 import {
   ProcessExecutorService,
   ExecutionContext,
   ExecutionHistory,
 } from './process-executor.service';
-import { BpmnProcessDefinition, BpmnElement } from './bpmn-parser.service';
-import { EventBusService } from './event-bus.service';
-import { ExpressionEvaluatorService } from './expression-evaluator.service';
-import { GatewayExecutorService } from './gateway-executor.service';
 
 describe('ProcessExecutorService', () => {
   let service: ProcessExecutorService;

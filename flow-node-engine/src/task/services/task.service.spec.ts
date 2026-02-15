@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { TaskService } from './task.service';
-import { Task, TaskStatus } from '../entities/task.entity';
+import { BusinessException } from '../../common/exceptions/business.exception';
 import { EventBusService } from '../../core/services/event-bus.service';
 import { ProcessEngineService } from '../../core/services/process-engine.service';
-import { BusinessException } from '../../common/exceptions/business.exception';
+import { Task, TaskStatus } from '../entities/task.entity';
+import { TaskService } from './task.service';
 
 describe('TaskService', () => {
   let service: TaskService;

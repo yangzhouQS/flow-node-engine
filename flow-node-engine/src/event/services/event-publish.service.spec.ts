@@ -1,12 +1,12 @@
 /**
  * EventPublishService 单元测试
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
-import { EventPublishService } from './event-publish.service';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventBusService } from '../../core/services/event-bus.service';
 import { Event, EventStatus, EventType } from '../entities/event.entity';
+import { EventPublishService } from './event-publish.service';
 
 describe('EventPublishService', () => {
   let service: EventPublishService;

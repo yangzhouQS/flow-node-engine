@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { GroupController } from './group.controller';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GroupService } from '../services/group.service';
+import { GroupController } from './group.controller';
 
 describe('GroupController', () => {
   let controller: GroupController;

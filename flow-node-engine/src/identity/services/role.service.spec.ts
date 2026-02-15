@@ -1,13 +1,13 @@
+import { NotFoundException, ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { NotFoundException, ConflictException } from '@nestjs/common';
 
-import { RoleService } from './role.service';
-import { IdentityService } from './identity.service';
-import { Role } from '../entities/role.entity';
 import { BusinessException } from '../../common/exceptions/business.exception';
+import { Role } from '../entities/role.entity';
+import { IdentityService } from './identity.service';
+import { RoleService } from './role.service';
 
 describe('RoleService', () => {
   let service: RoleService;

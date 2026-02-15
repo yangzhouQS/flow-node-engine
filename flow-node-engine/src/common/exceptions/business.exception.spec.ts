@@ -1,6 +1,6 @@
+import { HttpStatus } from '@nestjs/common';
 import { describe, it, expect } from 'vitest';
 import { BusinessException, ErrorDetail } from './business.exception';
-import { HttpStatus } from '@nestjs/common';
 
 describe('BusinessException', () => {
   it('should be defined', () => {

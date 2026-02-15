@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { ProcessInstanceService } from '../../process-instance/services/process-instance.service';
+import { BpmnElement } from './bpmn-parser.service';
 import { CallActivityExecutorService, CallActivityExecutionContext, ParameterMapping } from './call-activity-executor.service';
 import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { VariableScopeService } from './variable-scope.service';
-import { ProcessInstanceService } from '../../process-instance/services/process-instance.service';
-import { BpmnElement } from './bpmn-parser.service';
 
 describe('CallActivityExecutorService', () => {
   let service: CallActivityExecutorService;

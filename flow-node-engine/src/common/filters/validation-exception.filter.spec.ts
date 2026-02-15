@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ValidationExceptionFilter } from './validation-exception.filter';
-import { ValidationException } from '../exceptions/validation.exception';
 import { ArgumentsHost } from '@nestjs/common';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ValidationException } from '../exceptions/validation.exception';
+import { ValidationExceptionFilter } from './validation-exception.filter';
 
 describe('ValidationExceptionFilter', () => {
   let filter: ValidationExceptionFilter;

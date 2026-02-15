@@ -1,12 +1,17 @@
 // eslint.config.js
-// ESLint 9+ Flat Config for NestJS Project
-const js = require('@eslint/js');
-const typescriptEslint = require('@typescript-eslint/eslint-plugin');
-const typescriptParser = require('@typescript-eslint/parser');
-const importPlugin = require('eslint-plugin-import');
-const prettierConfig = require('eslint-config-prettier');
+// ESLint 9+ Flat Config for NestJS Project (ES Module)
+import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import';
+import prettierConfig from 'eslint-config-prettier';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-module.exports = [
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export default [
   // 全局忽略配置
   {
     ignores: [

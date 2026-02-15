@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, QueryRunner } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 
 /**
  * 慢查询日志记录接口
@@ -335,7 +335,7 @@ export class SlowQueryLogService implements OnModuleInit, OnModuleDestroy {
   /**
    * 获取最近的慢查询
    */
-  getRecentSlowQueries(limit: number = 50): SlowQueryLog[] {
+  getRecentSlowQueries(limit = 50): SlowQueryLog[] {
     return this.slowQueryLogs.slice(-limit).reverse();
   }
 

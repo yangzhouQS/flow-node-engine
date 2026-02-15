@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ResponseInterceptor } from './response.interceptor';
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { of, firstValueFrom } from 'rxjs';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ResponseInterceptor } from './response.interceptor';
 
 describe('ResponseInterceptor', () => {
   let interceptor: ResponseInterceptor<any>;

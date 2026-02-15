@@ -1,12 +1,12 @@
 /**
  * 评论服务单元测试
  */
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CommentService } from './comment.service';
 import { Comment, CommentType } from '../entities/comment.entity';
+import { CommentService } from './comment.service';
 
 describe('CommentService', () => {
   let service: CommentService;

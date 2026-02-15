@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventBusService } from './event-bus.service';
 
 describe('EventBusService', () => {

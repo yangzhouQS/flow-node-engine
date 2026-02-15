@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { ProcessInstanceService } from './process-instance.service';
-import { ProcessInstance } from '../entities/process-instance.entity';
-import { Execution } from '../entities/execution.entity';
-import { Variable } from '../entities/variable.entity';
 import { ProcessDefinition } from '../../process-definition/entities/process-definition.entity';
+import { Execution } from '../entities/execution.entity';
+import { ProcessInstance } from '../entities/process-instance.entity';
+import { Variable } from '../entities/variable.entity';
+import { ProcessInstanceService } from './process-instance.service';
 
 describe('ProcessInstanceService', () => {
   let service: ProcessInstanceService;

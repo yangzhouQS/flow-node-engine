@@ -1,5 +1,3 @@
-import { DecisionRuleDto } from '../dto/dmn.dto';
-
 /**
  * 规则评估结果
  */
@@ -24,8 +22,12 @@ export interface RuleExecutionAudit {
   ruleNumber: number;
   /** 规则ID */
   ruleId: string;
+  /** 规则索引 */
+  ruleIndex: number;
+  /** 是否匹配 */
+  matched: boolean;
   /** 是否有效 */
-  isValid: boolean;
+  isValid?: boolean;
   /** 输入条目审计 */
   inputEntries: InputEntryAudit[];
   /** 输出条目审计 */
@@ -42,12 +44,24 @@ export interface RuleExecutionAudit {
 export interface InputEntryAudit {
   /** 条目ID */
   id: string;
+  /** 输入ID */
+  inputId?: string;
+  /** 输入名称 */
+  inputName?: string;
+  /** 输入值 */
+  inputValue?: any;
+  /** 操作符 */
+  operator?: string;
+  /** 条件值 */
+  conditionValue?: any;
   /** 表达式 */
   expression?: string;
   /** 条件文本 */
   conditionText?: string;
   /** 评估结果 */
-  result: boolean | string;
+  result?: boolean | string;
+  /** 是否匹配 */
+  matched?: boolean;
 }
 
 /**
@@ -56,10 +70,16 @@ export interface InputEntryAudit {
 export interface OutputEntryAudit {
   /** 条目ID */
   id: string;
+  /** 输出ID */
+  outputId?: string;
+  /** 输出名称 */
+  outputName?: string;
+  /** 输出值 */
+  outputValue?: any;
   /** 表达式 */
   expression?: string;
-  /** 输出值 */
-  result: any;
+  /** 输出结果 */
+  result?: any;
 }
 
 /**
@@ -73,9 +93,9 @@ export interface DecisionExecutionAuditContainer {
   /** 决策Key */
   decisionKey: string;
   /** 决策版本 */
-  decisionVersion: number;
+  decisionVersion?: number;
   /** Hit Policy */
-  hitPolicy: string;
+  hitPolicy?: string;
   /** 聚合类型 */
   aggregation?: string;
   /** 严格模式 */
@@ -83,31 +103,31 @@ export interface DecisionExecutionAuditContainer {
   /** 是否强制DMN1.1 */
   forceDMN11: boolean;
   /** 开始时间 */
-  startTime: Date;
+  startTime?: Date;
   /** 结束时间 */
   endTime?: Date;
   /** 是否失败 */
-  failed: boolean;
+  failed?: boolean;
   /** 异常消息 */
   exceptionMessage?: string;
   /** 验证消息 */
   validationMessage?: string;
   /** 输入变量 */
-  inputVariables: Record<string, any>;
+  inputVariables?: Record<string, any>;
   /** 输入变量类型 */
-  inputVariableTypes: Record<string, string>;
+  inputVariableTypes?: Record<string, string>;
   /** 决策结果 */
-  decisionResult: Record<string, any>[];
+  decisionResult?: Record<string, any>[];
   /** 决策结果类型 */
-  decisionResultTypes: Record<string, string>;
+  decisionResultTypes?: Record<string, string>;
   /** 规则执行审计 */
-  ruleExecutions: Record<number, RuleExecutionAudit>;
+  ruleExecutions: RuleExecutionAudit[];
   /** 是否多结果 */
-  multipleResults: boolean;
+  multipleResults?: boolean;
   /** 输入子句 */
-  inputClauses: InputClauseAudit[];
+  inputClauses?: InputClauseAudit[];
   /** 输出子句 */
-  outputClauses: OutputClauseAudit[];
+  outputClauses?: OutputClauseAudit[];
 }
 
 /**
@@ -145,40 +165,46 @@ export interface OutputClauseAudit {
  */
 export interface RuleExecutionContext {
   /** 决策定义 */
-  decision: any;
+  decision?: any;
+  /** 决策表定义 */
+  decisionTable?: DecisionTableDefinition;
   /** 输入变量 */
-  variables: Map<string, any>;
+  variables?: Map<string, any>;
+  /** 输入数据 */
+  inputData?: Record<string, any>;
   /** 堆栈变量 */
-  stackVariables: Map<string, any>;
+  stackVariables?: Map<string, any>;
   /** 审计容器 */
   auditContainer: DecisionExecutionAuditContainer;
   /** 规则结果 */
-  ruleResults: Map<number, Record<string, any>>;
+  ruleResults?: Map<number, Record<string, any>>;
   /** 聚合器 */
-  aggregator: string | null;
+  aggregator?: string | null;
   /** 严格模式 */
   strictMode: boolean;
   /** 强制DMN1.1 */
   forceDMN11: boolean;
   /** 输出子句输出值 */
-  outputClauseOutputValues: any[] | null;
+  outputClauseOutputValues?: any[] | null;
+  /** Hit Policy处理器 */
+  handler?: HitPolicyHandler;
   
   /** 添加规则结果 */
-  addRuleResult(ruleNumber: number, outputName: string, outputValue: any): void;
+  addRuleResult?(ruleNumber: number, outputName: string, outputValue: any): void;
   /** 获取规则结果 */
-  getRuleResults(): Map<number, Record<string, any>>;
+  getRuleResults?(): Map<number, Record<string, any>>;
   /** 获取堆栈变量 */
-  getStackVariables(): Map<string, any>;
+  getStackVariables?(): Map<string, any>;
   /** 获取审计容器 */
-  getAuditContainer(): DecisionExecutionAuditContainer;
+  getAuditContainer?(): DecisionExecutionAuditContainer;
   /** 获取聚合器 */
-  getAggregator(): string | null;
+  getAggregator?(): string | null;
   /** 是否严格模式 */
-  isStrictMode(): boolean;
+  isStrictMode?(): boolean;
   /** 是否强制DMN1.1 */
-  isForceDMN11(): boolean;
+  isForceDMN11?(): boolean;
   /** 获取输出子句输出值 */
-  getOutputClauseOutputValues(): any[] | null;
+  getOutputClauseOutputValues?(): any[] | null;
 }
 
 /**
@@ -201,16 +227,32 @@ export interface HitPolicyHandler {
 }
 
 /**
+ * 继续评估结果
+ */
+export interface ContinueEvaluatingResult {
+  shouldContinue: boolean;
+  reason?: string;
+}
+
+/**
+ * 规则有效性结果
+ */
+export interface RuleValidityResult {
+  valid: boolean;
+  errorMessage?: string;
+}
+
+/**
  * 继续评估行为接口（与Flowable ContinueEvaluatingBehavior对应）
  * 控制找到匹配规则后是否继续评估后续规则
  */
 export interface ContinueEvaluatingBehavior extends HitPolicyHandler {
   /**
    * 判断是否继续评估
-   * @param ruleResult 当前规则结果
-   * @returns 是否继续评估
+   * @param ruleResult 当前规则是否匹配
+   * @returns 继续评估结果
    */
-  shouldContinueEvaluating(ruleResult: boolean): boolean;
+  shouldContinueEvaluating(ruleResult: boolean): ContinueEvaluatingResult;
 }
 
 /**
@@ -220,10 +262,11 @@ export interface ContinueEvaluatingBehavior extends HitPolicyHandler {
 export interface EvaluateRuleValidityBehavior extends HitPolicyHandler {
   /**
    * 评估规则有效性
-   * @param ruleNumber 规则编号
-   * @param context 执行上下文
+   * @param matchedResults 匹配的规则结果列表
+   * @param strictMode 是否严格模式
+   * @returns 有效性结果
    */
-  evaluateRuleValidity(ruleNumber: number, context: RuleExecutionContext): void;
+  evaluateRuleValidity(matchedResults: RuleEvaluationResult[], strictMode: boolean): RuleValidityResult;
 }
 
 /**
@@ -249,8 +292,9 @@ export interface ComposeDecisionResultBehavior extends HitPolicyHandler {
   /**
    * 组装决策结果
    * @param context 执行上下文
+   * @returns 决策结果
    */
-  composeDecisionResults(context: RuleExecutionContext): void;
+  composeDecisionResults(context: RuleExecutionContext): Record<string, any> | Record<string, any>[];
   
   /**
    * 更新堆栈变量
@@ -275,6 +319,9 @@ export interface HitPolicyResult {
 
   /** 是否需要聚合 */
   needsAggregation: boolean;
+  
+  /** 是否多结果 */
+  multipleResults?: boolean;
 }
 
 /**

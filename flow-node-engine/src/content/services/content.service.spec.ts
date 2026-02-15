@@ -1,14 +1,14 @@
 /**
  * 内容服务单元测试
  */
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Attachment } from '../entities/attachment.entity';
+import { ContentItem, ContentItemType, ContentItemStatus } from '../entities/content-item.entity';
 import { ContentService } from './content.service';
 import { StorageService } from './storage.service';
-import { ContentItem, ContentItemType, ContentItemStatus } from '../entities/content-item.entity';
-import { Attachment } from '../entities/attachment.entity';
 
 describe('ContentService', () => {
   let service: ContentService;

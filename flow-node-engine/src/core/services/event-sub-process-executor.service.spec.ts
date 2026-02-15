@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { EventSubscriptionService, EventSubscriptionType, EventSubscriptionConfigType } from '../../event-subscription';
+import { BpmnElement } from './bpmn-parser.service';
 import { 
   EventSubProcessExecutorService, 
   EventSubProcessExecutionContext,
@@ -10,8 +12,6 @@ import {
 } from './event-sub-process-executor.service';
 import { ExpressionEvaluatorService } from './expression-evaluator.service';
 import { VariableScopeService, VariableScope } from './variable-scope.service';
-import { EventSubscriptionService, EventSubscriptionType, EventSubscriptionConfigType } from '../../event-subscription';
-import { BpmnElement } from './bpmn-parser.service';
 
 describe('EventSubProcessExecutorService', () => {
   let service: EventSubProcessExecutorService;

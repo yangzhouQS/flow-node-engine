@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource, QueryRunner } from 'typeorm';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { MultiInstanceRejectService, HandleMultiInstanceRejectParams, MultiInstanceRejectResult } from './multi-instance-reject.service';
-import { MultiInstanceConfigEntity } from '../entities/multi-instance-config.entity';
-import { Task, TaskStatus } from '../entities/task.entity';
 import { HistoricActivityInstance } from '../../history/entities/historic-activity-instance.entity';
 import { MultiInstanceRejectStrategy } from '../dto/task-reject.dto';
+import { MultiInstanceConfigEntity } from '../entities/multi-instance-config.entity';
+import { Task, TaskStatus } from '../entities/task.entity';
+import { MultiInstanceRejectService, HandleMultiInstanceRejectParams, MultiInstanceRejectResult } from './multi-instance-reject.service';
 
 describe('MultiInstanceRejectService', () => {
   let service: MultiInstanceRejectService;

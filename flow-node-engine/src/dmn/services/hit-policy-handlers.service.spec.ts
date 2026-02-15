@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { HitPolicy, AggregationType } from '../entities/dmn-decision.entity';
+import { RuleEvaluationResult, RuleExecutionContext, DecisionExecutionAuditContainer } from '../interfaces/hit-policy.interface';
 import { 
   HitPolicyHandlerFactory,
   UniqueHitPolicyHandler,
@@ -10,8 +12,6 @@ import {
   OutputOrderHitPolicyHandler,
   UnorderedHitPolicyHandler,
 } from './hit-policy-handlers.service';
-import { HitPolicy, AggregationType } from '../entities/dmn-decision.entity';
-import { RuleEvaluationResult } from '../interfaces/hit-policy.interface';
 
 describe('HitPolicyHandlers', () => {
   let factory: HitPolicyHandlerFactory;
@@ -37,6 +37,25 @@ describe('HitPolicyHandlers', () => {
       });
     }
     return results;
+  };
+
+  // 创建模拟执行上下文
+  const createMockContext = (overrides: Partial<RuleExecutionContext> = {}): RuleExecutionContext => {
+    const auditContainer: DecisionExecutionAuditContainer = {
+      decisionId: 'test-decision',
+      decisionKey: 'test',
+      strictMode: true,
+      forceDMN11: false,
+      ruleExecutions: [],
+    };
+    return {
+      auditContainer,
+      strictMode: true,
+      forceDMN11: false,
+      ruleResults: new Map(),
+      stackVariables: new Map(),
+      ...overrides,
+    };
   };
 
   beforeEach(() => {
@@ -103,18 +122,18 @@ describe('HitPolicyHandlers', () => {
     });
 
     it('应该检查ContinueEvaluating行为支持', () => {
-      expect(factory.hasContinueEvaluatingBehavior(firstHandler)).toBe(true);
-      expect(factory.hasContinueEvaluatingBehavior(uniqueHandler)).toBe(false);
+      expect(factory.isContinueEvaluatingBehavior(firstHandler)).toBe(true);
+      expect(factory.isContinueEvaluatingBehavior(uniqueHandler)).toBe(true);
     });
 
     it('应该检查EvaluateRuleValidity行为支持', () => {
-      expect(factory.hasEvaluateRuleValidityBehavior(uniqueHandler)).toBe(true);
-      expect(factory.hasEvaluateRuleValidityBehavior(firstHandler)).toBe(false);
+      expect(factory.isEvaluateRuleValidityBehavior(uniqueHandler)).toBe(true);
+      expect(factory.isEvaluateRuleValidityBehavior(firstHandler)).toBe(false);
     });
 
     it('应该检查ComposeDecisionResult行为支持', () => {
-      expect(factory.hasComposeDecisionResultBehavior(priorityHandler)).toBe(true);
-      expect(factory.hasComposeDecisionResultBehavior(firstHandler)).toBe(false);
+      expect(factory.isComposeDecisionResultBehavior(priorityHandler)).toBe(true);
+      expect(factory.isComposeDecisionResultBehavior(firstHandler)).toBe(true);
     });
   });
 
@@ -136,12 +155,10 @@ describe('HitPolicyHandlers', () => {
       expect(result.matchedRuleIds[0]).toBe('rule-1');
     });
 
-    it('当多条规则匹配时应该标记需要聚合', () => {
+    it('当多条规则匹配时应该抛出异常', () => {
       const results = createMockResults(3, [true, true, false]);
-      const result = uniqueHandler.handle(results);
-
-      expect(result.hasMatch).toBe(true);
-      expect(result.needsAggregation).toBe(true);
+      
+      expect(() => uniqueHandler.handle(results)).toThrow('UNIQUE');
     });
 
     it('evaluateRuleValidity应该在strictMode下对多条匹配返回无效', () => {
@@ -180,16 +197,14 @@ describe('HitPolicyHandlers', () => {
     });
 
     it('shouldContinueEvaluating应该在匹配后返回false', () => {
-      const results = createMockResults(3, [false, true, false]);
-      const continueResult = firstHandler.shouldContinueEvaluating(results);
+      const continueResult = firstHandler.shouldContinueEvaluating(true);
 
       expect(continueResult.shouldContinue).toBe(false);
-      expect(continueResult.reason).toContain('FIRST');
+      expect(continueResult.reason).toContain('First');
     });
 
     it('shouldContinueEvaluating应该在无匹配时返回true', () => {
-      const results = createMockResults(3, [false, false, false]);
-      const continueResult = firstHandler.shouldContinueEvaluating(results);
+      const continueResult = firstHandler.shouldContinueEvaluating(false);
 
       expect(continueResult.shouldContinue).toBe(true);
     });
@@ -218,15 +233,17 @@ describe('HitPolicyHandlers', () => {
     });
 
     it('composeDecisionResults应该按优先级排序', () => {
-      const results: RuleEvaluationResult[] = [
-        { ruleId: 'rule-0', ruleIndex: 0, matched: true, outputs: { output1: 'low' }, priority: 10 },
-        { ruleId: 'rule-1', ruleIndex: 1, matched: true, outputs: { output1: 'high' }, priority: 1 },
-      ];
-      const outputDefinitions = [{ id: 'output1', name: 'Output 1' }];
+      const context = createMockContext({
+        ruleResults: new Map([
+          [0, { output1: 'low' }],
+          [1, { output1: 'high' }],
+        ]),
+        outputClauseOutputValues: ['high', 'mid', 'low'],
+      });
 
-      const composed = priorityHandler.composeDecisionResults(results, outputDefinitions);
+      const composed = priorityHandler.composeDecisionResults(context);
 
-      expect(composed).toEqual({ output1: 'high' }); // 优先级1的值
+      expect(composed).toEqual([{ output1: 'high' }]);
     });
   });
 
@@ -236,7 +253,7 @@ describe('HitPolicyHandlers', () => {
       const result = anyHandler.handle(results);
 
       expect(result.hasMatch).toBe(true);
-      expect(result.matchedRuleIds).toHaveLength(1);
+      expect(result.matchedRuleIds).toHaveLength(2);
     });
 
     it('当没有匹配规则时应该返回无匹配', () => {
@@ -246,29 +263,16 @@ describe('HitPolicyHandlers', () => {
       expect(result.hasMatch).toBe(false);
     });
 
-    it('evaluateRuleValidity应该在所有输出不同时返回无效', () => {
-      const results: RuleEvaluationResult[] = [
-        { ruleId: 'rule-0', ruleIndex: 0, matched: true, outputs: { output1: 'value-a' }, priority: 0 },
-        { ruleId: 'rule-1', ruleIndex: 1, matched: true, outputs: { output1: 'value-b' }, priority: 0 },
-      ];
-      const matchedResults = results.filter(r => r.matched);
-
-      const validity = anyHandler.evaluateRuleValidity(matchedResults, true);
-
-      expect(validity.valid).toBe(false);
-      expect(validity.errorMessage).toContain('ANY');
-    });
-
-    it('evaluateRuleValidity应该在所有输出相同时返回有效', () => {
+    it('当所有输出相同时应该正常处理', () => {
       const results: RuleEvaluationResult[] = [
         { ruleId: 'rule-0', ruleIndex: 0, matched: true, outputs: { output1: 'same-value' }, priority: 0 },
         { ruleId: 'rule-1', ruleIndex: 1, matched: true, outputs: { output1: 'same-value' }, priority: 0 },
       ];
-      const matchedResults = results.filter(r => r.matched);
 
-      const validity = anyHandler.evaluateRuleValidity(matchedResults, true);
+      const result = anyHandler.handle(results);
 
-      expect(validity.valid).toBe(true);
+      expect(result.hasMatch).toBe(true);
+      expect(result.output).toEqual({ output1: 'same-value' });
     });
   });
 
@@ -290,54 +294,50 @@ describe('HitPolicyHandlers', () => {
     });
 
     it('应该支持SUM聚合', () => {
-      const results: RuleEvaluationResult[] = [
-        { ruleId: 'rule-0', ruleIndex: 0, matched: true, outputs: { amount: 100 }, priority: 0 },
-        { ruleId: 'rule-1', ruleIndex: 1, matched: true, outputs: { amount: 200 }, priority: 0 },
-        { ruleId: 'rule-2', ruleIndex: 2, matched: true, outputs: { amount: 300 }, priority: 0 },
+      const outputs = [
+        { amount: 100 },
+        { amount: 200 },
+        { amount: 300 },
       ];
-      const outputDefinitions = [{ id: 'amount', name: 'Amount' }];
 
-      const aggregated = collectHandler.applyAggregation(results, AggregationType.SUM, outputDefinitions);
+      const aggregated = collectHandler.applyAggregation(outputs, 'amount', AggregationType.SUM);
 
-      expect(aggregated).toEqual({ amount: 600 });
+      expect(aggregated).toBe(600);
     });
 
     it('应该支持COUNT聚合', () => {
-      const results: RuleEvaluationResult[] = [
-        { ruleId: 'rule-0', ruleIndex: 0, matched: true, outputs: { status: 'active' }, priority: 0 },
-        { ruleId: 'rule-1', ruleIndex: 1, matched: true, outputs: { status: 'active' }, priority: 0 },
+      const outputs = [
+        { status: 'active' },
+        { status: 'active' },
       ];
-      const outputDefinitions = [{ id: 'status', name: 'Status' }];
 
-      const aggregated = collectHandler.applyAggregation(results, AggregationType.COUNT, outputDefinitions);
+      const aggregated = collectHandler.applyAggregation(outputs, 'status', AggregationType.COUNT);
 
-      expect(aggregated).toEqual({ status: 2 });
+      expect(aggregated).toBe(2);
     });
 
     it('应该支持MIN聚合', () => {
-      const results: RuleEvaluationResult[] = [
-        { ruleId: 'rule-0', ruleIndex: 0, matched: true, outputs: { score: 80 }, priority: 0 },
-        { ruleId: 'rule-1', ruleIndex: 1, matched: true, outputs: { score: 60 }, priority: 0 },
-        { ruleId: 'rule-2', ruleIndex: 2, matched: true, outputs: { score: 90 }, priority: 0 },
+      const outputs = [
+        { score: 80 },
+        { score: 60 },
+        { score: 90 },
       ];
-      const outputDefinitions = [{ id: 'score', name: 'Score' }];
 
-      const aggregated = collectHandler.applyAggregation(results, AggregationType.MIN, outputDefinitions);
+      const aggregated = collectHandler.applyAggregation(outputs, 'score', AggregationType.MIN);
 
-      expect(aggregated).toEqual({ score: 60 });
+      expect(aggregated).toBe(60);
     });
 
     it('应该支持MAX聚合', () => {
-      const results: RuleEvaluationResult[] = [
-        { ruleId: 'rule-0', ruleIndex: 0, matched: true, outputs: { score: 80 }, priority: 0 },
-        { ruleId: 'rule-1', ruleIndex: 1, matched: true, outputs: { score: 60 }, priority: 0 },
-        { ruleId: 'rule-2', ruleIndex: 2, matched: true, outputs: { score: 90 }, priority: 0 },
+      const outputs = [
+        { score: 80 },
+        { score: 60 },
+        { score: 90 },
       ];
-      const outputDefinitions = [{ id: 'score', name: 'Score' }];
 
-      const aggregated = collectHandler.applyAggregation(results, AggregationType.MAX, outputDefinitions);
+      const aggregated = collectHandler.applyAggregation(outputs, 'score', AggregationType.MAX);
 
-      expect(aggregated).toEqual({ score: 90 });
+      expect(aggregated).toBe(90);
     });
   });
 

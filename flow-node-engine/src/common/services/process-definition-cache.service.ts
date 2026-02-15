@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit , Inject } from '@nestjs/common';
+
 import { Cache } from 'cache-manager';
 
 /**
