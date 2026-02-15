@@ -14,6 +14,7 @@ import { HitPolicyHandlerFactory ,
   CollectHitPolicyHandler,
   RuleOrderHitPolicyHandler,
   OutputOrderHitPolicyHandler,
+  UnorderedHitPolicyHandler,
 } from './services/hit-policy-handlers.service';
 import { RuleEngineExecutorService } from './services/rule-engine-executor.service';
 
@@ -27,7 +28,7 @@ import { RuleEngineExecutorService } from './services/rule-engine-executor.servi
     RuleEngineExecutorService,
     ConditionEvaluatorService,
 
-    // Hit Policy处理器
+    // Hit Policy处理器（与Flowable保持一致，支持8种策略）
     UniqueHitPolicyHandler,
     FirstHitPolicyHandler,
     PriorityHitPolicyHandler,
@@ -35,6 +36,7 @@ import { RuleEngineExecutorService } from './services/rule-engine-executor.servi
     CollectHitPolicyHandler,
     RuleOrderHitPolicyHandler,
     OutputOrderHitPolicyHandler,
+    UnorderedHitPolicyHandler,
     HitPolicyHandlerFactory,
   ],
   exports: [

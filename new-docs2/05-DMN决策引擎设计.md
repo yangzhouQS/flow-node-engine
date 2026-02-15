@@ -31,6 +31,7 @@ DMN（Decision Model and Notation）是 OMG（Object Management Group）制定�
 | **Rule** | 规则，决策表中的一行 | 年龄>18 AND 收入>5000 → 批准 |
 | **Hit Policy** | 命中策略，规则匹配策略 | UNIQUE, FIRST, PRIORITY, ANY |
 | **Decision Service** | 决策服务，多个决策的组合 | 综合风险评估服务 |
+| **Builtin Aggregator** | 内置聚合器，COLLECT策略的聚合函数 | SUM, COUNT, MIN, MAX |
 
 ### 1.3 DMN 与 BPMN 的集成
 
@@ -77,9 +78,9 @@ graph TB
     end
     
     subgraph 数据层
-        M[Decision表]
-        N[Deployment表]
-        O[HistoricDecisionExecution表]
+        M[ACT_DMN_DECISION表]
+        N[ACT_DMN_DEPLOYMENT表]
+        O[ACT_DMN_HI_DECISION_EXECUTION表]
     end
     
     G --> M
@@ -97,717 +98,787 @@ graph TB
 
 | 服务 | 职责 | 主要方法 |
 |-----|------|---------|
-| **DmnRepositoryService** | 决策表部署和管理 | deploy, getDecision, createDeployment |
-| **DmnDecisionService** | 决策执行 | executeDecision, executeWithAuditTrail |
+| **DmnRepositoryService** | 决策表部署和管理 | createDeployment, getDecision, createDecisionQuery |
+| **DmnDecisionService** | 决策执行 | executeDecision, executeDecisionService, executeWithAuditTrail |
 | **DmnHistoryService** | 历史执行记录查询 | createHistoricDecisionExecutionQuery |
 | **DmnManagementService** | 引擎管理和维护 | getTableName, executeCustomSql |
 
 ---
 
-## 三、数据模型设计
+## 三、命中策略（Hit Policy）设计
 
-### 3.1 决策定义实体
+### 3.1 命中策略类型（与Flowable保持一致）
 
-```typescript
-// dmn/entities/decision.entity.ts
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Index } from 'typeorm';
-import { BaseEntity } from '../../common/entities/base.entity';
+| 命中策略 | 枚举值 | 描述 | 使用场景 |
+|---------|--------|------|---------|
+| **UNIQUE** | `UNIQUE` | 只能有一条规则匹配，多条匹配则报错 | 互斥规则场景 |
+| **FIRST** | `FIRST` | 返回第一条匹配的规则，找到后停止评估 | 优先级规则 |
+| **PRIORITY** | `PRIORITY` | 按输出优先级返回最高优先级结果 | 有优先级的决策 |
+| **ANY** | `ANY` | 允许多条匹配，但输出必须相同 | 宽松匹配场景 |
+| **COLLECT** | `COLLECT` | 收集所有匹配规则的输出（支持聚合器） | 多结果场景 |
+| **RULE ORDER** | `RULE ORDER` | 按规则顺序返回所有匹配结果 | 顺序敏感场景 |
+| **OUTPUT ORDER** | `OUTPUT ORDER` | 按输出值排序返回所有匹配结果 | 需要排序的场景 |
+| **UNORDERED** | `UNORDERED` | 返回所有匹配结果，无特定顺序 | 不关心顺序的场景 |
 
-@Entity('dmn_decision')
-export class DmnDecision extends BaseEntity {
-  @Column({ name: 'key', length: 64 })
-  @Index()
-  key: string;
+### 3.2 COLLECT策略聚合器
 
-  @Column({ name: 'name', length: 128, nullable: true })
-  name: string;
+COLLECT策略支持以下内置聚合器（`BuiltinAggregator`）：
 
-  @Column({ name: 'version', type: 'int' })
-  version: number;
+| 聚合器 | 描述 | 输出类型要求 |
+|--------|------|-------------|
+| **SUM** | 求和 | number |
+| **COUNT** | 计数 | number |
+| **MIN** | 最小值 | number |
+| **MAX** | 最大值 | number |
 
-  @Column({ name: 'category', length: 128, nullable: true })
-  category: string;
+**注意**：使用聚合器时，只能有单个输出子句，且输出类型必须为`number`。
 
-  @Column({ name: 'deployment_id', length: 64, nullable: true })
-  @Index()
-  deploymentId: string;
+### 3.3 命中策略行为接口设计（与Flowable保持一致）
 
-  @Column({ name: 'dmn_xml', type: 'text' })
-  dmnXml: string;
-
-  @Column({ name: 'decision_table_key', length: 64, nullable: true })
-  decisionTableKey: string;
-
-  @Column({ name: 'decision_table_name', length: 128, nullable: true })
-  decisionTableName: string;
-
-  @Column({ name: 'hit_policy', length: 20, default: 'UNIQUE' })
-  hitPolicy: string;
-
-  @Column({ name: 'input_clauses', type: 'json', nullable: true })
-  inputClauses: InputClause[];
-
-  @Column({ name: 'output_clauses', type: 'json', nullable: true })
-  outputClauses: OutputClause[];
-
-  @Column({ name: 'rules', type: 'json', nullable: true })
-  rules: DecisionRule[];
-
-  @Column({ name: 'tenant_id', length: 64, nullable: true })
-  @Index()
-  tenantId: string;
-
-  @Column({ name: 'is_active', type: 'tinyint', width: 1, default: 1 })
-  isActive: boolean;
-}
-
-export interface InputClause {
-  id: string;
-  name: string;
-  label?: string;
-  typeRef: string; // string, number, boolean, date
-  inputExpression: {
-    text: string;
-    typeRef: string;
-  };
-}
-
-export interface OutputClause {
-  id: string;
-  name: string;
-  label?: string;
-  typeRef: string;
-  outputValues?: string[];
-  defaultOutputEntry?: string;
-}
-
-export interface DecisionRule {
-  id: string;
-  ruleNumber: number;
-  description?: string;
-  inputEntries: RuleInputEntry[];
-  outputEntries: RuleOutputEntry[];
-}
-
-export interface RuleInputEntry {
-  id: string;
-  clauseId: string;
-  text: string; // 表达式文本，如 "> 18", "== '男'"
-}
-
-export interface RuleOutputEntry {
-  id: string;
-  clauseId: string;
-  text: string; // 输出值或表达式
-}
-```
-
-### 3.2 部署实体
-
-```typescript
-// dmn/entities/dmn-deployment.entity.ts
-import { Entity, Column, OneToMany, Index } from 'typeorm';
-import { BaseEntity } from '../../common/entities/base.entity';
-import { DmnDecision } from './decision.entity';
-
-@Entity('dmn_deployment')
-export class DmnDeployment extends BaseEntity {
-  @Column({ name: 'name', length: 128, nullable: true })
-  name: string;
-
-  @Column({ name: 'category', length: 128, nullable: true })
-  category: string;
-
-  @Column({ name: 'tenant_id', length: 64, nullable: true })
-  @Index()
-  tenantId: string;
-
-  @Column({ name: 'parent_deployment_id', length: 64, nullable: true })
-  parentDeploymentId: string;
-
-  @OneToMany(() => DmnDecision, decision => decision.deployment)
-  decisions: DmnDecision[];
-
-  @OneToMany(() => DmnResource, resource => resource.deployment)
-  resources: DmnResource[];
-}
-
-@Entity('dmn_resource')
-export class DmnResource extends BaseEntity {
-  @Column({ name: 'name', length: 256 })
-  name: string;
-
-  @Column({ name: 'deployment_id', length: 64 })
-  @Index()
-  deploymentId: string;
-
-  @Column({ name: 'content', type: 'longblob' })
-  content: Buffer;
-}
-```
-
-### 3.3 历史执行记录实体
-
-```typescript
-// dmn/entities/historic-decision-execution.entity.ts
-import { Entity, Column, Index } from 'typeorm';
-import { BaseEntity } from '../../common/entities/base.entity';
-
-@Entity('dmn_historic_decision_execution')
-export class HistoricDecisionExecution extends BaseEntity {
-  @Column({ name: 'decision_key', length: 64 })
-  @Index()
-  decisionKey: string;
-
-  @Column({ name: 'decision_name', length: 128, nullable: true })
-  decisionName: string;
-
-  @Column({ name: 'decision_version', type: 'int' })
-  decisionVersion: number;
-
-  @Column({ name: 'process_instance_id', length: 64, nullable: true })
-  @Index()
-  processInstanceId: string;
-
-  @Column({ name: 'execution_id', length: 64, nullable: true })
-  executionId: string;
-
-  @Column({ name: 'activity_id', length: 64, nullable: true })
-  activityId: string;
-
-  @Column({ name: 'scope_type', length: 20, nullable: true })
-  scopeType: string;
-
-  @Column({ name: 'tenant_id', length: 64, nullable: true })
-  tenantId: string;
-
-  @Column({ name: 'user_id', length: 64, nullable: true })
-  userId: string;
-
-  @Column({ name: 'start_time', type: 'datetime' })
-  startTime: Date;
-
-  @Column({ name: 'end_time', type: 'datetime', nullable: true })
-  endTime: Date;
-
-  @Column({ name: 'input_variables', type: 'json', nullable: true })
-  inputVariables: Record<string, any>;
-
-  @Column({ name: 'output_variables', type: 'json', nullable: true })
-  outputVariables: Record<string, any>;
-
-  @Column({ name: 'decision_result', type: 'json', nullable: true })
-  decisionResult: Record<string, any>[];
-
-  @Column({ name: 'audit_trail', type: 'json', nullable: true })
-  auditTrail: DecisionExecutionAuditContainer;
-
-  @Column({ name: 'failed', type: 'tinyint', width: 1, default: 0 })
-  failed: boolean;
-
-  @Column({ name: 'exception_message', type: 'text', nullable: true })
-  exceptionMessage: string;
-}
-
-export interface DecisionExecutionAuditContainer {
-  decisionKey: string;
-  decisionName: string;
-  startTime: Date;
-  endTime?: Date;
-  failed: boolean;
-  exceptionMessage?: string;
-  ruleEntries: RuleAuditEntry[];
-  inputEntries: InputAuditEntry[];
-  outputEntries: OutputAuditEntry[];
-  decisionResult?: Record<string, any>[];
-}
-
-export interface RuleAuditEntry {
-  ruleNumber: number;
-  ruleId: string;
-  isValid: boolean;
-  inputEntries: InputEntryAudit[];
-  outputEntries: OutputEntryAudit[];
-}
-
-export interface InputAuditEntry {
-  clauseId: string;
-  clauseName: string;
-  expression: string;
-}
-
-export interface OutputAuditEntry {
-  clauseId: string;
-  clauseName: string;
-  typeRef: string;
-}
-
-export interface InputEntryAudit {
-  entryId: string;
-  expression: string;
-  result: boolean;
-}
-
-export interface OutputEntryAudit {
-  entryId: string;
-  expression: string;
-  result: any;
-}
-```
-
----
-
-## 四、命中策略（Hit Policy）设计
-
-### 4.1 命中策略类型
-
-| 命中策略 | 描述 | 使用场景 |
-|---------|------|---------|
-| **UNIQUE** | 只能有一条规则匹配，多条匹配则报错 | 互斥规则场景 |
-| **FIRST** | 返回第一条匹配的规则 | 优先级规则 |
-| **PRIORITY** | 按输出优先级返回最高优先级结果 | 有优先级的决策 |
-| **ANY** | 允许多条匹配，但输出必须相同 | 宽松匹配场景 |
-| **COLLECT** | 收集所有匹配规则的输出 | 多结果场景 |
-| **RULE ORDER** | 按规则顺序返回所有匹配结果 | 顺序敏感场景 |
-| **OUTPUT ORDER** | 按输出值排序返回所有匹配结果 | 需要排序的场景 |
-
-### 4.2 命中策略实现
+Flowable采用行为分离设计，将命中策略的不同职责拆分为多个接口：
 
 ```typescript
 // dmn/services/hit-policy/hit-policy-behavior.ts
+
+/**
+ * 命中策略基础接口
+ */
 export interface HitPolicyBehavior {
   getHitPolicyName(): string;
-  shouldContinueEvaluating(ruleResult: boolean): boolean;
-  evaluateRuleValidity(ruleNumber: number, executionContext: RuleExecutionContext): void;
-  composeOutput(outputVariableId: string, executionVariable: any, executionContext: RuleExecutionContext): void;
-  composeDecisionResults?(executionContext: RuleExecutionContext): void;
 }
 
+/**
+ * 继续评估行为接口
+ * 控制找到匹配规则后是否继续评估后续规则
+ */
+export interface ContinueEvaluatingBehavior extends HitPolicyBehavior {
+  shouldContinueEvaluating(ruleResult: boolean): boolean;
+}
+
+/**
+ * 评估规则有效性行为接口
+ * 用于UNIQUE等需要验证规则唯一性的策略
+ */
+export interface EvaluateRuleValidityBehavior extends HitPolicyBehavior {
+  evaluateRuleValidity(ruleNumber: number, executionContext: RuleExecutionContext): void;
+}
+
+/**
+ * 组装规则结果行为接口
+ * 处理单个规则的输出结果
+ */
+export interface ComposeRuleResultBehavior extends HitPolicyBehavior {
+  composeRuleResult(ruleNumber: number, outputName: string, outputValue: any, executionContext: RuleExecutionContext): void;
+}
+
+/**
+ * 组装决策结果行为接口
+ * 处理最终决策结果的组装
+ */
+export interface ComposeDecisionResultBehavior extends HitPolicyBehavior {
+  composeDecisionResults(executionContext: RuleExecutionContext): void;
+  updateStackWithDecisionResults(decisionResults: Record<string, any>[], executionContext: RuleExecutionContext): void;
+}
+```
+
+### 3.4 抽象命中策略基类
+
+```typescript
+// dmn/services/hit-policy/abstract-hit-policy.ts
+
+/**
+ * 命中策略抽象基类（与Flowable AbstractHitPolicy保持一致）
+ */
+export abstract class AbstractHitPolicy implements 
+  ContinueEvaluatingBehavior, 
+  ComposeRuleResultBehavior, 
+  ComposeDecisionResultBehavior {
+  
+  protected multipleResults: boolean = false;
+
+  constructor();
+  constructor(multipleResults: boolean);
+  constructor(multipleResults?: boolean) {
+    if (multipleResults !== undefined) {
+      this.multipleResults = multipleResults;
+    }
+  }
+
+  /**
+   * 获取命中策略名称
+   */
+  abstract getHitPolicyName(): string;
+
+  /**
+   * 默认继续评估行为：继续评估所有规则
+   */
+  shouldContinueEvaluating(ruleResult: boolean): boolean {
+    return true;
+  }
+
+  /**
+   * 默认规则结果组装：添加到规则结果集合
+   */
+  composeRuleResult(ruleNumber: number, outputName: string, outputValue: any, executionContext: RuleExecutionContext): void {
+    executionContext.addRuleResult(ruleNumber, outputName, outputValue);
+  }
+
+  /**
+   * 默认决策结果组装：将所有规则结果转为决策结果
+   */
+  composeDecisionResults(executionContext: RuleExecutionContext): void {
+    const decisionResults = Array.from(executionContext.getRuleResults().values());
+    this.updateStackWithDecisionResults(decisionResults, executionContext);
+    
+    const auditContainer = executionContext.getAuditContainer();
+    auditContainer.decisionResult = decisionResults;
+    auditContainer.multipleResults = this.multipleResults;
+  }
+
+  /**
+   * 更新执行堆栈变量
+   */
+  updateStackWithDecisionResults(decisionResults: Record<string, any>[], executionContext: RuleExecutionContext): void {
+    decisionResults.forEach(result => {
+      Object.entries(result).forEach(([key, value]) => {
+        executionContext.getStackVariables().set(key, value);
+      });
+    });
+  }
+}
+```
+
+### 3.5 具体命中策略实现
+
+#### 3.5.1 UNIQUE策略
+
+```typescript
 // dmn/services/hit-policy/hit-policy-unique.ts
-import { HitPolicyBehavior, RuleExecutionContext } from './hit-policy-behavior';
-import { FlowableException } from '../../../common/exceptions/flowable.exception';
 
-export class HitPolicyUnique implements HitPolicyBehavior {
-  private matchedRules: number[] = [];
-
+/**
+ * UNIQUE命中策略（与Flowable HitPolicyUnique保持一致）
+ * 只允许一条规则匹配，多条匹配时根据strictMode抛出异常或记录警告
+ */
+export class HitPolicyUnique extends AbstractHitPolicy implements EvaluateRuleValidityBehavior {
+  
   getHitPolicyName(): string {
     return 'UNIQUE';
   }
 
-  shouldContinueEvaluating(ruleResult: boolean): boolean {
-    return true; // 继续评估所有规则以验证唯一性
-  }
-
+  /**
+   * 评估规则有效性
+   * 检查是否有多条规则匹配
+   */
   evaluateRuleValidity(ruleNumber: number, executionContext: RuleExecutionContext): void {
-    if (this.matchedRules.includes(ruleNumber)) {
-      return; // 已经匹配过
-    }
-
-    this.matchedRules.push(ruleNumber);
-
-    if (this.matchedRules.length > 1) {
-      throw new FlowableException(
-        `HitPolicy UNIQUE: 多条规则匹配 (规则 ${this.matchedRules.join(', ')})`
-      );
+    const ruleExecutions = executionContext.getAuditContainer().ruleExecutions;
+    
+    for (const [entryRuleNumber, ruleExecution] of Object.entries(ruleExecutions)) {
+      const entryRuleNum = parseInt(entryRuleNumber);
+      if (entryRuleNum !== ruleNumber && ruleExecution.isValid) {
+        const hitPolicyViolatedMessage = 
+          `HitPolicy UNIQUE violated; at least rule ${ruleNumber} and rule ${entryRuleNum} are valid.`;
+        
+        if (executionContext.isStrictMode()) {
+          // 严格模式：抛出异常
+          ruleExecutions[ruleNumber].exceptionMessage = hitPolicyViolatedMessage;
+          ruleExecutions[entryRuleNum].exceptionMessage = hitPolicyViolatedMessage;
+          throw new FlowableException('HitPolicy UNIQUE violated.');
+        } else {
+          // 非严格模式：记录验证消息
+          ruleExecutions[ruleNumber].validationMessage = hitPolicyViolatedMessage;
+          ruleExecutions[entryRuleNum].validationMessage = hitPolicyViolatedMessage;
+          break;
+        }
+      }
     }
   }
 
-  composeOutput(outputVariableId: string, executionVariable: any, executionContext: RuleExecutionContext): void {
-    // 直接设置输出
-    executionContext.setOutputVariable(outputVariableId, executionVariable);
-  }
-
+  /**
+   * 组装决策结果
+   * 非严格模式下，多条匹配时取最后一个有效结果
+   */
   composeDecisionResults(executionContext: RuleExecutionContext): void {
-    // UNIQUE策略只产生单个结果
-    const result = executionContext.getOutputVariables();
-    executionContext.setDecisionResult([result]);
+    const ruleResults = Array.from(executionContext.getRuleResults().values());
+    let decisionResults: Record<string, any>[];
+
+    if (ruleResults.length > 1 && !executionContext.isStrictMode()) {
+      // 非严格模式：合并所有结果，取最后一个有效值
+      const lastResult: Record<string, any> = {};
+      
+      for (const ruleResult of ruleResults) {
+        for (const [key, value] of Object.entries(ruleResult)) {
+          if (value !== null && value !== undefined) {
+            lastResult[key] = value;
+          }
+        }
+      }
+      
+      executionContext.getAuditContainer().validationMessage = 
+        'HitPolicy UNIQUE violated; multiple valid rules. Setting last valid rule result as final result.';
+      decisionResults = [lastResult];
+    } else {
+      decisionResults = ruleResults;
+    }
+
+    this.updateStackWithDecisionResults(decisionResults, executionContext);
+    executionContext.getAuditContainer().decisionResult = decisionResults;
   }
 }
+```
 
+#### 3.5.2 FIRST策略
+
+```typescript
 // dmn/services/hit-policy/hit-policy-first.ts
-export class HitPolicyFirst implements HitPolicyBehavior {
-  private hasMatched = false;
 
+/**
+ * FIRST命中策略（与Flowable HitPolicyFirst保持一致）
+ * 返回第一条匹配的规则，找到后停止评估
+ */
+export class HitPolicyFirst extends AbstractHitPolicy {
+  
   getHitPolicyName(): string {
     return 'FIRST';
   }
 
+  /**
+   * 找到匹配规则后停止评估
+   */
   shouldContinueEvaluating(ruleResult: boolean): boolean {
-    if (ruleResult) {
-      this.hasMatched = true;
-      return false; // 找到第一条匹配后停止
-    }
-    return true;
-  }
-
-  evaluateRuleValidity(ruleNumber: number, executionContext: RuleExecutionContext): void {
-    // FIRST策略不需要额外验证
-  }
-
-  composeOutput(outputVariableId: string, executionVariable: any, executionContext: RuleExecutionContext): void {
-    if (!this.hasMatched) {
-      return;
-    }
-    executionContext.setOutputVariable(outputVariableId, executionVariable);
-  }
-
-  composeDecisionResults(executionContext: RuleExecutionContext): void {
-    const result = executionContext.getOutputVariables();
-    executionContext.setDecisionResult([result]);
+    return !ruleResult; // 如果规则匹配，停止评估
   }
 }
+```
 
+#### 3.5.3 COLLECT策略
+
+```typescript
 // dmn/services/hit-policy/hit-policy-collect.ts
-export class HitPolicyCollect implements HitPolicyBehavior {
-  private results: Map<string, any[]> = new Map();
 
+/**
+ * COLLECT命中策略（与Flowable HitPolicyCollect保持一致）
+ * 收集所有匹配规则的输出，支持聚合器
+ */
+export class HitPolicyCollect extends AbstractHitPolicy {
+  
   getHitPolicyName(): string {
     return 'COLLECT';
   }
 
-  shouldContinueEvaluating(ruleResult: boolean): boolean {
-    return true; // 收集所有匹配规则
-  }
-
-  evaluateRuleValidity(ruleNumber: number, executionContext: RuleExecutionContext): void {
-    // COLLECT策略允许任意数量匹配
-  }
-
-  composeOutput(outputVariableId: string, executionVariable: any, executionContext: RuleExecutionContext): void {
-    if (!this.results.has(outputVariableId)) {
-      this.results.set(outputVariableId, []);
+  /**
+   * 组装决策结果
+   * 支持无聚合器和有聚合器两种模式
+   */
+  composeDecisionResults(executionContext: RuleExecutionContext): void {
+    const decisionResults: Record<string, any>[] = [];
+    const ruleResults = executionContext.getRuleResults();
+    
+    if (ruleResults && ruleResults.size > 0) {
+      const aggregator = executionContext.getAggregator();
+      
+      if (aggregator === null || aggregator === undefined) {
+        // 无聚合器：返回所有匹配结果
+        decisionResults.push(...Array.from(ruleResults.values()));
+      } else {
+        // 有聚合器：执行聚合计算
+        const outputValuesEntry = this.composeOutputValues(executionContext);
+        
+        if (outputValuesEntry) {
+          const [outputName, values] = outputValuesEntry;
+          let aggregatedValue: number;
+          
+          switch (aggregator) {
+            case 'SUM':
+              aggregatedValue = this.aggregateSum(values);
+              break;
+            case 'MIN':
+              aggregatedValue = this.aggregateMin(values);
+              break;
+            case 'MAX':
+              aggregatedValue = this.aggregateMax(values);
+              break;
+            case 'COUNT':
+              aggregatedValue = this.aggregateCount(values);
+              break;
+            default:
+              throw new FlowableException(`Unknown aggregator: ${aggregator}`);
+          }
+          
+          decisionResults.push({ [outputName]: aggregatedValue });
+        }
+      }
     }
-    this.results.get(outputVariableId)!.push(executionVariable);
+
+    this.updateStackWithDecisionResults(decisionResults, executionContext);
+    
+    executionContext.getAuditContainer().decisionResult = decisionResults;
+    // 无聚合器时返回多个结果
+    executionContext.getAuditContainer().multipleResults = 
+      (aggregator === null || aggregator === undefined);
+  }
+
+  /**
+   * 组装输出值列表
+   */
+  private composeOutputValues(executionContext: RuleExecutionContext): [string, number[]] | null {
+    let ruleResults = Array.from(executionContext.getRuleResults().values());
+    
+    if (executionContext.isForceDMN11()) {
+      // DMN 1.1模式：去重
+      const uniqueResults = new Set(ruleResults.map(r => JSON.stringify(r)));
+      ruleResults = Array.from(uniqueResults).map(s => JSON.parse(s));
+    }
+    
+    return this.createOutputDoubleValues(ruleResults);
+  }
+
+  /**
+   * 创建输出数值列表
+   */
+  private createOutputDoubleValues(ruleResults: Record<string, any>[]): [string, number[]] | null {
+    const distinctOutputValues: Map<string, number[]> = new Map();
+    
+    for (const ruleResult of ruleResults) {
+      for (const [key, value] of Object.entries(ruleResult)) {
+        if (!distinctOutputValues.has(key)) {
+          distinctOutputValues.set(key, []);
+        }
+        distinctOutputValues.get(key)!.push(value as number);
+      }
+    }
+    
+    // 返回第一个输出子句的值
+    if (distinctOutputValues.size > 0) {
+      const firstEntry = distinctOutputValues.entries().next().value;
+      return [firstEntry[0], firstEntry[1]];
+    }
+    
+    return null;
+  }
+
+  private aggregateSum(values: number[]): number {
+    return values.reduce((sum, val) => sum + val, 0);
+  }
+
+  private aggregateMin(values: number[]): number {
+    return Math.min(...values);
+  }
+
+  private aggregateMax(values: number[]): number {
+    return Math.max(...values);
+  }
+
+  private aggregateCount(values: number[]): number {
+    return values.length;
+  }
+}
+```
+
+#### 3.5.4 ANY策略
+
+```typescript
+// dmn/services/hit-policy/hit-policy-any.ts
+
+/**
+ * ANY命中策略（与Flowable HitPolicyAny保持一致）
+ * 允许多条匹配，但所有输出必须相同
+ */
+export class HitPolicyAny extends AbstractHitPolicy {
+  
+  getHitPolicyName(): string {
+    return 'ANY';
   }
 
   composeDecisionResults(executionContext: RuleExecutionContext): void {
-    const decisionResult: Record<string, any>[] = [];
+    const ruleResults = executionContext.getRuleResults();
+    let validationFailed = false;
     
-    // 将收集的结果转换为决策结果数组
-    const maxLen = Math.max(...Array.from(this.results.values()).map(arr => arr.length));
+    // 检查所有匹配规则的输出是否相同
+    const ruleResultsArray = Array.from(ruleResults.entries());
     
-    for (let i = 0; i < maxLen; i++) {
-      const resultItem: Record<string, any> = {};
-      for (const [key, values] of this.results) {
-        resultItem[key] = values[i];
+    for (let i = 0; i < ruleResultsArray.length; i++) {
+      for (let j = i + 1; j < ruleResultsArray.length; j++) {
+        const [ruleNumber1, outputValues1] = ruleResultsArray[i];
+        const [ruleNumber2, outputValues2] = ruleResultsArray[j];
+        
+        // 比较输出值
+        for (const [outputName, value1] of Object.entries(outputValues1)) {
+          const value2 = outputValues2[outputName];
+          
+          if (value1 !== value2) {
+            const hitPolicyViolatedMessage = 
+              `HitPolicy ANY violated; both rule ${ruleNumber1} and ${ruleNumber2} are valid but output ${outputName} has different values.`;
+            
+            if (executionContext.isStrictMode()) {
+              executionContext.getAuditContainer().ruleExecutions[ruleNumber1].exceptionMessage = hitPolicyViolatedMessage;
+              executionContext.getAuditContainer().ruleExecutions[ruleNumber2].exceptionMessage = hitPolicyViolatedMessage;
+              throw new FlowableException('HitPolicy ANY violated.');
+            } else {
+              executionContext.getAuditContainer().ruleExecutions[ruleNumber1].validationMessage = hitPolicyViolatedMessage;
+              executionContext.getAuditContainer().ruleExecutions[ruleNumber2].validationMessage = hitPolicyViolatedMessage;
+              validationFailed = true;
+            }
+          }
+        }
       }
-      decisionResult.push(resultItem);
     }
     
-    executionContext.setDecisionResult(decisionResult);
+    // 非严格模式下，取最后一个有效结果
+    if (!executionContext.isStrictMode() && validationFailed) {
+      executionContext.getAuditContainer().validationMessage = 
+        'HitPolicy ANY violated; multiple valid rules with different outcomes. Setting last valid rule result as final result.';
+    }
+    
+    const decisionResults = [ruleResultsArray[ruleResultsArray.length - 1]?.[1] || {}];
+    this.updateStackWithDecisionResults(decisionResults, executionContext);
+    executionContext.getAuditContainer().decisionResult = decisionResults;
   }
 }
+```
 
-// dmn/services/hit-policy/hit-policy-priority.ts
-export class HitPolicyPriority implements HitPolicyBehavior {
-  private matchedRules: Array<{ ruleNumber: number; priority: number; output: Record<string, any> }> = [];
+#### 3.5.5 RULE ORDER策略
 
-  constructor(private outputPriorities: Map<string, number[]>) {
-    // outputPriorities: 输出子句ID -> 优先级值数组
+```typescript
+// dmn/services/hit-policy/hit-policy-rule-order.ts
+
+/**
+ * RULE ORDER命中策略（与Flowable HitPolicyRuleOrder保持一致）
+ * 按规则顺序返回所有匹配结果
+ */
+export class HitPolicyRuleOrder extends AbstractHitPolicy {
+  
+  constructor() {
+    super(true); // 多结果模式
   }
 
+  getHitPolicyName(): string {
+    return 'RULE ORDER';
+  }
+}
+```
+
+#### 3.5.6 OUTPUT ORDER策略
+
+```typescript
+// dmn/services/hit-policy/hit-policy-output-order.ts
+
+/**
+ * OUTPUT ORDER命中策略（与Flowable HitPolicyOutputOrder保持一致）
+ * 按输出值优先级排序返回所有匹配结果
+ */
+export class HitPolicyOutputOrder extends AbstractHitPolicy {
+  
+  constructor() {
+    super(true); // 多结果模式
+  }
+
+  getHitPolicyName(): string {
+    return 'OUTPUT ORDER';
+  }
+
+  composeDecisionResults(executionContext: RuleExecutionContext): void {
+    const decisionResults: Record<string, any>[] = [];
+    const ruleResults = Array.from(executionContext.getRuleResults().values());
+    
+    if (ruleResults.length > 0) {
+      // 获取输出值优先级列表
+      const outputValues = executionContext.getOutputClauseOutputValues();
+      const outputValuesPresent = outputValues && outputValues.length > 0;
+      
+      if (!outputValuesPresent) {
+        const hitPolicyViolatedMessage = 'HitPolicy OUTPUT ORDER violated; no output values present';
+        
+        if (executionContext.isStrictMode()) {
+          throw new FlowableException(hitPolicyViolatedMessage);
+        } else {
+          executionContext.getAuditContainer().validationMessage = 
+            `${hitPolicyViolatedMessage}. Setting first valid result as final result.`;
+          decisionResults.push(...ruleResults);
+        }
+      } else {
+        // 按输出值优先级排序
+        const sortedResults = this.sortByOutputValues(ruleResults, outputValues!);
+        decisionResults.push(...sortedResults);
+      }
+    }
+
+    this.updateStackWithDecisionResults(decisionResults, executionContext);
+    executionContext.getAuditContainer().decisionResult = decisionResults;
+  }
+
+  /**
+   * 按输出值优先级排序
+   */
+  private sortByOutputValues(
+    results: Record<string, any>[], 
+    outputValues: any[]
+  ): Record<string, any>[] {
+    return results.sort((a, b) => {
+      const aValue = Object.values(a)[0];
+      const bValue = Object.values(b)[0];
+      
+      const aIndex = outputValues.indexOf(aValue);
+      const bIndex = outputValues.indexOf(bValue);
+      
+      // 优先级高的（索引小的）排在前面
+      return aIndex - bIndex;
+    });
+  }
+}
+```
+
+#### 3.5.7 PRIORITY策略
+
+```typescript
+// dmn/services/hit-policy/hit-policy-priority.ts
+
+/**
+ * PRIORITY命中策略（与Flowable HitPolicyPriority保持一致）
+ * 按输出优先级返回最高优先级结果
+ */
+export class HitPolicyPriority extends AbstractHitPolicy {
+  
   getHitPolicyName(): string {
     return 'PRIORITY';
   }
 
-  shouldContinueEvaluating(ruleResult: boolean): boolean {
-    return true; // 需要评估所有规则以确定最高优先级
-  }
-
-  evaluateRuleValidity(ruleNumber: number, executionContext: RuleExecutionContext): void {
-    // PRIORITY策略允许任意数量匹配
-  }
-
-  composeOutput(outputVariableId: string, executionVariable: any, executionContext: RuleExecutionContext): void {
-    const currentOutput = executionContext.getCurrentOutput();
-    const priority = this.calculatePriority(outputVariableId, executionVariable);
-    
-    this.matchedRules.push({
-      ruleNumber: executionContext.getCurrentRuleNumber(),
-      priority,
-      output: { ...currentOutput, [outputVariableId]: executionVariable },
-    });
-  }
-
-  private calculatePriority(outputVariableId: string, value: any): number {
-    const priorities = this.outputPriorities.get(outputVariableId);
-    if (!priorities) {
-      return 0;
-    }
-    const index = priorities.indexOf(value);
-    return index >= 0 ? priorities.length - index : 0;
-  }
-
   composeDecisionResults(executionContext: RuleExecutionContext): void {
-    // 按优先级排序，返回最高优先级的结果
-    this.matchedRules.sort((a, b) => b.priority - a.priority);
+    const ruleResults = Array.from(executionContext.getRuleResults().values());
     
-    if (this.matchedRules.length > 0) {
-      executionContext.setDecisionResult([this.matchedRules[0].output]);
-    } else {
-      executionContext.setDecisionResult([]);
+    if (ruleResults.length === 0) {
+      this.updateStackWithDecisionResults([], executionContext);
+      executionContext.getAuditContainer().decisionResult = [];
+      return;
     }
+    
+    // 获取输出值优先级列表
+    const outputValues = executionContext.getOutputClauseOutputValues();
+    const outputValuesPresent = outputValues && outputValues.length > 0;
+    
+    if (!outputValuesPresent) {
+      const hitPolicyViolatedMessage = 'HitPolicy PRIORITY violated; no output values present';
+      
+      if (executionContext.isStrictMode()) {
+        throw new FlowableException(hitPolicyViolatedMessage);
+      } else {
+        executionContext.getAuditContainer().validationMessage = 
+          `${hitPolicyViolatedMessage}. Setting first valid result as final result.`;
+        this.updateStackWithDecisionResults([ruleResults[0]], executionContext);
+        executionContext.getAuditContainer().decisionResult = [ruleResults[0]];
+        return;
+      }
+    }
+    
+    // 按优先级排序，取最高优先级结果
+    const sortedResults = this.sortByOutputValues(ruleResults, outputValues!);
+    const decisionResults = [sortedResults[0]];
+    
+    this.updateStackWithDecisionResults(decisionResults, executionContext);
+    executionContext.getAuditContainer().decisionResult = decisionResults;
+  }
+
+  private sortByOutputValues(
+    results: Record<string, any>[], 
+    outputValues: any[]
+  ): Record<string, any>[] {
+    return results.sort((a, b) => {
+      const aValue = Object.values(a)[0];
+      const bValue = Object.values(b)[0];
+      
+      const aIndex = outputValues.indexOf(aValue);
+      const bIndex = outputValues.indexOf(bValue);
+      
+      return aIndex - bIndex;
+    });
   }
 }
 ```
 
 ---
 
-## 五、规则引擎执行器设计
+## 四、规则引擎执行器设计
 
-### 5.1 规则引擎执行服务
+### 4.1 规则引擎执行服务（与Flowable保持一致）
 
 ```typescript
 // dmn/services/rule-engine-executor.service.ts
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
-import { DmnDecision, DecisionRule, InputClause, OutputClause } from '../entities/decision.entity';
-import { 
-  DecisionExecutionAuditContainer, 
-  RuleAuditEntry,
-  InputEntryAudit,
-  OutputEntryAudit,
-} from '../entities/historic-decision-execution.entity';
-import { HitPolicyBehavior } from './hit-policy/hit-policy-behavior';
-import { ExpressionEvaluatorService } from '../../core/services/expression-evaluator.service';
-import { EventBusService } from '../../core/services/event-bus.service';
+import { Decision, DecisionRule, DecisionTable } from '../models/decision.model';
+import { DecisionExecutionAuditContainer } from '../models/audit.model';
+import { AbstractHitPolicy } from './hit-policy/abstract-hit-policy';
+import { ExpressionManager } from '../../core/services/expression-manager.service';
 
-export interface ExecuteDecisionContext {
-  decisionKey: string;
-  decisionId?: string;
-  tenantId?: string;
-  variables: Record<string, any>;
-  processInstanceId?: string;
-  executionId?: string;
-  activityId?: string;
-  userId?: string;
-  disableHistory?: boolean;
-}
-
+/**
+ * 规则执行上下文（与Flowable ELExecutionContext对应）
+ */
 export interface RuleExecutionContext {
-  decision: DmnDecision;
-  variables: Record<string, any>;
-  stackVariables: Record<string, any>;
+  decision: Decision;
+  variables: Map<string, any>;
+  stackVariables: Map<string, any>;
   auditContainer: DecisionExecutionAuditContainer;
   ruleResults: Map<number, Record<string, any>>;
-  decisionResult: Record<string, any>[];
-  currentRuleNumber: number;
-  currentOutput: Record<string, any>;
+  aggregator: string | null;
+  strictMode: boolean;
+  forceDMN11: boolean;
+  
+  addRuleResult(ruleNumber: number, outputName: string, outputValue: any): void;
+  getRuleResults(): Map<number, Record<string, any>>;
+  getStackVariables(): Map<string, any>;
+  getAuditContainer(): DecisionExecutionAuditContainer;
+  getAggregator(): string | null;
+  isStrictMode(): boolean;
+  isForceDMN11(): boolean;
+  getOutputClauseOutputValues(): any[] | null;
 }
 
+/**
+ * 规则引擎执行器（与Flowable RuleEngineExecutorImpl对应）
+ */
 @Injectable()
-export class RuleEngineExecutorService {
-  private readonly logger = new Logger(RuleEngineExecutorService.name);
+export class RuleEngineExecutor {
+  private readonly logger = new Logger(RuleEngineExecutor.name);
   
-  private hitPolicyBehaviors: Map<string, HitPolicyBehavior>;
+  private hitPolicyBehaviors: Map<string, AbstractHitPolicy>;
+  private expressionManager: ExpressionManager;
+  private strictMode: boolean = true;
 
   constructor(
-    @InjectRepository(DmnDecision)
-    private readonly decisionRepository: Repository<DmnDecision>,
-    private readonly expressionEvaluator: ExpressionEvaluatorService,
-    private readonly eventBus: EventBusService,
-    // 注入所有命中策略
-    hitPolicyUnique: HitPolicyBehavior,
-    hitPolicyFirst: HitPolicyBehavior,
-    hitPolicyPriority: HitPolicyBehavior,
-    hitPolicyAny: HitPolicyBehavior,
-    hitPolicyCollect: HitPolicyBehavior,
+    hitPolicyBehaviors: Map<string, AbstractHitPolicy>,
+    expressionManager: ExpressionManager,
+    strictMode: boolean = true
   ) {
-    this.hitPolicyBehaviors = new Map([
-      ['UNIQUE', hitPolicyUnique],
-      ['FIRST', hitPolicyFirst],
-      ['PRIORITY', hitPolicyPriority],
-      ['ANY', hitPolicyAny],
-      ['COLLECT', hitPolicyCollect],
-    ]);
+    this.hitPolicyBehaviors = hitPolicyBehaviors;
+    this.expressionManager = expressionManager;
+    this.strictMode = strictMode;
   }
 
   /**
-   * 执行决策
+   * 执行决策（与Flowable execute方法对应）
    */
-  async execute(decision: DmnDecision, context: ExecuteDecisionContext): Promise<DecisionExecutionAuditContainer> {
+  execute(decision: Decision, executeDecisionContext: ExecuteDecisionContext): DecisionExecutionAuditContainer {
     if (!decision) {
-      throw new Error('决策不能为空');
+      throw new Error('no decision provided');
     }
 
-    if (!decision.rules || decision.rules.length === 0) {
-      throw new Error('决策表中没有规则');
+    const decisionTable = decision.expression as DecisionTable;
+    if (!decisionTable) {
+      throw new Error('no decision table present in decision');
     }
 
     // 创建执行上下文和审计跟踪
-    const ruleExecutionContext = this.createRuleContext(decision, context);
+    const executionContext = this.createExecutionContext(decision, executeDecisionContext);
 
     try {
       // 健全性检查
-      this.sanityCheckDecisionTable(decision);
+      this.sanityCheckDecisionTable(decisionTable);
 
       // 评估决策表
-      this.evaluateDecisionTable(decision, ruleExecutionContext);
+      this.evaluateDecisionTable(decisionTable, executionContext);
 
     } catch (error) {
-      this.logger.error('决策表执行失败', error);
-      ruleExecutionContext.auditContainer.failed = true;
-      ruleExecutionContext.auditContainer.exceptionMessage = this.getExceptionMessage(error);
+      this.logger.error('decision table execution failed', error);
+      executionContext.getAuditContainer().failed = true;
+      executionContext.getAuditContainer().exceptionMessage = this.getExceptionMessage(error);
     } finally {
       // 结束审计跟踪
-      ruleExecutionContext.auditContainer.endTime = new Date();
+      executionContext.getAuditContainer().endTime = new Date();
     }
 
-    return ruleExecutionContext.auditContainer;
+    return executionContext.getAuditContainer();
   }
 
   /**
-   * 创建规则执行上下文
+   * 评估决策表（与Flowable evaluateDecisionTable方法对应）
    */
-  private createRuleContext(decision: DmnDecision, context: ExecuteDecisionContext): RuleExecutionContext {
-    const auditContainer: DecisionExecutionAuditContainer = {
-      decisionKey: decision.key,
-      decisionName: decision.name,
-      startTime: new Date(),
-      failed: false,
-      ruleEntries: [],
-      inputEntries: [],
-      outputEntries: [],
-    };
-
-    // 添加输入子句审计信息
-    if (decision.inputClauses) {
-      for (const clause of decision.inputClauses) {
-        auditContainer.inputEntries.push({
-          clauseId: clause.id,
-          clauseName: clause.name,
-          expression: clause.inputExpression.text,
-        });
-      }
+  private evaluateDecisionTable(decisionTable: DecisionTable, executionContext: RuleExecutionContext): void {
+    if (!decisionTable.rules || decisionTable.rules.length === 0) {
+      throw new Error('no rules present in table');
     }
 
-    // 添加输出子句审计信息
-    if (decision.outputClauses) {
-      for (const clause of decision.outputClauses) {
-        auditContainer.outputEntries.push({
-          clauseId: clause.id,
-          clauseName: clause.name,
-          typeRef: clause.typeRef,
-        });
-      }
-    }
+    this.logger.debug(`Start table evaluation: ${decisionTable.id}`);
 
-    return {
-      decision,
-      variables: { ...context.variables },
-      stackVariables: { ...context.variables },
-      auditContainer,
-      ruleResults: new Map(),
-      decisionResult: [],
-      currentRuleNumber: 0,
-      currentOutput: {},
-    };
-  }
-
-  /**
-   * 评估决策表
-   */
-  private evaluateDecisionTable(decision: DmnDecision, context: RuleExecutionContext): void {
-    this.logger.debug(`开始评估决策表: ${decision.key}`);
-
-    const hitPolicy = this.getHitPolicyBehavior(decision.hitPolicy);
-    const validRuleOutputs: Map<number, any[]> = new Map();
+    const hitPolicy = this.getHitPolicyBehavior(decisionTable.hitPolicy);
+    const validRuleOutputEntries: Map<number, any[]> = new Map();
 
     // 评估每条规则的条件
-    for (const rule of decision.rules) {
-      const ruleResult = this.executeRule(rule, decision.inputClauses, context);
+    for (const rule of decisionTable.rules) {
+      const ruleResult = this.executeRule(rule, executionContext);
 
       if (ruleResult) {
-        // 评估命中策略有效性
-        if (typeof hitPolicy.evaluateRuleValidity === 'function') {
-          hitPolicy.evaluateRuleValidity(rule.ruleNumber, context);
+        // 评估命中策略有效性（如UNIQUE策略）
+        if (this.isEvaluateRuleValidityBehavior(hitPolicy)) {
+          (hitPolicy as any).evaluateRuleValidity(rule.ruleNumber, executionContext);
         }
 
         // 添加有效规则的输出
-        validRuleOutputs.set(rule.ruleNumber, rule.outputEntries);
+        validRuleOutputEntries.set(rule.ruleNumber, rule.outputEntries);
       }
 
-      // 是否继续评估
-      if (!hitPolicy.shouldContinueEvaluating(ruleResult)) {
-        this.logger.debug(`命中策略 ${decision.hitPolicy} 停止继续评估`);
-        break;
+      // 是否继续评估（如FIRST策略找到匹配后停止）
+      if (this.isContinueEvaluatingBehavior(hitPolicy)) {
+        if (!hitPolicy.shouldContinueEvaluating(ruleResult)) {
+          this.logger.debug(`Stopping execution; hit policy ${decisionTable.hitPolicy} specific behaviour`);
+          break;
+        }
       }
     }
 
     // 组装规则结论
-    for (const [ruleNumber, outputEntries] of validRuleOutputs) {
-      this.executeOutputEntryAction(ruleNumber, outputEntries, decision.outputClauses, decision.hitPolicy, context);
+    for (const [ruleNumber, outputEntries] of validRuleOutputEntries) {
+      this.executeOutputEntryAction(ruleNumber, outputEntries, decisionTable.hitPolicy, executionContext);
     }
 
     // 后处理：组装决策结果
-    if (typeof hitPolicy.composeDecisionResults === 'function') {
-      hitPolicy.composeDecisionResults(context);
+    if (this.isComposeDecisionResultBehavior(hitPolicy)) {
+      hitPolicy.composeDecisionResults!(executionContext);
     }
 
-    // 设置最终结果
-    context.auditContainer.decisionResult = context.decisionResult;
-
-    this.logger.debug(`结束评估决策表: ${decision.key}`);
+    this.logger.debug(`End table evaluation: ${decisionTable.id}`);
   }
 
   /**
-   * 执行单条规则
+   * 执行单条规则（与Flowable executeRule方法对应）
    */
-  private executeRule(
-    rule: DecisionRule,
-    inputClauses: InputClause[],
-    context: RuleExecutionContext,
-  ): boolean {
-    this.logger.debug(`开始评估规则 ${rule.ruleNumber}`);
+  private executeRule(rule: DecisionRule, executionContext: RuleExecutionContext): boolean {
+    this.logger.debug(`Start rule ${rule.ruleNumber} evaluation`);
 
-    context.currentRuleNumber = rule.ruleNumber;
-
-    // 添加规则审计条目
-    const ruleAudit: RuleAuditEntry = {
-      ruleNumber: rule.ruleNumber,
-      ruleId: rule.id,
-      isValid: false,
-      inputEntries: [],
-      outputEntries: [],
-    };
-    context.auditContainer.ruleEntries.push(ruleAudit);
+    // 添加审计条目
+    executionContext.getAuditContainer().addRuleEntry(rule);
 
     let conditionResult = false;
 
     // 遍历所有输入条件
-    for (const inputEntry of rule.inputEntries) {
-      const inputClause = inputClauses.find(c => c.id === inputEntry.clauseId);
-      if (!inputClause) {
-        continue;
-      }
-
+    for (const conditionContainer of rule.inputEntries) {
+      const inputEntryId = conditionContainer.id;
       conditionResult = false;
 
       try {
-        // 如果条件为空或"-"，则结果为TRUE
-        if (!inputEntry.text || inputEntry.text === '-') {
+        const inputEntryText = conditionContainer.text;
+        
+        // 如果条件为空或"-"，结果为TRUE
+        if (!inputEntryText || inputEntryText === '-') {
           conditionResult = true;
         } else {
-          conditionResult = this.executeInputExpressionEvaluation(inputClause, inputEntry, context);
+          conditionResult = this.executeInputExpressionEvaluation(conditionContainer, executionContext);
         }
 
-        // 添加输入条目审计
-        ruleAudit.inputEntries.push({
-          entryId: inputEntry.id,
-          expression: inputEntry.text,
-          result: conditionResult,
-        });
+        // 添加审计条目
+        executionContext.getAuditContainer().addInputEntry(
+          rule.ruleNumber, 
+          inputEntryId, 
+          conditionResult
+        );
 
-        this.logger.debug(`输入条目 ${inputEntry.id}: ${inputClause.inputExpression.text} ${inputEntry.text} = ${conditionResult}`);
+        this.logger.debug(`input entry ${inputEntryId}: ${conditionContainer.inputExpression?.text} ${inputEntryText} = ${conditionResult}`);
 
       } catch (error) {
-        ruleAudit.inputEntries.push({
-          entryId: inputEntry.id,
-          expression: inputEntry.text,
-          result: false,
-        });
+        executionContext.getAuditContainer().addInputEntry(
+          rule.ruleNumber, 
+          inputEntryId, 
+          this.getExceptionMessage(error), 
+          null
+        );
         throw error;
       }
 
@@ -818,11 +889,12 @@ export class RuleEngineExecutorService {
     }
 
     if (conditionResult) {
-      ruleAudit.isValid = true;
-      context.auditContainer.ruleEntries.find(r => r.ruleNumber === rule.ruleNumber)!.isValid = true;
+      executionContext.getAuditContainer().markRuleValid(rule.ruleNumber);
     }
 
-    this.logger.debug(`结束评估规则 ${rule.ruleNumber}: ${conditionResult}`);
+    executionContext.getAuditContainer().markRuleEnd(rule.ruleNumber);
+
+    this.logger.debug(`End rule ${rule.ruleNumber} evaluation`);
     return conditionResult;
   }
 
@@ -830,277 +902,244 @@ export class RuleEngineExecutorService {
    * 执行输入表达式评估
    */
   private executeInputExpressionEvaluation(
-    inputClause: InputClause,
-    inputEntry: { text: string },
-    context: RuleExecutionContext,
+    conditionContainer: any, 
+    executionContext: RuleExecutionContext
   ): boolean {
-    const inputExpression = inputClause.inputExpression.text;
-    const entryExpression = inputEntry.text;
-
-    // 构建条件表达式
-    const conditionExpression = this.buildConditionExpression(inputExpression, entryExpression);
-
-    // 使用表达式求值器评估
-    return this.expressionEvaluator.evaluateBoolean(conditionExpression, context.stackVariables);
-  }
-
-  /**
-   * 构建条件表达式
-   */
-  private buildConditionExpression(inputExpression: string, entryExpression: string): string {
-    // 处理比较运算符
-    const operators = ['>=', '<=', '!=', '>', '<', '='];
-    
-    for (const op of operators) {
-      if (entryExpression.startsWith(op)) {
-        const value = entryExpression.substring(op.length).trim();
-        return `${inputExpression} ${op} ${this.formatValue(value)}`;
-      }
-    }
-
-    // 处理包含运算符
-    if (entryExpression.startsWith('not(') || entryExpression.startsWith('not (')) {
-      const inner = entryExpression.replace(/^not\s*\(/, '').replace(/\)$/, '');
-      return `!(${this.buildConditionExpression(inputExpression, inner)})`;
-    }
-
-    // 处理范围表达式
-    if (entryExpression.includes('..')) {
-      const [start, end] = entryExpression.split('..').map(s => s.trim());
-      return `(${inputExpression} >= ${this.formatValue(start)} && ${inputExpression} <= ${this.formatValue(end)})`;
-    }
-
-    // 处理枚举值
-    if (entryExpression.includes(',')) {
-      const values = entryExpression.split(',').map(v => v.trim());
-      const formattedValues = values.map(v => this.formatValue(v));
-      return `[${formattedValues.join(', ')}].includes(${inputExpression})`;
-    }
-
-    // 默认等于比较
-    return `${inputExpression} == ${this.formatValue(entryExpression)}`;
-  }
-
-  /**
-   * 格式化值
-   */
-  private formatValue(value: string): string {
-    // 如果是字符串字面量（用引号包围）
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
-      return value;
-    }
-
-    // 如果是数字
-    if (!isNaN(Number(value))) {
-      return value;
-    }
-
-    // 如果是布尔值
-    if (value === 'true' || value === 'false') {
-      return value;
-    }
-
-    // 如果是变量引用
-    if (value.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/)) {
-      return value;
-    }
-
-    // 默认作为字符串处理
-    return `"${value}"`;
+    // 使用表达式管理器执行表达式
+    return this.expressionManager.evaluateBoolean(
+      conditionContainer.inputExpression?.text,
+      conditionContainer.text,
+      executionContext.getStackVariables()
+    );
   }
 
   /**
    * 执行输出条目动作
    */
   private executeOutputEntryAction(
-    ruleNumber: number,
-    outputEntries: any[],
-    outputClauses: OutputClause[],
-    hitPolicy: string,
-    context: RuleExecutionContext,
+    ruleNumber: number, 
+    ruleOutputContainers: any[], 
+    hitPolicy: string, 
+    executionContext: RuleExecutionContext
   ): void {
-    this.logger.debug(`开始处理规则 ${ruleNumber} 的输出`);
+    this.logger.debug('Start conclusion processing');
 
-    context.currentRuleNumber = ruleNumber;
-    context.currentOutput = {};
-
-    for (const outputEntry of outputEntries) {
-      this.composeOutputEntryResult(ruleNumber, outputEntry, outputClauses, hitPolicy, context);
+    for (const clauseContainer of ruleOutputContainers) {
+      this.composeOutputEntryResult(ruleNumber, clauseContainer, hitPolicy, executionContext);
     }
 
-    this.logger.debug(`结束处理规则 ${ruleNumber} 的输出`);
+    this.logger.debug('End conclusion processing');
   }
 
   /**
    * 组装输出条目结果
    */
   private composeOutputEntryResult(
-    ruleNumber: number,
-    outputEntry: any,
-    outputClauses: OutputClause[],
-    hitPolicy: string,
-    context: RuleExecutionContext,
+    ruleNumber: number, 
+    ruleClauseContainer: any, 
+    hitPolicy: string, 
+    executionContext: RuleExecutionContext
   ): void {
-    const outputClause = outputClauses.find(c => c.id === outputEntry.clauseId);
-    if (!outputClause) {
-      return;
-    }
-
+    const outputClause = ruleClauseContainer.outputClause;
     const outputVariableId = outputClause.name;
     const outputVariableType = outputClause.typeRef;
+    const outputEntryExpression = ruleClauseContainer.outputEntry;
 
-    if (outputEntry.text) {
+    this.logger.debug(`Start evaluation conclusion ${outputClause.outputNumber} of valid rule ${ruleNumber}`);
+
+    if (outputEntryExpression?.text) {
+      let executionVariable: any = null;
+      
       try {
         // 执行输出表达式
-        const resultValue = this.expressionEvaluator.evaluate(outputEntry.text, context.stackVariables);
+        const resultValue = this.expressionManager.evaluate(
+          outputEntryExpression.text,
+          executionContext.getStackVariables()
+        );
         
         // 类型转换
-        const executionVariable = this.convertType(resultValue, outputVariableType);
+        executionVariable = this.getExecutionVariable(outputVariableType, resultValue);
 
         // 更新执行上下文
-        context.stackVariables[outputVariableId] = executionVariable;
-        context.currentOutput[outputVariableId] = executionVariable;
+        executionContext.getStackVariables().set(outputVariableId, executionVariable);
 
-        // 调用命中策略处理输出
-        const hitPolicyBehavior = this.getHitPolicyBehavior(hitPolicy);
-        hitPolicyBehavior.composeOutput(outputVariableId, executionVariable, context);
-
-        // 添加审计条目
-        const ruleAudit = context.auditContainer.ruleEntries.find(r => r.ruleNumber === ruleNumber);
-        if (ruleAudit) {
-          ruleAudit.outputEntries.push({
-            entryId: outputEntry.id,
-            expression: outputEntry.text,
-            result: executionVariable,
-          });
+        // 创建结果
+        if (this.isComposeRuleResultBehavior(this.getHitPolicyBehavior(hitPolicy))) {
+          this.getHitPolicyBehavior(hitPolicy).composeRuleResult!(
+            ruleNumber, 
+            outputVariableId, 
+            executionVariable, 
+            executionContext
+          );
         }
 
-        this.logger.debug(`创建输出结果: ${outputVariableId} = ${executionVariable}`);
+        // 添加审计条目
+        executionContext.getAuditContainer().addOutputEntry(
+          ruleNumber, 
+          outputEntryExpression.id, 
+          executionVariable
+        );
+        executionContext.getAuditContainer().addDecisionResultType(outputVariableId, outputVariableType);
+
+        if (executionVariable !== null) {
+          this.logger.debug(`Created conclusion result: ${outputVariableId} with value ${resultValue}`);
+        } else {
+          this.logger.warn('Could not create conclusion result');
+        }
 
       } catch (error) {
         // 清除结果变量
-        context.ruleResults.clear();
+        executionContext.getRuleResults().clear();
 
-        const ruleAudit = context.auditContainer.ruleEntries.find(r => r.ruleNumber === ruleNumber);
-        if (ruleAudit) {
-          ruleAudit.outputEntries.push({
-            entryId: outputEntry.id,
-            expression: outputEntry.text,
-            result: null,
-          });
-        }
+        executionContext.getAuditContainer().addOutputEntry(
+          ruleNumber, 
+          outputEntryExpression.id, 
+          this.getExceptionMessage(error), 
+          executionVariable
+        );
         throw error;
       }
     } else {
-      this.logger.debug(`输出表达式为空`);
+      this.logger.debug('Expression is empty');
+      executionContext.getAuditContainer().addOutputEntry(
+        ruleNumber, 
+        outputEntryExpression.id, 
+        null
+      );
+    }
 
-      const ruleAudit = context.auditContainer.ruleEntries.find(r => r.ruleNumber === ruleNumber);
-      if (ruleAudit) {
-        ruleAudit.outputEntries.push({
-          entryId: outputEntry.id,
-          expression: '',
-          result: null,
-        });
-      }
+    this.logger.debug(`End evaluation conclusion ${outputClause.outputNumber} of valid rule ${ruleNumber}`);
+  }
+
+  /**
+   * 类型转换（与Flowable ExecutionVariableFactory对应）
+   */
+  private getExecutionVariable(typeRef: string, resultValue: any): any {
+    if (resultValue === null || resultValue === undefined) {
+      return resultValue;
+    }
+
+    switch (typeRef?.toLowerCase()) {
+      case 'string':
+        return String(resultValue);
+      case 'number':
+      case 'integer':
+        return Number(resultValue);
+      case 'boolean':
+        return Boolean(resultValue);
+      case 'date':
+        return new Date(resultValue);
+      default:
+        return resultValue;
     }
   }
 
   /**
-   * 类型转换
+   * 决策表健全性检查（与Flowable sanityCheckDecisionTable对应）
    */
-  private convertType(value: any, typeRef: string): any {
-    if (value === null || value === undefined) {
-      return value;
-    }
-
-    switch (typeRef.toLowerCase()) {
-      case 'string':
-        return String(value);
-      case 'number':
-      case 'integer':
-        return Number(value);
-      case 'boolean':
-        return Boolean(value);
-      case 'date':
-        return new Date(value);
-      default:
-        return value;
+  private sanityCheckDecisionTable(decisionTable: DecisionTable): void {
+    // 检查COLLECT策略的聚合配置
+    if (decisionTable.hitPolicy === 'COLLECT' && 
+        decisionTable.aggregation && 
+        decisionTable.outputs) {
+      
+      if (decisionTable.outputs.length > 1) {
+        throw new FlowableException(
+          `HitPolicy: COLLECT has aggregation: ${decisionTable.aggregation} and multiple outputs. This is not supported`
+        );
+      }
+      
+      if (decisionTable.outputs[0].typeRef !== 'number') {
+        throw new FlowableException(
+          `HitPolicy: COLLECT has aggregation: ${decisionTable.aggregation} needs output type number`
+        );
+      }
     }
   }
 
   /**
    * 获取命中策略处理器
    */
-  private getHitPolicyBehavior(hitPolicy: string): HitPolicyBehavior {
+  private getHitPolicyBehavior(hitPolicy: string): AbstractHitPolicy {
     const behavior = this.hitPolicyBehaviors.get(hitPolicy);
+    
     if (!behavior) {
-      throw new Error(`未配置命中策略处理器: ${hitPolicy}`);
+      const errorMessage = `HitPolicy behavior: ${hitPolicy} not configured`;
+      this.logger.error(errorMessage);
+      throw new FlowableException(errorMessage);
     }
+    
     return behavior;
   }
 
   /**
-   * 决策表健全性检查
+   * 行为接口检查方法
    */
-  private sanityCheckDecisionTable(decision: DmnDecision): void {
-    // 检查COLLECT策略的聚合配置
-    if (decision.hitPolicy === 'COLLECT') {
-      // 如果有聚合函数，检查输出类型
-      // 实现聚合检查逻辑
-    }
+  private isContinueEvaluatingBehavior(behavior: AbstractHitPolicy): boolean {
+    return 'shouldContinueEvaluating' in behavior;
+  }
+
+  private isEvaluateRuleValidityBehavior(behavior: AbstractHitPolicy): boolean {
+    return 'evaluateRuleValidity' in behavior;
+  }
+
+  private isComposeRuleResultBehavior(behavior: AbstractHitPolicy): boolean {
+    return 'composeRuleResult' in behavior;
+  }
+
+  private isComposeDecisionResultBehavior(behavior: AbstractHitPolicy): boolean {
+    return 'composeDecisionResults' in behavior;
   }
 
   /**
    * 获取异常消息
    */
-  private getExceptionMessage(error: Error): string {
-    return error.cause?.message || error.message;
+  private getExceptionMessage(error: any): string {
+    if (error.cause?.message) {
+      return error.cause.message;
+    }
+    return error.message || String(error);
   }
 }
 ```
 
 ---
 
-## 六、DMN 服务实现
+## 五、DMN 服务实现
 
-### 6.1 决策服务
+### 5.1 决策服务（与Flowable DmnDecisionService保持一致）
 
 ```typescript
 // dmn/services/dmn-decision.service.ts
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Injectable, Logger } from '@nestjs/common';
 
-import { DmnDecision } from '../entities/decision.entity';
-import { HistoricDecisionExecution } from '../entities/historic-decision-execution.entity';
-import { RuleEngineExecutorService, ExecuteDecisionContext } from './rule-engine-executor.service';
-import { EventBusService } from '../../core/services/event-bus.service';
-
+/**
+ * 决策执行构建器（与Flowable ExecuteDecisionBuilder对应）
+ */
 export interface ExecuteDecisionBuilder {
   decisionKey: string;
-  decisionId?: string;
+  parentDeploymentId?: string;
+  instanceId?: string;          // 流程实例ID
+  executionId?: string;         // 执行ID
+  activityId?: string;          // 活动ID
+  scopeType?: string;           // 作用域类型
   tenantId?: string;
+  fallbackToDefaultTenant?: boolean;  // 是否回退到默认租户
   variables: Record<string, any>;
-  processInstanceId?: string;
-  executionId?: string;
-  activityId?: string;
-  userId?: string;
   disableHistory?: boolean;
 }
 
+/**
+ * DMN决策服务（与Flowable DmnDecisionService接口对应）
+ */
 @Injectable()
 export class DmnDecisionService {
   private readonly logger = new Logger(DmnDecisionService.name);
 
   constructor(
-    @InjectRepository(DmnDecision)
-    private readonly decisionRepository: Repository<DmnDecision>,
-    @InjectRepository(HistoricDecisionExecution)
-    private readonly historicRepository: Repository<HistoricDecisionExecution>,
-    private readonly ruleEngineExecutor: RuleEngineExecutorService,
-    private readonly eventBus: EventBusService,
-    private readonly dataSource: DataSource,
+    private readonly ruleEngineExecutor: RuleEngineExecutor,
+    private readonly decisionRepository: DecisionRepository,
+    private readonly historicRepository: HistoricDecisionExecutionRepository,
   ) {}
 
   /**
@@ -1114,12 +1153,12 @@ export class DmnDecisionService {
   }
 
   /**
-   * 执行决策
+   * 执行决策（返回多个结果）
+   * 对应Flowable: executeDecision()
    */
   async executeDecision(builder: ExecuteDecisionBuilder): Promise<Record<string, any>[]> {
     const context = this.buildExecuteContext(builder);
     const decision = await this.getDecision(context);
-
     const auditContainer = await this.ruleEngineExecutor.execute(decision, context);
 
     // 保存历史记录
@@ -1127,27 +1166,30 @@ export class DmnDecisionService {
       await this.persistHistoricExecution(decision, context, auditContainer);
     }
 
-    // 发布事件
-    this.eventBus.emit('dmn.decision.executed', {
-      decisionKey: decision.key,
-      decisionName: decision.name,
-      processInstanceId: context.processInstanceId,
-      success: !auditContainer.failed,
-    });
-
     return auditContainer.decisionResult || [];
   }
 
   /**
-   * 执行决策（带审计跟踪）
+   * 执行决策服务
+   * 对应Flowable: executeDecisionService()
    */
-  async executeWithAuditTrail(builder: ExecuteDecisionBuilder): Promise<any> {
+  async executeDecisionService(builder: ExecuteDecisionBuilder): Promise<Record<string, Record<string, any>[]>> {
+    // 实现决策服务执行逻辑
+    // 决策服务包含多个输出决策
+    const results: Record<string, Record<string, any>[]> = {};
+    // ... 实现省略
+    return results;
+  }
+
+  /**
+   * 执行决策（带审计跟踪）
+   * 对应Flowable: executeWithAuditTrail() / executeDecisionWithAuditTrail()
+   */
+  async executeWithAuditTrail(builder: ExecuteDecisionBuilder): Promise<DecisionExecutionAuditContainer> {
     const context = this.buildExecuteContext(builder);
     const decision = await this.getDecision(context);
-
     const auditContainer = await this.ruleEngineExecutor.execute(decision, context);
 
-    // 保存历史记录
     if (!context.disableHistory) {
       await this.persistHistoricExecution(decision, context, auditContainer);
     }
@@ -1157,670 +1199,426 @@ export class DmnDecisionService {
 
   /**
    * 执行决策（单结果）
+   * 对应Flowable: executeWithSingleResult() / executeDecisionWithSingleResult()
    */
-  async executeWithSingleResult(builder: ExecuteDecisionBuilder): Promise<Record<string, any> | null> {
+  async executeWithSingleResult(builder: ExecuteDecisionBuilder): Promise<Record<string, any>> {
     const results = await this.executeDecision(builder);
     
     if (!results || results.length === 0) {
-      return null;
+      throw new FlowableException('No results from decision execution');
     }
 
     if (results.length > 1) {
-      throw new Error('决策返回多个结果，但期望单个结果');
+      throw new FlowableException('Decision returned multiple results, but single result expected');
     }
 
     return results[0];
   }
 
   /**
-   * 构建执行上下文
+   * 执行决策服务（单结果）
+   * 对应Flowable: executeDecisionServiceWithSingleResult()
    */
-  private buildExecuteContext(builder: ExecuteDecisionBuilder): ExecuteDecisionContext {
-    return {
-      decisionKey: builder.decisionKey,
-      decisionId: builder.decisionId,
-      tenantId: builder.tenantId,
-      variables: builder.variables || {},
-      processInstanceId: builder.processInstanceId,
-      executionId: builder.executionId,
-      activityId: builder.activityId,
-      userId: builder.userId,
-      disableHistory: builder.disableHistory,
-    };
-  }
-
-  /**
-   * 获取决策定义
-   */
-  private async getDecision(context: ExecuteDecisionContext): Promise<DmnDecision> {
-    let decision: DmnDecision | null = null;
-
-    if (context.decisionId) {
-      decision = await this.decisionRepository.findOne({
-        where: { id: context.decisionId },
-      });
-    } else if (context.decisionKey) {
-      const queryBuilder = this.decisionRepository.createQueryBuilder('decision');
-      
-      queryBuilder
-        .where('decision.key = :key', { key: context.decisionKey })
-        .andWhere('decision.isActive = :isActive', { isActive: true })
-        .orderBy('decision.version', 'DESC')
-        .limit(1);
-
-      if (context.tenantId) {
-        queryBuilder.andWhere('decision.tenantId = :tenantId', { tenantId: context.tenantId });
+  async executeDecisionServiceWithSingleResult(builder: ExecuteDecisionBuilder): Promise<Record<string, any>> {
+    const results = await this.executeDecisionService(builder);
+    
+    // 合并所有输出决策的结果
+    const mergedResult: Record<string, any> = {};
+    for (const [, decisionResult] of Object.entries(results)) {
+      if (decisionResult.length > 0) {
+        Object.assign(mergedResult, decisionResult[0]);
       }
-
-      decision = await queryBuilder.getOne();
     }
-
-    if (!decision) {
-      throw new NotFoundException(`决策不存在: ${context.decisionKey || context.decisionId}`);
-    }
-
-    return decision;
+    
+    return mergedResult;
   }
 
   /**
-   * 保存历史执行记录
+   * 执行决策服务（带审计跟踪）
+   * 对应Flowable: executeDecisionServiceWithAuditTrail()
    */
-  private async persistHistoricExecution(
-    decision: DmnDecision,
-    context: ExecuteDecisionContext,
-    auditContainer: any,
-  ): Promise<void> {
-    const historicExecution = this.historicRepository.create({
-      id: this.generateUuid(),
-      decisionKey: decision.key,
-      decisionName: decision.name,
-      decisionVersion: decision.version,
-      processInstanceId: context.processInstanceId || null,
-      executionId: context.executionId || null,
-      activityId: context.activityId || null,
-      tenantId: context.tenantId || null,
-      userId: context.userId || null,
-      startTime: auditContainer.startTime,
-      endTime: auditContainer.endTime,
-      inputVariables: context.variables,
-      outputVariables: auditContainer.failed ? null : this.extractOutputVariables(auditContainer.decisionResult),
-      decisionResult: auditContainer.decisionResult,
-      auditTrail: auditContainer,
-      failed: auditContainer.failed,
-      exceptionMessage: auditContainer.exceptionMessage || null,
-    });
-
-    await this.historicRepository.save(historicExecution);
+  async executeDecisionServiceWithAuditTrail(builder: ExecuteDecisionBuilder): Promise<DecisionServiceExecutionAuditContainer> {
+    // 实现决策服务带审计跟踪执行
+    // ... 实现省略
+    return {} as DecisionServiceExecutionAuditContainer;
   }
 
-  /**
-   * 提取输出变量
-   */
-  private extractOutputVariables(decisionResult: Record<string, any>[]): Record<string, any> {
-    if (!decisionResult || decisionResult.length === 0) {
-      return {};
-    }
-
-    // 对于单个结果，直接返回
-    if (decisionResult.length === 1) {
-      return decisionResult[0];
-    }
-
-    // 对于多个结果，返回数组
-    return { results: decisionResult };
-  }
-
-  private generateUuid(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  }
+  // ... 其他辅助方法
 }
 ```
 
-### 6.2 仓库服务
+### 5.2 仓库服务（与Flowable DmnRepositoryService保持一致）
 
 ```typescript
 // dmn/services/dmn-repository.service.ts
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Injectable, Logger } from '@nestjs/common';
 
-import { DmnDecision } from '../entities/decision.entity';
-import { DmnDeployment, DmnResource } from '../entities/dmn-deployment.entity';
-import { EventBusService } from '../../core/services/event-bus.service';
-import { DmnParserService } from './dmn-parser.service';
-
-export interface CreateDeploymentDto {
-  name?: string;
-  category?: string;
-  tenantId?: string;
-  dmnXml: string;
-}
-
-export interface DecisionQueryDto {
-  key?: string;
-  name?: string;
-  version?: number;
-  latest?: boolean;
-  active?: boolean;
-  tenantId?: string;
-  page?: number;
-  pageSize?: number;
-}
-
+/**
+ * DMN仓库服务（与Flowable DmnRepositoryService接口对应）
+ */
 @Injectable()
 export class DmnRepositoryService {
   private readonly logger = new Logger(DmnRepositoryService.name);
 
-  constructor(
-    @InjectRepository(DmnDecision)
-    private readonly decisionRepository: Repository<DmnDecision>,
-    @InjectRepository(DmnDeployment)
-    private readonly deploymentRepository: Repository<DmnDeployment>,
-    @InjectRepository(DmnResource)
-    private readonly resourceRepository: Repository<DmnResource>,
-    private readonly dmnParser: DmnParserService,
-    private readonly eventBus: EventBusService,
-    private readonly dataSource: DataSource,
-  ) {}
-
   /**
-   * 创建部署
+   * 创建部署构建器
    */
-  async createDeployment(dto: CreateDeploymentDto): Promise<DmnDeployment> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 1. 解析DMN XML
-      const parsedDecisions = await this.dmnParser.parse(dto.dmnXml);
-
-      if (parsedDecisions.length === 0) {
-        throw new BadRequestException('DMN XML中没有找到决策定义');
-      }
-
-      // 2. 创建部署记录
-      const deployment = queryRunner.manager.create(DmnDeployment, {
-        id: this.generateUuid(),
-        name: dto.name || 'DMN部署',
-        category: dto.category || null,
-        tenantId: dto.tenantId || null,
-      });
-      await queryRunner.manager.save(deployment);
-
-      // 3. 保存资源
-      const resource = queryRunner.manager.create(DmnResource, {
-        id: this.generateUuid(),
-        name: `${deployment.id}.dmn`,
-        deploymentId: deployment.id,
-        content: Buffer.from(dto.dmnXml, 'utf-8'),
-      });
-      await queryRunner.manager.save(resource);
-
-      // 4. 创建决策定义
-      for (const parsedDecision of parsedDecisions) {
-        // 获取当前版本
-        const existingDecision = await queryRunner.manager.findOne(DmnDecision, {
-          where: {
-            key: parsedDecision.key,
-            tenantId: dto.tenantId || null,
-          },
-          order: { version: 'DESC' },
-        });
-
-        const version = existingDecision ? existingDecision.version + 1 : 1;
-
-        const decision = queryRunner.manager.create(DmnDecision, {
-          id: this.generateUuid(),
-          key: parsedDecision.key,
-          name: parsedDecision.name,
-          version,
-          category: dto.category || null,
-          deploymentId: deployment.id,
-          dmnXml: dto.dmnXml,
-          decisionTableKey: parsedDecision.decisionTable?.id,
-          decisionTableName: parsedDecision.decisionTable?.name,
-          hitPolicy: parsedDecision.decisionTable?.hitPolicy || 'UNIQUE',
-          inputClauses: parsedDecision.decisionTable?.inputs || [],
-          outputClauses: parsedDecision.decisionTable?.outputs || [],
-          rules: parsedDecision.decisionTable?.rules || [],
-          tenantId: dto.tenantId || null,
-          isActive: true,
-        });
-
-        await queryRunner.manager.save(decision);
-      }
-
-      await queryRunner.commitTransaction();
-
-      // 5. 发布事件
-      this.eventBus.emit('dmn.deployment.created', {
-        deploymentId: deployment.id,
-        name: deployment.name,
-        decisionCount: parsedDecisions.length,
-      });
-
-      return deployment;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  /**
-   * 查询决策定义
-   */
-  async findDecisions(query: DecisionQueryDto): Promise<[DmnDecision[], number]> {
-    const queryBuilder = this.decisionRepository.createQueryBuilder('decision');
-
-    if (query.key) {
-      queryBuilder.andWhere('decision.key = :key', { key: query.key });
-    }
-
-    if (query.name) {
-      queryBuilder.andWhere('decision.name LIKE :name', { name: `%${query.name}%` });
-    }
-
-    if (query.version !== undefined) {
-      queryBuilder.andWhere('decision.version = :version', { version: query.version });
-    }
-
-    if (query.active !== undefined) {
-      queryBuilder.andWhere('decision.isActive = :isActive', { isActive: query.active });
-    }
-
-    if (query.tenantId) {
-      queryBuilder.andWhere('decision.tenantId = :tenantId', { tenantId: query.tenantId });
-    }
-
-    // 最新版本过滤
-    if (query.latest) {
-      queryBuilder
-        .andWhere('decision.isActive = :isActive', { isActive: true })
-        .orderBy('decision.version', 'DESC');
-    } else {
-      queryBuilder.orderBy('decision.key', 'ASC').addOrderBy('decision.version', 'DESC');
-    }
-
-    const page = query.page || 1;
-    const pageSize = query.pageSize || 20;
-
-    queryBuilder.skip((page - 1) * pageSize).take(pageSize);
-
-    return queryBuilder.getManyAndCount();
-  }
-
-  /**
-   * 获取决策定义
-   */
-  async getDecisionById(id: string): Promise<DmnDecision> {
-    const decision = await this.decisionRepository.findOne({ where: { id } });
-    if (!decision) {
-      throw new NotFoundException(`决策不存在: ${id}`);
-    }
-    return decision;
-  }
-
-  /**
-   * 获取决策定义（按Key和版本）
-   */
-  async getDecisionByKey(key: string, version?: number, tenantId?: string): Promise<DmnDecision> {
-    const queryBuilder = this.decisionRepository.createQueryBuilder('decision');
-    
-    queryBuilder.where('decision.key = :key', { key });
-    
-    if (version !== undefined) {
-      queryBuilder.andWhere('decision.version = :version', { version });
-    } else {
-      queryBuilder.andWhere('decision.isActive = :isActive', { isActive: true });
-      queryBuilder.orderBy('decision.version', 'DESC').limit(1);
-    }
-
-    if (tenantId) {
-      queryBuilder.andWhere('decision.tenantId = :tenantId', { tenantId });
-    }
-
-    const decision = await queryBuilder.getOne();
-    if (!decision) {
-      throw new NotFoundException(`决策不存在: ${key}`);
-    }
-    return decision;
+  createDeployment(): DmnDeploymentBuilder {
+    return new DmnDeploymentBuilderImpl();
   }
 
   /**
    * 删除部署
    */
-  async deleteDeployment(deploymentId: string, cascade: boolean = false): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 检查是否有关联的决策实例
-      const decisions = await queryRunner.manager.find(DmnDecision, {
-        where: { deploymentId },
-      });
-
-      if (!cascade && decisions.length > 0) {
-        throw new BadRequestException('部署下存在决策定义，无法删除');
-      }
-
-      // 删除决策定义
-      if (cascade) {
-        await queryRunner.manager.delete(DmnDecision, { deploymentId });
-      }
-
-      // 删除资源
-      await queryRunner.manager.delete(DmnResource, { deploymentId });
-
-      // 删除部署
-      await queryRunner.manager.delete(DmnDeployment, { id: deploymentId });
-
-      await queryRunner.commitTransaction();
-
-      this.eventBus.emit('dmn.deployment.deleted', { deploymentId });
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+  async deleteDeployment(deploymentId: string): Promise<void> {
+    // 实现删除部署逻辑
   }
 
   /**
-   * 激活/挂起决策定义
+   * 创建决策查询
    */
-  async setDecisionActive(id: string, isActive: boolean): Promise<DmnDecision> {
-    const decision = await this.getDecisionById(id);
-    decision.isActive = isActive;
-    return this.decisionRepository.save(decision);
+  createDecisionQuery(): DmnDecisionQuery {
+    return new DmnDecisionQueryImpl();
   }
 
-  private generateUuid(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
+  /**
+   * 创建原生决策查询
+   */
+  createNativeDecisionQuery(): NativeDecisionQuery {
+    return new NativeDecisionQueryImpl();
+  }
+
+  /**
+   * 设置部署分类
+   */
+  async setDeploymentCategory(deploymentId: string, category: string): Promise<void> {
+    // 实现设置分类逻辑
+  }
+
+  /**
+   * 设置部署租户ID
+   */
+  async setDeploymentTenantId(deploymentId: string, newTenantId: string): Promise<void> {
+    // 实现设置租户ID逻辑
+  }
+
+  /**
+   * 更改部署父部署ID
+   */
+  async changeDeploymentParentDeploymentId(deploymentId: string, newParentDeploymentId: string): Promise<void> {
+    // 实现更改父部署ID逻辑
+  }
+
+  /**
+   * 获取部署资源名称列表
+   */
+  async getDeploymentResourceNames(deploymentId: string): Promise<string[]> {
+    // 实现获取资源名称列表逻辑
+    return [];
+  }
+
+  /**
+   * 获取资源流
+   */
+  async getResourceAsStream(deploymentId: string, resourceName: string): Promise<Buffer | null> {
+    // 实现获取资源流逻辑
+    return null;
+  }
+
+  /**
+   * 创建部署查询
+   */
+  createDeploymentQuery(): DmnDeploymentQuery {
+    return new DmnDeploymentQueryImpl();
+  }
+
+  /**
+   * 获取决策
+   */
+  async getDecision(decisionId: string): Promise<DmnDecision | null> {
+    // 实现获取决策逻辑
+    return null;
+  }
+
+  /**
+   * 获取DMN资源
+   */
+  async getDmnResource(decisionId: string): Promise<Buffer | null> {
+    // 实现获取DMN资源逻辑
+    return null;
+  }
+
+  /**
+   * 设置决策分类
+   */
+  async setDecisionCategory(decisionId: string, category: string): Promise<void> {
+    // 实现设置分类逻辑
+  }
+
+  /**
+   * 获取DMN定义
+   */
+  async getDmnDefinition(decisionId: string): Promise<DmnDefinition | null> {
+    // 实现获取DMN定义逻辑
+    return null;
   }
 }
 ```
 
 ---
 
-## 七、DMN 解析器设计
+## 六、引擎配置设计
 
-### 7.1 DMN XML 解析服务
+### 6.1 引擎配置（与Flowable DmnEngineConfiguration保持一致）
 
 ```typescript
-// dmn/services/dmn-parser.service.ts
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { parseString } from 'xml2js';
-import { promisify } from 'util';
+// dmn/config/dmn-engine-configuration.ts
 
-const parseXml = promisify(parseString);
+/**
+ * DMN引擎配置（与Flowable DmnEngineConfiguration对应）
+ */
+export class DmnEngineConfiguration {
+  
+  // 命中策略配置
+  protected hitPolicyBehaviors: Map<string, AbstractHitPolicy>;
+  protected customHitPolicyBehaviors: Map<string, AbstractHitPolicy>;
+  
+  // 严格模式配置（默认true）
+  protected strictMode: boolean = true;
+  
+  // 表达式管理器
+  protected expressionManager: ExpressionManager;
+  
+  // 其他配置
+  protected clock: Clock;
+  protected objectMapper: ObjectMapper;
 
-export interface ParsedDecision {
-  id: string;
-  key: string;
-  name: string;
-  decisionTable?: {
-    id: string;
-    name?: string;
-    hitPolicy: string;
-    aggregation?: string;
-    inputs: any[];
-    outputs: any[];
-    rules: any[];
-  };
+  /**
+   * 初始化命中策略
+   */
+  initHitPolicyBehaviors(): void {
+    if (!this.hitPolicyBehaviors) {
+      this.hitPolicyBehaviors = this.getDefaultHitPolicyBehaviors();
+    }
+
+    // 添加自定义命中策略
+    if (this.customHitPolicyBehaviors) {
+      for (const [key, value] of this.customHitPolicyBehaviors) {
+        this.hitPolicyBehaviors.set(key, value);
+      }
+    }
+  }
+
+  /**
+   * 获取默认命中策略
+   */
+  getDefaultHitPolicyBehaviors(): Map<string, AbstractHitPolicy> {
+    const defaultHitPolicyBehaviors = new Map<string, AbstractHitPolicy>();
+
+    // UNIQUE
+    const hitPolicyUniqueBehavior = new HitPolicyUnique();
+    defaultHitPolicyBehaviors.set(hitPolicyUniqueBehavior.getHitPolicyName(), hitPolicyUniqueBehavior);
+
+    // ANY
+    const hitPolicyAnyBehavior = new HitPolicyAny();
+    defaultHitPolicyBehaviors.set(hitPolicyAnyBehavior.getHitPolicyName(), hitPolicyAnyBehavior);
+
+    // FIRST
+    const hitPolicyFirstBehavior = new HitPolicyFirst();
+    defaultHitPolicyBehaviors.set(hitPolicyFirstBehavior.getHitPolicyName(), hitPolicyFirstBehavior);
+
+    // RULE ORDER
+    const hitPolicyRuleOrderBehavior = new HitPolicyRuleOrder();
+    defaultHitPolicyBehaviors.set(hitPolicyRuleOrderBehavior.getHitPolicyName(), hitPolicyRuleOrderBehavior);
+
+    // PRIORITY
+    const hitPolicyPriorityBehavior = new HitPolicyPriority();
+    defaultHitPolicyBehaviors.set(hitPolicyPriorityBehavior.getHitPolicyName(), hitPolicyPriorityBehavior);
+
+    // OUTPUT ORDER
+    const hitPolicyOutputOrderBehavior = new HitPolicyOutputOrder();
+    defaultHitPolicyBehaviors.set(hitPolicyOutputOrderBehavior.getHitPolicyName(), hitPolicyOutputOrderBehavior);
+
+    // COLLECT
+    const hitPolicyCollectBehavior = new HitPolicyCollect();
+    defaultHitPolicyBehaviors.set(hitPolicyCollectBehavior.getHitPolicyName(), hitPolicyCollectBehavior);
+
+    return defaultHitPolicyBehaviors;
+  }
+
+  // Getters and Setters
+  
+  getHitPolicyBehaviors(): Map<string, AbstractHitPolicy> {
+    return this.hitPolicyBehaviors;
+  }
+
+  setHitPolicyBehaviors(hitPolicyBehaviors: Map<string, AbstractHitPolicy>): void {
+    this.hitPolicyBehaviors = hitPolicyBehaviors;
+  }
+
+  getCustomHitPolicyBehaviors(): Map<string, AbstractHitPolicy> {
+    return this.customHitPolicyBehaviors;
+  }
+
+  setCustomHitPolicyBehaviors(customHitPolicyBehaviors: Map<string, AbstractHitPolicy>): void {
+    this.customHitPolicyBehaviors = customHitPolicyBehaviors;
+  }
+
+  isStrictMode(): boolean {
+    return this.strictMode;
+  }
+
+  setStrictMode(strictMode: boolean): void {
+    this.strictMode = strictMode;
+  }
 }
+```
 
-@Injectable()
-export class DmnParserService {
-  private readonly logger = new Logger(DmnParserService.name);
+---
 
-  /**
-   * 解析DMN XML
-   */
-  async parse(dmnXml: string): Promise<ParsedDecision[]> {
-    try {
-      const result = await parseXml(dmnXml, {
-        explicitArray: false,
-        mergeAttrs: true,
-      });
+## 七、数据库表结构（与Flowable保持一致）
 
-      const definitions = result['dmn:definitions'] || result['definitions'];
-      if (!definitions) {
-        throw new BadRequestException('无效的DMN XML：缺少definitions元素');
-      }
+### 7.1 表命名规范
 
-      const decisions: ParsedDecision[] = [];
-      const decisionElements = this.toArray(definitions['dmn:decision'] || definitions['decision'] || []);
+Flowable DMN引擎使用 `ACT_DMN_` 前缀，字段使用下划线后缀（如 `ID_`, `KEY_`）。
 
-      for (const decisionEl of decisionElements) {
-        const decision = this.parseDecision(decisionEl);
-        if (decision) {
-          decisions.push(decision);
+```sql
+-- ============================================
+-- DMN部署表（对应 ACT_DMN_DEPLOYMENT）
+-- ============================================
+CREATE TABLE ACT_DMN_DEPLOYMENT (
+    ID_ VARCHAR(255) NOT NULL,
+    NAME_ VARCHAR(255) NULL,
+    CATEGORY_ VARCHAR(255) NULL,
+    DEPLOY_TIME_ DATETIME(3) NULL,
+    TENANT_ID_ VARCHAR(255) NULL,
+    PARENT_DEPLOYMENT_ID_ VARCHAR(255) NULL,
+    CONSTRAINT PK_ACT_DMN_DEPLOYMENT PRIMARY KEY (ID_)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DMN部署表';
+
+-- ============================================
+-- DMN部署资源表（对应 ACT_DMN_DEPLOYMENT_RESOURCE）
+-- ============================================
+CREATE TABLE ACT_DMN_DEPLOYMENT_RESOURCE (
+    ID_ VARCHAR(255) NOT NULL,
+    NAME_ VARCHAR(255) NULL,
+    DEPLOYMENT_ID_ VARCHAR(255) NULL,
+    RESOURCE_BYTES_ LONGBLOB NULL,
+    CONSTRAINT PK_ACT_DMN_DEPLOYMENT_RESOURCE PRIMARY KEY (ID_),
+    CONSTRAINT ACT_FK_DMN_RSRC_DPL FOREIGN KEY (DEPLOYMENT_ID_) 
+        REFERENCES ACT_DMN_DEPLOYMENT (ID_)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DMN部署资源表';
+
+CREATE INDEX ACT_IDX_DMN_RSRC_DPL ON ACT_DMN_DEPLOYMENT_RESOURCE (DEPLOYMENT_ID_);
+
+-- ============================================
+-- DMN决策表（对应 ACT_DMN_DECISION）
+-- ============================================
+CREATE TABLE ACT_DMN_DECISION (
+    ID_ VARCHAR(255) NOT NULL,
+    NAME_ VARCHAR(255) NULL,
+    VERSION_ INT NULL,
+    KEY_ VARCHAR(255) NULL,
+    CATEGORY_ VARCHAR(255) NULL,
+    DECISION_TYPE_ VARCHAR(255) NULL,  -- 决策类型（DECISION/DECISION_SERVICE）
+    DEPLOYMENT_ID_ VARCHAR(255) NULL,
+    TENANT_ID_ VARCHAR(255) NULL,
+    RESOURCE_NAME_ VARCHAR(255) NULL,
+    DESCRIPTION_ VARCHAR(255) NULL,
+    CONSTRAINT PK_ACT_DMN_DECISION_TABLE PRIMARY KEY (ID_)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DMN决策定义表';
+
+-- 唯一索引：Key + Version + TenantId
+CREATE UNIQUE INDEX ACT_IDX_DMN_DEC_UNIQ ON ACT_DMN_DECISION(KEY_, VERSION_, TENANT_ID_);
+
+-- ============================================
+-- DMN历史决策执行记录表（对应 ACT_DMN_HI_DECISION_EXECUTION）
+-- ============================================
+CREATE TABLE ACT_DMN_HI_DECISION_EXECUTION (
+    ID_ VARCHAR(255) NOT NULL,
+    DECISION_DEFINITION_ID_ VARCHAR(255) NULL,
+    DEPLOYMENT_ID_ VARCHAR(255) NULL,
+    START_TIME_ DATETIME(3) NULL,
+    END_TIME_ DATETIME(3) NULL,
+    INSTANCE_ID_ VARCHAR(255) NULL,      -- 流程实例ID
+    EXECUTION_ID_ VARCHAR(255) NULL,     -- 执行ID
+    ACTIVITY_ID_ VARCHAR(255) NULL,      -- 活动ID
+    SCOPE_TYPE_ VARCHAR(255) NULL,       -- 作用域类型
+    FAILED_ TINYINT DEFAULT 0 NULL,      -- 是否失败
+    TENANT_ID_ VARCHAR(255) NULL,
+    EXECUTION_JSON_ LONGTEXT NULL,       -- 执行JSON（包含完整的审计信息）
+    CONSTRAINT PK_ACT_DMN_HI_DECISION_EXECUTION PRIMARY KEY (ID_)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DMN历史决策执行记录表';
+
+-- 流程实例ID索引
+CREATE INDEX ACT_IDX_DMN_INSTANCE_ID ON ACT_DMN_HI_DECISION_EXECUTION(INSTANCE_ID_);
+```
+
+### 7.2 EXECUTION_JSON_ 字段结构
+
+历史执行记录使用单个 `EXECUTION_JSON_` 字段存储完整的执行信息，结构如下：
+
+```json
+{
+  "decisionId": "decision_id",
+  "decisionName": "决策名称",
+  "decisionKey": "decision_key",
+  "decisionVersion": 1,
+  "hitPolicy": "UNIQUE",
+  "strictMode": true,
+  "startTime": "2024-01-01T10:00:00.000Z",
+  "endTime": "2024-01-01T10:00:01.000Z",
+  "failed": false,
+  "exceptionMessage": null,
+  "validationMessage": null,
+  "inputVariables": {
+    "age": 25,
+    "income": 5000
+  },
+  "decisionResult": [
+    {
+      "result": "approved",
+      "amount": 10000
+    }
+  ],
+  "ruleExecutions": {
+    "1": {
+      "ruleNumber": 1,
+      "ruleId": "rule_1",
+      "valid": true,
+      "inputEntries": [
+        {
+          "id": "inputEntry_1",
+          "expression": "> 18",
+          "result": true
         }
-      }
-
-      return decisions;
-    } catch (error) {
-      this.logger.error('解析DMN XML失败', error);
-      throw new BadRequestException(`解析DMN XML失败: ${error.message}`);
-    }
-  }
-
-  /**
-   * 解析决策元素
-   */
-  private parseDecision(decisionEl: any): ParsedDecision | null {
-    const id = decisionEl.id;
-    const key = decisionEl.name || id;
-    const name = decisionEl.label || key;
-
-    const parsed: ParsedDecision = {
-      id,
-      key,
-      name,
-    };
-
-    // 解析决策表
-    const decisionTableEl = decisionEl['dmn:decisionTable'] || decisionEl['decisionTable'];
-    if (decisionTableEl) {
-      parsed.decisionTable = this.parseDecisionTable(decisionTableEl);
-    }
-
-    return parsed;
-  }
-
-  /**
-   * 解析决策表
-   */
-  private parseDecisionTable(tableEl: any): any {
-    const id = tableEl.id;
-    const name = tableEl.label || tableEl.name;
-    const hitPolicy = tableEl.hitPolicy || 'UNIQUE';
-    const aggregation = tableEl.aggregation;
-
-    // 解析输入子句
-    const inputs = this.parseInputClauses(tableEl['dmn:input'] || tableEl['input'] || []);
-
-    // 解析输出子句
-    const outputs = this.parseOutputClauses(tableEl['dmn:output'] || tableEl['output'] || []);
-
-    // 解析规则
-    const rules = this.parseRules(tableEl['dmn:rule'] || tableEl['rule'] || [], inputs, outputs);
-
-    return {
-      id,
-      name,
-      hitPolicy,
-      aggregation,
-      inputs,
-      outputs,
-      rules,
-    };
-  }
-
-  /**
-   * 解析输入子句
-   */
-  private parseInputClauses(inputEls: any[]): any[] {
-    const inputs: any[] = [];
-    const elements = this.toArray(inputEls);
-
-    for (const inputEl of elements) {
-      const inputExpressionEl = inputEl['dmn:inputExpression'] || inputEl['inputExpression'];
-      
-      inputs.push({
-        id: inputEl.id,
-        name: inputEl.label || inputEl.name || `input_${inputs.length + 1}`,
-        label: inputEl.label,
-        typeRef: inputExpressionEl?.typeRef || 'string',
-        inputExpression: {
-          text: inputExpressionEl?.['dmn:text'] || inputExpressionEl?.text || '',
-          typeRef: inputExpressionEl?.typeRef || 'string',
-        },
-      });
-    }
-
-    return inputs;
-  }
-
-  /**
-   * 解析输出子句
-   */
-  private parseOutputClauses(outputEls: any[]): any[] {
-    const outputs: any[] = [];
-    const elements = this.toArray(outputEls);
-
-    for (const outputEl of elements) {
-      const outputValuesEl = outputEl['dmn:outputValues'] || outputEl['outputValues'];
-      const defaultOutputEl = outputEl['dmn:defaultOutputEntry'] || outputEl['defaultOutputEntry'];
-
-      outputs.push({
-        id: outputEl.id,
-        name: outputEl.label || outputEl.name || `output_${outputs.length + 1}`,
-        label: outputEl.label,
-        typeRef: outputEl.typeRef || 'string',
-        outputValues: outputValuesEl ? this.parseOutputValues(outputValuesEl) : undefined,
-        defaultOutputEntry: defaultOutputEl?.text || undefined,
-      });
-    }
-
-    return outputs;
-  }
-
-  /**
-   * 解析输出值列表
-   */
-  private parseOutputValues(valuesEl: any): string[] {
-    const textEl = valuesEl['dmn:text'] || valuesEl.text;
-    if (typeof textEl === 'string') {
-      return textEl.split(',').map(v => v.trim());
-    }
-    return [];
-  }
-
-  /**
-   * 解析规则
-   */
-  private parseRules(ruleEls: any[], inputs: any[], outputs: any[]): any[] {
-    const rules: any[] = [];
-    const elements = this.toArray(ruleEls);
-
-    for (let i = 0; i < elements.length; i++) {
-      const ruleEl = elements[i];
-      const ruleNumber = i + 1;
-
-      // 解析输入条目
-      const inputEntryEls = this.toArray(ruleEl['dmn:inputEntry'] || ruleEl['inputEntry'] || []);
-      const inputEntries = inputEntryEls.map((entryEl, idx) => ({
-        id: entryEl.id,
-        clauseId: inputs[idx]?.id || `input_${idx + 1}`,
-        text: entryEl['dmn:text'] || entryEl.text || '',
-      }));
-
-      // 解析输出条目
-      const outputEntryEls = this.toArray(ruleEl['dmn:outputEntry'] || ruleEl['outputEntry'] || []);
-      const outputEntries = outputEntryEls.map((entryEl, idx) => ({
-        id: entryEl.id,
-        clauseId: outputs[idx]?.id || `output_${idx + 1}`,
-        text: entryEl['dmn:text'] || entryEl.text || '',
-      }));
-
-      rules.push({
-        id: ruleEl.id,
-        ruleNumber,
-        description: ruleEl.description,
-        inputEntries,
-        outputEntries,
-      });
-    }
-
-    return rules;
-  }
-
-  /**
-   * 转换为数组
-   */
-  private toArray(value: any): any[] {
-    if (Array.isArray(value)) {
-      return value;
-    }
-    if (value === undefined || value === null) {
-      return [];
-    }
-    return [value];
-  }
-
-  /**
-   * 验证DMN XML
-   */
-  async validate(dmnXml: string): Promise<{ valid: boolean; errors: string[] }> {
-    const errors: string[] = [];
-
-    try {
-      const decisions = await this.parse(dmnXml);
-
-      if (decisions.length === 0) {
-        errors.push('DMN XML中没有找到决策定义');
-      }
-
-      for (const decision of decisions) {
-        if (!decision.decisionTable) {
-          errors.push(`决策 ${decision.key} 没有决策表`);
-          continue;
+      ],
+      "outputEntries": [
+        {
+          "id": "outputEntry_1",
+          "expression": "\"approved\"",
+          "result": "approved"
         }
-
-        if (!decision.decisionTable.rules || decision.decisionTable.rules.length === 0) {
-          errors.push(`决策 ${decision.key} 的决策表没有规则`);
-        }
-
-        if (!decision.decisionTable.inputs || decision.decisionTable.inputs.length === 0) {
-          errors.push(`决策 ${decision.key} 的决策表没有输入子句`);
-        }
-
-        if (!decision.decisionTable.outputs || decision.decisionTable.outputs.length === 0) {
-          errors.push(`决策 ${decision.key} 的决策表没有输出子句`);
-        }
-      }
-    } catch (error) {
-      errors.push(error.message);
+      ]
     }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-    };
-  }
+  },
+  "inputClauses": [
+    {
+      "id": "input_1",
+      "name": "age",
+      "expression": "age",
+      "typeRef": "number"
+    }
+  ],
+  "outputClauses": [
+    {
+      "id": "output_1",
+      "name": "result",
+      "typeRef": "string",
+      "outputValues": ["approved", "rejected"]
+    }
+  ],
+  "multipleResults": false
 }
 ```
 
@@ -1833,19 +1631,21 @@ export class DmnParserService {
 ```typescript
 // process-instance/services/executors/business-rule-task-executor.ts
 import { Injectable, Logger } from '@nestjs/common';
-import { Execution } from '../../process-instance/entities/execution.entity';
-import { Task } from '../../task/entities/task.entity';
-import { DmnDecisionService, ExecuteDecisionBuilder } from '../../dmn/services/dmn-decision.service';
-import { VariableService } from '../../process-instance/services/variable.service';
-import { EventBusService } from '../../core/services/event-bus.service';
 
+/**
+ * Business Rule Task配置
+ */
 export interface BusinessRuleTaskConfig {
   decisionKey?: string;
   decisionId?: string;
   resultVariable?: string;
   tenantId?: string;
+  fallbackToDefaultTenant?: boolean;
 }
 
+/**
+ * Business Rule Task执行器
+ */
 @Injectable()
 export class BusinessRuleTaskExecutor {
   private readonly logger = new Logger(BusinessRuleTaskExecutor.name);
@@ -1853,7 +1653,6 @@ export class BusinessRuleTaskExecutor {
   constructor(
     private readonly dmnDecisionService: DmnDecisionService,
     private readonly variableService: VariableService,
-    private readonly eventBus: EventBusService,
   ) {}
 
   /**
@@ -1861,7 +1660,7 @@ export class BusinessRuleTaskExecutor {
    */
   async execute(
     execution: Execution,
-    config: BusinessRuleTaskConfig,
+    config: BusinessRuleTaskConfig
   ): Promise<void> {
     this.logger.debug(`执行Business Rule Task: ${execution.activityId}`);
 
@@ -1872,15 +1671,17 @@ export class BusinessRuleTaskExecutor {
     // 2. 获取流程变量
     const variables = await this.variableService.getVariables(execution.processInstanceId);
 
-    // 3. 构建决策执行参数
+    // 3. 构建决策执行参数（与Flowable ExecuteDecisionBuilder对应）
     const builder: ExecuteDecisionBuilder = {
       decisionKey,
       decisionId: config.decisionId,
       tenantId: config.tenantId || execution.tenantId,
+      fallbackToDefaultTenant: config.fallbackToDefaultTenant,
       variables,
-      processInstanceId: execution.processInstanceId,
+      instanceId: execution.processInstanceId,
       executionId: execution.id,
       activityId: execution.activityId,
+      scopeType: execution.scopeType,
     };
 
     // 4. 执行决策
@@ -1888,7 +1689,7 @@ export class BusinessRuleTaskExecutor {
 
     // 5. 保存决策结果到流程变量
     if (decisionResult && decisionResult.length > 0) {
-      // 保存完整结果
+      // 保存完整结果数组
       await this.variableService.setVariable(
         execution.processInstanceId,
         resultVariable,
@@ -1907,15 +1708,6 @@ export class BusinessRuleTaskExecutor {
       }
     }
 
-    // 6. 发布事件
-    this.eventBus.emit('business-rule-task.executed', {
-      executionId: execution.id,
-      processInstanceId: execution.processInstanceId,
-      activityId: execution.activityId,
-      decisionKey,
-      resultCount: decisionResult?.length || 0,
-    });
-
     this.logger.debug(`Business Rule Task执行完成: ${execution.activityId}`);
   }
 }
@@ -1923,209 +1715,513 @@ export class BusinessRuleTaskExecutor {
 
 ---
 
-## 九、API 设计
+## 九、API 设计（与Flowable DMN REST保持一致）
 
-### 9.1 DMN Controller
+### 9.1 REST API端点设计
+
+基于Flowable DMN REST模块（`flowable-dmn-rest`），以下是标准的REST API端点：
+
+| 端点 | 方法 | 描述 | 对应Flowable类 |
+|-----|------|------|----------------|
+| `/dmn-rule/execute` | POST | 执行决策（自动检测决策或决策服务） | DmnRuleServiceResource.execute() |
+| `/dmn-rule/execute/single-result` | POST | 执行决策（期望单结果） | DmnRuleServiceResource.executeWithSingleResult() |
+| `/dmn-rule/execute-decision` | POST | 执行决策（明确指定决策） | DmnRuleServiceResource.executeDecision() |
+| `/dmn-rule/execute-decision/single-result` | POST | 执行决策（明确指定决策，期望单结果） | DmnRuleServiceResource.executeDecisionWithSingleResult() |
+| `/dmn-rule/execute-decision-service` | POST | 执行决策服务 | DmnRuleServiceResource.executeDecisionService() |
+| `/dmn-rule/execute-decision-service/single-result` | POST | 执行决策服务（期望单结果） | DmnRuleServiceResource.executeDecisionServiceWithSingleResult() |
+
+### 9.2 请求结构（与Flowable DmnRuleServiceRequest对应）
+
+```typescript
+// dmn/dto/dmn-rule-service-request.dto.ts
+
+/**
+ * DMN规则服务请求（与Flowable DmnRuleServiceRequest对应）
+ */
+export class DmnRuleServiceRequest {
+  /**
+   * 决策Key（必需）
+   */
+  decisionKey: string;
+
+  /**
+   * 租户ID
+   */
+  tenantId?: string;
+
+  /**
+   * 父部署ID
+   */
+  parentDeploymentId?: string;
+
+  /**
+   * 输入变量列表
+   */
+  inputVariables?: EngineRestVariable[];
+
+  /**
+   * 是否禁用历史记录
+   */
+  disableHistory?: boolean;
+}
+
+/**
+ * REST变量（与Flowable EngineRestVariable对应）
+ */
+export interface EngineRestVariable {
+  name: string;
+  type: string;
+  value: any;
+  valueUrl?: string;
+  scope?: string;
+}
+```
+
+### 9.3 响应结构（与Flowable DmnRuleServiceResponse对应）
+
+```typescript
+// dmn/dto/dmn-rule-service-response.dto.ts
+
+/**
+ * DMN规则服务响应（多结果，与Flowable DmnRuleServiceResponse对应）
+ */
+export class DmnRuleServiceResponse {
+  /**
+   * 结果变量列表（二维数组，每组代表一条匹配规则的输出）
+   */
+  resultVariables: EngineRestVariable[][];
+
+  /**
+   * 请求URL
+   */
+  url?: string;
+}
+
+/**
+ * DMN规则服务单结果响应（与Flowable DmnRuleServiceSingleResponse对应）
+ */
+export class DmnRuleServiceSingleResponse {
+  /**
+   * 结果变量列表（单层数组，代表单个决策结果）
+   */
+  resultVariables: EngineRestVariable[];
+
+  /**
+   * 请求URL
+   */
+  url?: string;
+}
+```
+
+### 9.4 DMN Controller实现
 
 ```typescript
 // dmn/controllers/dmn.controller.ts
 import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { DmnRepositoryService, CreateDeploymentDto, DecisionQueryDto } from '../services/dmn-repository.service';
-import { DmnDecisionService, ExecuteDecisionBuilder } from '../services/dmn-decision.service';
 
-@Controller('api/v1/dmn')
+@Controller('dmn-rule')
 export class DmnController {
   constructor(
     private readonly repositoryService: DmnRepositoryService,
     private readonly decisionService: DmnDecisionService,
+    private readonly restResponseFactory: DmnRestResponseFactory,
   ) {}
 
   /**
-   * 部署决策表
-   * POST /api/v1/dmn/deployment
-   */
-  @Post('deployment')
-  async createDeployment(@Body() dto: CreateDeploymentDto) {
-    return this.repositoryService.createDeployment(dto);
-  }
-
-  /**
-   * 查询决策定义列表
-   * GET /api/v1/dmn/decisions
-   */
-  @Get('decisions')
-  async findDecisions(@Query() query: DecisionQueryDto) {
-    return this.repositoryService.findDecisions(query);
-  }
-
-  /**
-   * 获取决策定义
-   * GET /api/v1/dmn/decisions/:id
-   */
-  @Get('decisions/:id')
-  async getDecision(@Param('id') id: string) {
-    return this.repositoryService.getDecisionById(id);
-  }
-
-  /**
-   * 执行决策
-   * POST /api/v1/dmn/execute
+   * 执行决策（自动检测决策或决策服务，带审计跟踪）
+   * POST /dmn-rule/execute
    */
   @Post('execute')
-  async executeDecision(@Body() builder: ExecuteDecisionBuilder) {
-    return this.decisionService.executeDecision(builder);
+  async execute(@Body() request: DmnRuleServiceRequest): Promise<DmnRuleServiceResponse> {
+    const builder = this.buildExecuteDecisionBuilder(request);
+    const auditContainer = await this.decisionService.executeWithAuditTrail(builder);
+    return this.restResponseFactory.createDmnRuleServiceResponse(auditContainer);
   }
 
   /**
-   * 执行决策（带审计跟踪）
-   * POST /api/v1/dmn/execute/audit
+   * 执行决策（期望单结果）
+   * POST /dmn-rule/execute/single-result
    */
-  @Post('execute/audit')
-  async executeWithAuditTrail(@Body() builder: ExecuteDecisionBuilder) {
-    return this.decisionService.executeWithAuditTrail(builder);
+  @Post('execute/single-result')
+  async executeWithSingleResult(@Body() request: DmnRuleServiceRequest): Promise<DmnRuleServiceSingleResponse> {
+    const builder = this.buildExecuteDecisionBuilder(request);
+    const result = await this.decisionService.executeWithSingleResult(builder);
+    return this.restResponseFactory.createDmnRuleServiceResponse(result);
   }
 
   /**
-   * 执行决策（单结果）
-   * POST /api/v1/dmn/execute/single
+   * 执行决策（明确指定决策类型）
+   * POST /dmn-rule/execute-decision
    */
-  @Post('execute/single')
-  async executeWithSingleResult(@Body() builder: ExecuteDecisionBuilder) {
-    return this.decisionService.executeWithSingleResult(builder);
+  @Post('execute-decision')
+  async executeDecision(@Body() request: DmnRuleServiceRequest): Promise<DmnRuleServiceResponse> {
+    const builder = this.buildExecuteDecisionBuilder(request);
+    const auditContainer = await this.decisionService.executeDecisionWithAuditTrail(builder);
+    return this.restResponseFactory.createDmnRuleServiceResponse(auditContainer);
   }
 
   /**
-   * 激活决策定义
-   * PUT /api/v1/dmn/decisions/:id/activate
+   * 执行决策（明确指定决策类型，期望单结果）
+   * POST /dmn-rule/execute-decision/single-result
    */
-  @Put('decisions/:id/activate')
-  async activateDecision(@Param('id') id: string) {
-    return this.repositoryService.setDecisionActive(id, true);
+  @Post('execute-decision/single-result')
+  async executeDecisionWithSingleResult(@Body() request: DmnRuleServiceRequest): Promise<DmnRuleServiceSingleResponse> {
+    const builder = this.buildExecuteDecisionBuilder(request);
+    const result = await this.decisionService.executeDecisionWithSingleResult(builder);
+    return this.restResponseFactory.createDmnRuleServiceResponse(result);
   }
 
   /**
-   * 挂起决策定义
-   * PUT /api/v1/dmn/decisions/:id/suspend
+   * 执行决策服务
+   * POST /dmn-rule/execute-decision-service
    */
-  @Put('decisions/:id/suspend')
-  async suspendDecision(@Param('id') id: string) {
-    return this.repositoryService.setDecisionActive(id, false);
+  @Post('execute-decision-service')
+  async executeDecisionService(@Body() request: DmnRuleServiceRequest): Promise<DmnRuleServiceResponse> {
+    const builder = this.buildExecuteDecisionBuilder(request);
+    const auditContainer = await this.decisionService.executeDecisionServiceWithAuditTrail(builder);
+    return this.restResponseFactory.createDmnRuleServiceResponse(auditContainer);
   }
 
   /**
-   * 删除部署
-   * DELETE /api/v1/dmn/deployment/:id
+   * 执行决策服务（期望单结果）
+   * POST /dmn-rule/execute-decision-service/single-result
    */
-  @Delete('deployment/:id')
-  async deleteDeployment(
-    @Param('id') id: string,
-    @Query('cascade') cascade: boolean = false,
-  ) {
-    await this.repositoryService.deleteDeployment(id, cascade);
-    return { success: true };
+  @Post('execute-decision-service/single-result')
+  async executeDecisionServiceWithSingleResult(@Body() request: DmnRuleServiceRequest): Promise<DmnRuleServiceSingleResponse> {
+    const builder = this.buildExecuteDecisionBuilder(request);
+    const result = await this.decisionService.executeDecisionServiceWithSingleResult(builder);
+    return this.restResponseFactory.createDmnRuleServiceResponse(result);
+  }
+
+  /**
+   * 构建决策执行构建器
+   */
+  private buildExecuteDecisionBuilder(request: DmnRuleServiceRequest): ExecuteDecisionBuilder {
+    const builder = this.decisionService.createExecuteDecisionBuilder();
+    builder.decisionKey = request.decisionKey;
+    
+    if (request.parentDeploymentId) {
+      builder.parentDeploymentId = request.parentDeploymentId;
+    }
+    
+    if (request.tenantId) {
+      builder.tenantId = request.tenantId;
+    }
+    
+    if (request.disableHistory) {
+      builder.disableHistory = true;
+    }
+    
+    if (request.inputVariables) {
+      builder.variables = this.composeInputVariables(request.inputVariables);
+    }
+    
+    return builder;
+  }
+
+  /**
+   * 组装输入变量
+   */
+  private composeInputVariables(restVariables: EngineRestVariable[]): Record<string, any> {
+    const inputVariables: Record<string, any> = {};
+    for (const variable of restVariables) {
+      if (!variable.name) {
+        throw new Error('Variable name is required.');
+      }
+      inputVariables[variable.name] = this.restResponseFactory.getVariableValue(variable);
+    }
+    return inputVariables;
+  }
+}
+```
+
+### 9.5 Repository API端点
+
+| 端点 | 方法 | 描述 | 对应Flowable类 |
+|-----|------|------|----------------|
+| `/repository/deployments` | GET | 获取部署列表 | DmnDeploymentCollectionResource |
+| `/repository/deployments/{deploymentId}` | GET | 获取部署详情 | DmnDeploymentResource |
+| `/repository/decisions` | GET | 获取决策列表 | DecisionCollectionResource |
+| `/repository/decisions/{decisionId}` | GET | 获取决策详情 | DecisionResource |
+| `/repository/decision-tables` | GET | 获取决策表列表 | DecisionTableCollectionResource |
+| `/repository/decision-tables/{decisionId}` | GET | 获取决策表详情 | DecisionTableResource |
+
+### 9.6 History API端点
+
+| 端点 | 方法 | 描述 | 对应Flowable类 |
+|-----|------|------|----------------|
+| `/history/historic-decision-executions` | GET | 查询历史决策执行 | HistoryDecisionExecutionCollectionResource |
+| `/history/historic-decision-executions/{executionId}` | GET | 获取历史决策执行详情 | HistoricDecisionExecutionResource |
+| `/history/historic-decision-executions/{executionId}/data` | GET | 获取历史决策执行数据 | HistoricDecisionExecutionResourceDataResource |
+
+---
+
+## 十、总结
+
+本文档补充设计了 DMN 决策引擎的完整功能，与 Flowable DMN 引擎实现保持一致。
+
+### 核心功能
+1. **决策表部署和管理** - 支持DMN XML解析、部署、版本管理
+2. **决策执行** - 规则引擎执行器、表达式求值
+3. **命中策略** - 支持8种标准命中策略（UNIQUE, FIRST, PRIORITY, ANY, COLLECT, RULE ORDER, OUTPUT ORDER, UNORDERED）
+4. **COLLECT聚合器** - 支持SUM, COUNT, MIN, MAX四种聚合函数
+5. **严格模式** - 支持strictMode配置，控制命中策略违反时的行为
+6. **审计跟踪** - 完整的决策执行审计记录
+7. **历史记录** - 决策执行历史持久化
+8. **BPMN集成** - Business Rule Task与DMN引擎集成
+9. **决策服务** - 支持多决策组合执行
+
+### 与Flowable的关键对齐点
+1. **命中策略行为接口分离**：采用ContinueEvaluatingBehavior、EvaluateRuleValidityBehavior、ComposeRuleResultBehavior、ComposeDecisionResultBehavior四个接口
+2. **数据库表命名**：使用ACT_DMN_前缀和下划线后缀
+3. **历史记录存储**：使用单个EXECUTION_JSON_字段存储完整执行信息
+4. **服务方法命名**：executeDecision、executeDecisionService、executeWithAuditTrail等
+5. **构建器模式**：ExecuteDecisionBuilder支持parentDeploymentId、fallbackToDefaultTenant等配置
+
+### 技术亮点
+- **标准化**：基于 OMG DMN 1.1 国际标准
+- **解耦设计**：DMN引擎可独立运行，也可深度嵌入BPMN流程
+- **可扩展**：命中策略可插拔，支持自定义命中策略
+- **可审计**：完整的决策执行审计跟踪
+- **可追溯**：历史记录支持决策回溯分析
+- **可配置**：严格模式、自定义命中策略等灵活配置
+
+---
+
+## 十一、DMN XML转换器设计（与Flowable DmnXMLConverter对应）
+
+### 11.1 XML转换器概述
+
+Flowable DMN使用 `DmnXMLConverter` 类实现DMN XML与内存模型之间的双向转换。
+
+```typescript
+// dmn/services/converter/dmn-xml-converter.ts
+
+/**
+ * DMN XML转换器（与Flowable DmnXMLConverter对应）
+ */
+export class DmnXMLConverter {
+  
+  // DMN命名空间
+  static readonly DMN_NAMESPACE = 'https://www.omg.org/spec/DMN/20191111/MODEL/';
+  static readonly DMN_11_NAMESPACE = 'http://www.omg.org/spec/DMN/20151101/dmn.xsd';
+  static readonly DMN_12_NAMESPACE = 'http://www.omg.org/spec/DMN/20180521/MODEL/';
+  static readonly DMN_13_NAMESPACE = 'https://www.omg.org/spec/DMN/20191111/MODEL/';
+  
+  // Flowable扩展命名空间
+  static readonly FLOWABLE_EXTENSIONS_NAMESPACE = 'http://flowable.org/dmn';
+  static readonly FLOWABLE_EXTENSIONS_PREFIX = 'flowable';
+  
+  /**
+   * 将XML转换为DMN模型
+   */
+  convertToDmnModel(xmlContent: string, validateSchema: boolean = true): DmnDefinition {
+    // 1. 解析XML
+    const parser = new XMLParser();
+    const document = parser.parse(xmlContent);
+    
+    // 2. 获取目标命名空间，确定DMN版本
+    const targetNamespace = this.getTargetNamespace(document);
+    
+    // 3. 可选：验证XSD Schema
+    if (validateSchema) {
+      this.validateModel(document, targetNamespace);
+    }
+    
+    // 4. 转换为DmnDefinition
+    return this.parseDmnDefinition(document);
+  }
+  
+  /**
+   * 将DMN模型转换为XML
+   */
+  convertToXML(dmnDefinition: DmnDefinition): string {
+    const writer = new XMLWriter();
+    
+    // 写入definitions根元素
+    writer.writeStartElement('definitions');
+    writer.writeDefaultNamespace(DmnXMLConverter.DMN_NAMESPACE);
+    
+    // 写入命名空间声明
+    writer.writeNamespace('dmndi', 'http://www.omg.org/spec/DMN/20180521/DMNDI/');
+    writer.writeNamespace('dc', 'http://www.omg.org/spec/DMN/20180521/DC/');
+    writer.writeNamespace('di', 'http://www.omg.org/spec/DMN/20180521/DI/');
+    
+    // 写入定义属性
+    writer.writeAttribute('id', dmnDefinition.id);
+    if (dmnDefinition.name) {
+      writer.writeAttribute('name', dmnDefinition.name);
+    }
+    writer.writeAttribute('namespace', dmnDefinition.namespace);
+    
+    // 写入InputData、ItemDefinition、Decision、DecisionService
+    // ... 实现省略
+    
+    writer.writeEndElement();
+    return writer.toString();
+  }
+}
+```
+
+### 11.2 DMN版本支持
+
+Flowable DMN支持三个版本的DMN规范：
+
+| 版本 | 命名空间 | XSD文件 |
+|-----|---------|---------|
+| DMN 1.1 | http://www.omg.org/spec/DMN/20151101/dmn.xsd | dmn.xsd |
+| DMN 1.2 | http://www.omg.org/spec/DMN/20180521/MODEL/ | DMN12.xsd |
+| DMN 1.3 | https://www.omg.org/spec/DMN/20191111/MODEL/ | DMN13.xsd |
+
+### 11.3 元素转换器列表
+
+| 转换器类 | XML元素 | 描述 |
+|---------|---------|------|
+| InputClauseXMLConverter | input | 输入子句转换器 |
+| OutputClauseXMLConverter | output | 输出子句转换器 |
+| DecisionRuleXMLConverter | rule | 决策规则转换器 |
+| InformationRequirementConverter | informationRequirement | 信息需求转换器 |
+| AuthorityRequirementConverter | authorityRequirement | 权限需求转换器 |
+| ItemDefinitionXMLConverter | itemDefinition | 项定义转换器 |
+| InputDataXMLConverter | inputData | 输入数据转换器 |
+| VariableXMLConverter | variable | 变量转换器 |
+| DecisionServiceXMLConverter | decisionService | 决策服务转换器 |
+
+---
+
+## 十二、引擎配置器设计（与Flowable DmnEngineConfigurator对应）
+
+### 12.1 配置器实现
+
+```typescript
+// dmn/config/dmn-engine-configurator.ts
+
+/**
+ * DMN引擎配置器（与Flowable DmnEngineConfigurator对应）
+ * 负责将DMN引擎集成到主流程引擎中
+ */
+export class DmnEngineConfigurator extends AbstractEngineConfigurator<DmnEngine> {
+  
+  protected dmnEngineConfiguration: DmnEngineConfiguration;
+  
+  /**
+   * 获取配置优先级
+   */
+  getPriority(): number {
+    return EngineConfigurationConstants.PRIORITY_ENGINE_DMN;
+  }
+  
+  /**
+   * 获取自定义部署器
+   */
+  protected getCustomDeployers(): EngineDeployer[] {
+    return [new DmnDeployer()];
+  }
+  
+  /**
+   * 获取MyBatis配置路径
+   */
+  protected getMybatisCfgPath(): string {
+    return DmnEngineConfiguration.DEFAULT_MYBATIS_MAPPING_FILE;
+  }
+  
+  /**
+   * 配置引擎
+   */
+  configure(engineConfiguration: AbstractEngineConfiguration): void {
+    if (!this.dmnEngineConfiguration) {
+      this.dmnEngineConfiguration = new StandaloneInMemDmnEngineConfiguration();
+    }
+    
+    // 初始化通用属性
+    this.initialiseCommonProperties(engineConfiguration, this.dmnEngineConfiguration);
+    
+    // 初始化引擎
+    this.initEngine();
+    
+    // 初始化服务配置
+    this.initServiceConfigurations(engineConfiguration, this.dmnEngineConfiguration);
+  }
+  
+  /**
+   * 构建引擎
+   */
+  protected buildEngine(): DmnEngine {
+    if (!this.dmnEngineConfiguration) {
+      throw new Error('DmnEngineConfiguration is required');
+    }
+    return this.dmnEngineConfiguration.buildDmnEngine();
   }
 }
 ```
 
 ---
 
-## 十、数据库表结构
+## 十三、模块依赖关系
 
-```sql
--- 决策定义表
-CREATE TABLE `dmn_decision` (
-  `id` varchar(64) NOT NULL,
-  `key` varchar(64) NOT NULL COMMENT '决策Key',
-  `name` varchar(128) DEFAULT NULL COMMENT '决策名称',
-  `version` int NOT NULL COMMENT '版本号',
-  `category` varchar(128) DEFAULT NULL COMMENT '分类',
-  `deployment_id` varchar(64) DEFAULT NULL COMMENT '部署ID',
-  `dmn_xml` text NOT NULL COMMENT 'DMN XML内容',
-  `decision_table_key` varchar(64) DEFAULT NULL COMMENT '决策表Key',
-  `decision_table_name` varchar(128) DEFAULT NULL COMMENT '决策表名称',
-  `hit_policy` varchar(20) DEFAULT 'UNIQUE' COMMENT '命中策略',
-  `input_clauses` json DEFAULT NULL COMMENT '输入子句',
-  `output_clauses` json DEFAULT NULL COMMENT '输出子句',
-  `rules` json DEFAULT NULL COMMENT '规则列表',
-  `tenant_id` varchar(64) DEFAULT NULL COMMENT '租户ID',
-  `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  PRIMARY KEY (`id`),
-  KEY `idx_key` (`key`),
-  KEY `idx_deployment_id` (`deployment_id`),
-  KEY `idx_tenant_id` (`tenant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DMN决策定义表';
+### 13.1 DMN相关模块列表
 
--- DMN部署表
-CREATE TABLE `dmn_deployment` (
-  `id` varchar(64) NOT NULL,
-  `name` varchar(128) DEFAULT NULL COMMENT '部署名称',
-  `category` varchar(128) DEFAULT NULL COMMENT '分类',
-  `tenant_id` varchar(64) DEFAULT NULL COMMENT '租户ID',
-  `parent_deployment_id` varchar(64) DEFAULT NULL COMMENT '父部署ID',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  PRIMARY KEY (`id`),
-  KEY `idx_tenant_id` (`tenant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DMN部署表';
+| 模块名称 | 描述 | 主要类 |
+|---------|------|-------|
+| flowable-dmn-api | DMN API接口定义 | DmnDecisionService, DmnRepositoryService, DmnHistoryService |
+| flowable-dmn-model | DMN模型定义 | Decision, DecisionTable, HitPolicy, BuiltinAggregator |
+| flowable-dmn-engine | DMN引擎核心实现 | RuleEngineExecutorImpl, AbstractHitPolicy, DmnDecisionServiceImpl |
+| flowable-dmn-xml-converter | XML转换器 | DmnXMLConverter, BaseDmnXMLConverter |
+| flowable-dmn-rest | REST API | DmnRuleServiceResource, DmnDeploymentCollectionResource |
+| flowable-dmn-engine-configurator | 引擎配置器 | DmnEngineConfigurator |
+| flowable-dmn-spring | Spring集成 | SpringDmnEngineConfiguration |
 
--- DMN资源表
-CREATE TABLE `dmn_resource` (
-  `id` varchar(64) NOT NULL,
-  `name` varchar(256) NOT NULL COMMENT '资源名称',
-  `deployment_id` varchar(64) NOT NULL COMMENT '部署ID',
-  `content` longblob COMMENT '资源内容',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`),
-  KEY `idx_deployment_id` (`deployment_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DMN资源表';
+### 13.2 模块依赖图
 
--- 历史决策执行记录表
-CREATE TABLE `dmn_historic_decision_execution` (
-  `id` varchar(64) NOT NULL,
-  `decision_key` varchar(64) NOT NULL COMMENT '决策Key',
-  `decision_name` varchar(128) DEFAULT NULL COMMENT '决策名称',
-  `decision_version` int NOT NULL COMMENT '决策版本',
-  `process_instance_id` varchar(64) DEFAULT NULL COMMENT '流程实例ID',
-  `execution_id` varchar(64) DEFAULT NULL COMMENT '执行ID',
-  `activity_id` varchar(64) DEFAULT NULL COMMENT '活动ID',
-  `scope_type` varchar(20) DEFAULT NULL COMMENT '作用域类型',
-  `tenant_id` varchar(64) DEFAULT NULL COMMENT '租户ID',
-  `user_id` varchar(64) DEFAULT NULL COMMENT '用户ID',
-  `start_time` datetime NOT NULL COMMENT '开始时间',
-  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
-  `input_variables` json DEFAULT NULL COMMENT '输入变量',
-  `output_variables` json DEFAULT NULL COMMENT '输出变量',
-  `decision_result` json DEFAULT NULL COMMENT '决策结果',
-  `audit_trail` json DEFAULT NULL COMMENT '审计跟踪',
-  `failed` tinyint(1) DEFAULT '0' COMMENT '是否失败',
-  `exception_message` text DEFAULT NULL COMMENT '异常消息',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`),
-  KEY `idx_decision_key` (`decision_key`),
-  KEY `idx_process_instance_id` (`process_instance_id`),
-  KEY `idx_tenant_id` (`tenant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='历史决策执行记录表';
+```
+flowable-dmn-rest
+       │
+       ▼
+flowable-dmn-engine ──────────► flowable-dmn-api
+       │                              │
+       ▼                              ▼
+flowable-dmn-xml-converter     flowable-dmn-model
+       │
+       ▼
+flowable-dmn-engine-configurator
+       │
+       ▼
+  flowable-engine (BPMN集成)
 ```
 
 ---
 
-## 十一、总结
+## 十四、总结
 
-本文档补充设计了 DMN 决策引擎的完整功能，包括：
+本文档补充设计了 DMN 决策引擎的完整功能，与 Flowable DMN 引擎实现保持一致。
 
 ### 核心功能
 1. **决策表部署和管理** - 支持DMN XML解析、部署、版本管理
 2. **决策执行** - 规则引擎执行器、表达式求值
-3. **命中策略** - 支持7种标准命中策略（UNIQUE, FIRST, PRIORITY, ANY, COLLECT, RULE ORDER, OUTPUT ORDER）
-4. **审计跟踪** - 完整的决策执行审计记录
-5. **历史记录** - 决策执行历史持久化
-6. **BPMN集成** - Business Rule Task与DMN引擎集成
+3. **命中策略** - 支持8种标准命中策略（UNIQUE, FIRST, PRIORITY, ANY, COLLECT, RULE ORDER, OUTPUT ORDER, UNORDERED）
+4. **COLLECT聚合器** - 支持SUM, COUNT, MIN, MAX四种聚合函数
+5. **严格模式** - 支持strictMode配置，控制命中策略违反时的行为
+6. **审计跟踪** - 完整的决策执行审计记录
+7. **历史记录** - 决策执行历史持久化
+8. **BPMN集成** - Business Rule Task与DMN引擎集成
+9. **决策服务** - 支持多决策组合执行
+10. **XML转换** - 支持DMN 1.1/1.2/1.3 XML格式转换
+
+### 与Flowable的关键对齐点
+1. **命中策略行为接口分离**：采用ContinueEvaluatingBehavior、EvaluateRuleValidityBehavior、ComposeRuleResultBehavior、ComposeDecisionResultBehavior四个接口
+2. **数据库表命名**：使用ACT_DMN_前缀和下划线后缀
+3. **历史记录存储**：使用单个EXECUTION_JSON_字段存储完整执行信息
+4. **服务方法命名**：executeDecision、executeDecisionService、executeWithAuditTrail等
+5. **构建器模式**：ExecuteDecisionBuilder支持parentDeploymentId、fallbackToDefaultTenant、disableHistory等配置
+6. **REST API端点**：/dmn-rule/execute、/dmn-rule/execute-decision、/dmn-rule/execute-decision-service等
+7. **XML命名空间**：支持DMN 1.1/1.2/1.3三个版本，包含Flowable扩展命名空间
+8. **引擎配置器**：通过DmnEngineConfigurator集成到主流程引擎
 
 ### 技术亮点
-- **标准化**：基于 OMG DMN 1.1 国际标准
+- **标准化**：基于 OMG DMN 1.1/1.2/1.3 国际标准
 - **解耦设计**：DMN引擎可独立运行，也可深度嵌入BPMN流程
-- **可扩展**：命中策略可插拔，易于扩展
+- **可扩展**：命中策略可插拔，支持自定义命中策略
 - **可审计**：完整的决策执行审计跟踪
 - **可追溯**：历史记录支持决策回溯分析
+- **可配置**：严格模式、自定义命中策略等灵活配置
+- **版本兼容**：支持多个DMN规范版本的XML转换

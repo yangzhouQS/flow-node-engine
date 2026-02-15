@@ -23,8 +23,8 @@ export enum DmnDecisionStatus {
 }
 
 /**
- * Hit Policy枚举
- * DMN 1.1标准定义的Hit Policy
+ * Hit Policy枚举（与Flowable HitPolicy对应）
+ * DMN 1.1/1.2/1.3标准定义的Hit Policy
  */
 export enum HitPolicy {
   /** 唯一命中 - 只允许一条规则匹配 */
@@ -41,6 +41,8 @@ export enum HitPolicy {
   RULE_ORDER = 'RULE ORDER',
   /** 输出顺序命中 - 按输出值顺序返回所有匹配结果 */
   OUTPUT_ORDER = 'OUTPUT ORDER',
+  /** 无序命中 - 返回所有匹配结果，无特定顺序 */
+  UNORDERED = 'UNORDERED',
 }
 
 /**

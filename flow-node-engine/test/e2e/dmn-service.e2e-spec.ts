@@ -1,6 +1,12 @@
 /**
  * E2E 测试 - DMN决策引擎 API
  * 测试决策表管理相关的HTTP接口
+ * 
+ * 与Flowable DMN引擎保持一致的行为：
+ * - 支持8种HitPolicy策略
+ * - 支持strictMode配置
+ * - 支持forceDMN11配置
+ * - 支持完整的审计跟踪
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Test, TestingModule, INestApplication } from '@nestjs/testing';
@@ -772,6 +778,409 @@ describe('E2E 测试 - DMN决策引擎 API', () => {
         .expect(200);
 
       expect(statsResponse.body).toHaveProperty('totalExecutions');
+    });
+  });
+
+  describe('HitPolicy策略测试（与Flowable保持一致）', () => {
+    it('应该支持UNIQUE策略（仅允许一条规则匹配）', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'unique-policy-test',
+          name: 'UNIQUE策略测试',
+          hitPolicy: HitPolicy.UNIQUE,
+          inputs: [
+            { id: 'value', label: '值', expression: 'value', type: 'number' },
+          ],
+          outputs: [
+            { id: 'result', label: '结果', name: 'result', type: 'string' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'value', operator: '==', value: 1 }],
+              outputs: [{ outputId: 'result', value: 'one' }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      // 发布决策
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      // 执行决策
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { value: 1 },
+        })
+        .expect(200);
+
+      expect(executeResponse.body.status).toBe('success');
+      expect(executeResponse.body.outputResult).toEqual({ result: 'one' });
+    });
+
+    it('应该支持FIRST策略（返回第一条匹配的规则）', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'first-policy-test',
+          name: 'FIRST策略测试',
+          hitPolicy: HitPolicy.FIRST,
+          inputs: [
+            { id: 'value', label: '值', expression: 'value', type: 'number' },
+          ],
+          outputs: [
+            { id: 'result', label: '结果', name: 'result', type: 'string' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 10 }],
+              outputs: [{ outputId: 'result', value: 'high' }],
+            },
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 5 }],
+              outputs: [{ outputId: 'result', value: 'medium' }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { value: 15 },
+        })
+        .expect(200);
+
+      expect(executeResponse.body.status).toBe('success');
+      expect(executeResponse.body.outputResult).toEqual({ result: 'high' });
+    });
+
+    it('应该支持PRIORITY策略（按优先级返回）', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'priority-policy-test',
+          name: 'PRIORITY策略测试',
+          hitPolicy: HitPolicy.PRIORITY,
+          inputs: [
+            { id: 'value', label: '值', expression: 'value', type: 'number' },
+          ],
+          outputs: [
+            { id: 'result', label: '结果', name: 'result', type: 'string' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 10 }],
+              outputs: [{ outputId: 'result', value: 'high' }],
+              priority: 1,
+            },
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 5 }],
+              outputs: [{ outputId: 'result', value: 'medium' }],
+              priority: 2,
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { value: 15 },
+        })
+        .expect(200);
+
+      expect(executeResponse.body.status).toBe('success');
+    });
+
+    it('应该支持RULE_ORDER策略（按规则顺序返回所有匹配）', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'rule-order-policy-test',
+          name: 'RULE_ORDER策略测试',
+          hitPolicy: HitPolicy.RULE_ORDER,
+          inputs: [
+            { id: 'value', label: '值', expression: 'value', type: 'number' },
+          ],
+          outputs: [
+            { id: 'result', label: '结果', name: 'result', type: 'string' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 5 }],
+              outputs: [{ outputId: 'result', value: 'first-match' }],
+            },
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 10 }],
+              outputs: [{ outputId: 'result', value: 'second-match' }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { value: 15 },
+        })
+        .expect(200);
+
+      expect(executeResponse.body.status).toBe('success');
+      expect(executeResponse.body.matchedCount).toBe(2);
+    });
+
+    it('应该支持COLLECT策略（收集所有匹配结果）', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'collect-policy-test',
+          name: 'COLLECT策略测试',
+          hitPolicy: HitPolicy.COLLECT,
+          aggregation: AggregationType.NONE,
+          inputs: [
+            { id: 'value', label: '值', expression: 'value', type: 'number' },
+          ],
+          outputs: [
+            { id: 'result', label: '结果', name: 'result', type: 'string' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 5 }],
+              outputs: [{ outputId: 'result', value: 'first' }],
+            },
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 10 }],
+              outputs: [{ outputId: 'result', value: 'second' }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { value: 15 },
+        })
+        .expect(200);
+
+      expect(executeResponse.body.status).toBe('success');
+      expect(executeResponse.body.matchedCount).toBe(2);
+    });
+
+    it('应该支持COLLECT SUM聚合策略', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'collect-sum-test',
+          name: 'COLLECT SUM聚合测试',
+          hitPolicy: HitPolicy.COLLECT,
+          aggregation: AggregationType.SUM,
+          inputs: [
+            { id: 'amount', label: '金额', expression: 'amount', type: 'number' },
+          ],
+          outputs: [
+            { id: 'discount', label: '折扣', name: 'discount', type: 'number' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'amount', operator: '>=', value: 100 }],
+              outputs: [{ outputId: 'discount', value: 10 }],
+            },
+            {
+              conditions: [{ inputId: 'amount', operator: '>=', value: 500 }],
+              outputs: [{ outputId: 'discount', value: 20 }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { amount: 600 },
+        })
+        .expect(200);
+
+      expect(executeResponse.body.status).toBe('success');
+    });
+
+    it('应该支持UNORDERED策略（返回所有匹配但无序）', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'unordered-policy-test',
+          name: 'UNORDERED策略测试',
+          hitPolicy: HitPolicy.UNORDERED,
+          inputs: [
+            { id: 'value', label: '值', expression: 'value', type: 'number' },
+          ],
+          outputs: [
+            { id: 'result', label: '结果', name: 'result', type: 'string' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 5 }],
+              outputs: [{ outputId: 'result', value: 'match1' }],
+            },
+            {
+              conditions: [{ inputId: 'value', operator: '>=', value: 10 }],
+              outputs: [{ outputId: 'result', value: 'match2' }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { value: 15 },
+        })
+        .expect(200);
+
+      expect(executeResponse.body.status).toBe('success');
+      expect(executeResponse.body.matchedCount).toBe(2);
+    });
+  });
+
+  describe('审计跟踪测试', () => {
+    it('执行结果应该包含审计信息', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'audit-test-decision',
+          name: '审计测试决策',
+          hitPolicy: HitPolicy.FIRST,
+          inputs: [
+            { id: 'input1', label: '输入1', expression: 'input1', type: 'string' },
+          ],
+          outputs: [
+            { id: 'output1', label: '输出1', name: 'output1', type: 'string' },
+          ],
+          rules: [
+            {
+              conditions: [{ inputId: 'input1', operator: '==', value: 'test' }],
+              outputs: [{ outputId: 'output1', value: 'result' }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { input1: 'test' },
+        })
+        .expect(200);
+
+      // 验证审计信息存在
+      expect(executeResponse.body).toHaveProperty('audit');
+      expect(executeResponse.body.audit).toHaveProperty('decisionId', decisionId);
+      expect(executeResponse.body.audit).toHaveProperty('ruleExecutions');
+      expect(Array.isArray(executeResponse.body.audit.ruleExecutions)).toBe(true);
+    });
+
+    it('审计信息应该包含规则执行详情', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/dmn/decisions')
+        .send({
+          decisionKey: 'audit-detail-test',
+          name: '审计详情测试',
+          hitPolicy: HitPolicy.FIRST,
+          inputs: [
+            { id: 'age', label: '年龄', expression: 'age', type: 'number' },
+          ],
+          outputs: [
+            { id: 'status', label: '状态', name: 'status', type: 'string' },
+          ],
+          rules: [
+            {
+              id: 'rule-adult',
+              conditions: [{ inputId: 'age', operator: '>=', value: 18 }],
+              outputs: [{ outputId: 'status', value: 'adult' }],
+            },
+          ],
+        })
+        .expect(201);
+
+      const decisionId = createResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/dmn/decisions/${decisionId}/publish`)
+        .expect(200);
+
+      const executeResponse = await request(app.getHttpServer())
+        .post('/dmn/execute')
+        .send({
+          decisionId,
+          inputData: { age: 25 },
+        })
+        .expect(200);
+
+      const ruleExecutions = executeResponse.body.audit?.ruleExecutions;
+      expect(ruleExecutions).toBeDefined();
+      expect(ruleExecutions.length).toBeGreaterThan(0);
+
+      const firstRule = ruleExecutions[0];
+      expect(firstRule).toHaveProperty('ruleId');
+      expect(firstRule).toHaveProperty('matched');
+      expect(firstRule).toHaveProperty('inputEntries');
+      expect(firstRule).toHaveProperty('outputEntries');
     });
   });
 });

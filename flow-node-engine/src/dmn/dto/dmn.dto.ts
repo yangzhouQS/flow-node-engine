@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional, IsEnum, IsObject, IsInt, Min, IsArray, IsBoolean } from 'class-validator';
 
 import { HitPolicy, AggregationType, DmnDecisionStatus } from '../entities/dmn-decision.entity';
+import { DecisionExecutionAuditContainer } from '../interfaces/hit-policy.interface';
 
 /**
  * 决策表输入定义DTO
@@ -401,6 +402,9 @@ export class DecisionResultDto {
 
   @ApiPropertyOptional({ description: '错误信息' })
   errorMessage?: string;
+
+  @ApiPropertyOptional({ description: '审计信息（包含规则执行详情）' })
+  audit?: DecisionExecutionAuditContainer;
 }
 
 /**

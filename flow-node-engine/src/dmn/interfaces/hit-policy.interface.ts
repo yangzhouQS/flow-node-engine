@@ -17,6 +17,171 @@ export interface RuleEvaluationResult {
 }
 
 /**
+ * 规则执行审计信息
+ */
+export interface RuleExecutionAudit {
+  /** 规则编号 */
+  ruleNumber: number;
+  /** 规则ID */
+  ruleId: string;
+  /** 是否有效 */
+  isValid: boolean;
+  /** 输入条目审计 */
+  inputEntries: InputEntryAudit[];
+  /** 输出条目审计 */
+  outputEntries: OutputEntryAudit[];
+  /** 异常消息 */
+  exceptionMessage?: string;
+  /** 验证消息 */
+  validationMessage?: string;
+}
+
+/**
+ * 输入条目审计
+ */
+export interface InputEntryAudit {
+  /** 条目ID */
+  id: string;
+  /** 表达式 */
+  expression?: string;
+  /** 条件文本 */
+  conditionText?: string;
+  /** 评估结果 */
+  result: boolean | string;
+}
+
+/**
+ * 输出条目审计
+ */
+export interface OutputEntryAudit {
+  /** 条目ID */
+  id: string;
+  /** 表达式 */
+  expression?: string;
+  /** 输出值 */
+  result: any;
+}
+
+/**
+ * 决策执行审计容器（与Flowable DecisionExecutionAuditContainer对应）
+ */
+export interface DecisionExecutionAuditContainer {
+  /** 决策ID */
+  decisionId: string;
+  /** 决策名称 */
+  decisionName?: string;
+  /** 决策Key */
+  decisionKey: string;
+  /** 决策版本 */
+  decisionVersion: number;
+  /** Hit Policy */
+  hitPolicy: string;
+  /** 聚合类型 */
+  aggregation?: string;
+  /** 严格模式 */
+  strictMode: boolean;
+  /** 是否强制DMN1.1 */
+  forceDMN11: boolean;
+  /** 开始时间 */
+  startTime: Date;
+  /** 结束时间 */
+  endTime?: Date;
+  /** 是否失败 */
+  failed: boolean;
+  /** 异常消息 */
+  exceptionMessage?: string;
+  /** 验证消息 */
+  validationMessage?: string;
+  /** 输入变量 */
+  inputVariables: Record<string, any>;
+  /** 输入变量类型 */
+  inputVariableTypes: Record<string, string>;
+  /** 决策结果 */
+  decisionResult: Record<string, any>[];
+  /** 决策结果类型 */
+  decisionResultTypes: Record<string, string>;
+  /** 规则执行审计 */
+  ruleExecutions: Record<number, RuleExecutionAudit>;
+  /** 是否多结果 */
+  multipleResults: boolean;
+  /** 输入子句 */
+  inputClauses: InputClauseAudit[];
+  /** 输出子句 */
+  outputClauses: OutputClauseAudit[];
+}
+
+/**
+ * 输入子句审计
+ */
+export interface InputClauseAudit {
+  /** ID */
+  id: string;
+  /** 标签 */
+  label?: string;
+  /** 表达式 */
+  expression: string;
+  /** 类型引用 */
+  typeRef?: string;
+}
+
+/**
+ * 输出子句审计
+ */
+export interface OutputClauseAudit {
+  /** ID */
+  id: string;
+  /** 标签 */
+  label?: string;
+  /** 名称 */
+  name: string;
+  /** 类型引用 */
+  typeRef?: string;
+  /** 输出值列表（用于PRIORITY/OUTPUT ORDER） */
+  outputValues?: any[];
+}
+
+/**
+ * 规则执行上下文（与Flowable ELExecutionContext对应）
+ */
+export interface RuleExecutionContext {
+  /** 决策定义 */
+  decision: any;
+  /** 输入变量 */
+  variables: Map<string, any>;
+  /** 堆栈变量 */
+  stackVariables: Map<string, any>;
+  /** 审计容器 */
+  auditContainer: DecisionExecutionAuditContainer;
+  /** 规则结果 */
+  ruleResults: Map<number, Record<string, any>>;
+  /** 聚合器 */
+  aggregator: string | null;
+  /** 严格模式 */
+  strictMode: boolean;
+  /** 强制DMN1.1 */
+  forceDMN11: boolean;
+  /** 输出子句输出值 */
+  outputClauseOutputValues: any[] | null;
+  
+  /** 添加规则结果 */
+  addRuleResult(ruleNumber: number, outputName: string, outputValue: any): void;
+  /** 获取规则结果 */
+  getRuleResults(): Map<number, Record<string, any>>;
+  /** 获取堆栈变量 */
+  getStackVariables(): Map<string, any>;
+  /** 获取审计容器 */
+  getAuditContainer(): DecisionExecutionAuditContainer;
+  /** 获取聚合器 */
+  getAggregator(): string | null;
+  /** 是否严格模式 */
+  isStrictMode(): boolean;
+  /** 是否强制DMN1.1 */
+  isForceDMN11(): boolean;
+  /** 获取输出子句输出值 */
+  getOutputClauseOutputValues(): any[] | null;
+}
+
+/**
  * Hit Policy处理器接口
  */
 export interface HitPolicyHandler {
@@ -29,9 +194,70 @@ export interface HitPolicyHandler {
   /**
    * 处理规则评估结果
    * @param results 所有规则的评估结果
+   * @param context 执行上下文
    * @returns 最终输出结果
    */
-  handle(results: RuleEvaluationResult[]): HitPolicyResult;
+  handle(results: RuleEvaluationResult[], context?: RuleExecutionContext): HitPolicyResult;
+}
+
+/**
+ * 继续评估行为接口（与Flowable ContinueEvaluatingBehavior对应）
+ * 控制找到匹配规则后是否继续评估后续规则
+ */
+export interface ContinueEvaluatingBehavior extends HitPolicyHandler {
+  /**
+   * 判断是否继续评估
+   * @param ruleResult 当前规则结果
+   * @returns 是否继续评估
+   */
+  shouldContinueEvaluating(ruleResult: boolean): boolean;
+}
+
+/**
+ * 评估规则有效性行为接口（与Flowable EvaluateRuleValidityBehavior对应）
+ * 用于UNIQUE等需要验证规则唯一性的策略
+ */
+export interface EvaluateRuleValidityBehavior extends HitPolicyHandler {
+  /**
+   * 评估规则有效性
+   * @param ruleNumber 规则编号
+   * @param context 执行上下文
+   */
+  evaluateRuleValidity(ruleNumber: number, context: RuleExecutionContext): void;
+}
+
+/**
+ * 组装规则结果行为接口（与Flowable ComposeRuleResultBehavior对应）
+ * 处理单个规则的输出结果
+ */
+export interface ComposeRuleResultBehavior extends HitPolicyHandler {
+  /**
+   * 组装规则结果
+   * @param ruleNumber 规则编号
+   * @param outputName 输出名称
+   * @param outputValue 输出值
+   * @param context 执行上下文
+   */
+  composeRuleResult(ruleNumber: number, outputName: string, outputValue: any, context: RuleExecutionContext): void;
+}
+
+/**
+ * 组装决策结果行为接口（与Flowable ComposeDecisionResultBehavior对应）
+ * 处理最终决策结果的组装
+ */
+export interface ComposeDecisionResultBehavior extends HitPolicyHandler {
+  /**
+   * 组装决策结果
+   * @param context 执行上下文
+   */
+  composeDecisionResults(context: RuleExecutionContext): void;
+  
+  /**
+   * 更新堆栈变量
+   * @param decisionResults 决策结果
+   * @param context 执行上下文
+   */
+  updateStackWithDecisionResults(decisionResults: Record<string, any>[], context: RuleExecutionContext): void;
 }
 
 /**
@@ -155,4 +381,6 @@ export interface DecisionOutputDefinition {
   type?: string;
   /** 默认值 */
   defaultValue?: any;
+  /** 输出值列表（用于PRIORITY/OUTPUT ORDER） */
+  outputValues?: any[];
 }

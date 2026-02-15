@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,18 +10,61 @@ import {
   RuleEvaluationResult,
   DecisionTableDefinition,
   RuleDefinition,
+  DecisionExecutionAuditContainer,
+  RuleExecutionAudit,
+  InputEntryAudit,
+  OutputEntryAudit,
+  RuleExecutionContext,
+  HitPolicyHandler,
+  ContinueEvaluatingBehavior,
+  EvaluateRuleValidityBehavior,
+  ComposeDecisionResultBehavior,
 } from '../interfaces/hit-policy.interface';
 
 import { ConditionEvaluatorService } from './condition-evaluator.service';
 import { HitPolicyHandlerFactory } from './hit-policy-handlers.service';
 
 /**
+ * 执行决策的配置选项
+ * 与Flowable的DecisionExecutionAuditContainer保持一致
+ */
+export interface ExecuteDecisionOptions {
+  /** 是否启用严格模式（默认true）- 违反HitPolicy时抛出异常 */
+  strictMode?: boolean;
+  /** 是否强制使用DMN 1.1模式（影响COLLECT去重行为） */
+  forceDMN11?: boolean;
+  /** 是否启用审计跟踪 */
+  enableAudit?: boolean;
+  /** 租户ID */
+  tenantId?: string;
+  /** 流程实例ID */
+  processInstanceId?: string;
+  /** 执行ID */
+  executionId?: string;
+  /** 活动ID */
+  activityId?: string;
+  /** 任务ID */
+  taskId?: string;
+}
+
+/**
  * 规则引擎执行器服务
  * 负责执行决策表并返回结果
+ * 
+ * 与Flowable DMN引擎保持一致的行为：
+ * - 支持strictMode配置
+ * - 支持forceDMN11配置
+ * - 支持完整的审计跟踪
+ * - 支持行为接口（ContinueEvaluating, EvaluateRuleValidity, ComposeDecisionResult）
  */
 @Injectable()
 export class RuleEngineExecutorService {
   private readonly logger = new Logger(RuleEngineExecutorService.name);
+
+  /** 默认严格模式 */
+  private readonly defaultStrictMode = true;
+  /** 默认DMN版本 */
+  private readonly defaultForceDMN11 = false;
 
   constructor(
     @InjectRepository(DmnDecisionEntity)
@@ -35,11 +78,15 @@ export class RuleEngineExecutorService {
   /**
    * 执行决策
    * @param dto 执行决策DTO
+   * @param options 执行选项
    * @returns 决策结果
    */
-  async execute(dto: ExecuteDecisionDto): Promise<DecisionResultDto> {
+  async execute(dto: ExecuteDecisionDto, options?: ExecuteDecisionOptions): Promise<DecisionResultDto> {
     const startTime = Date.now();
     const executionId = uuidv4();
+    const strictMode = options?.strictMode ?? this.defaultStrictMode;
+    const forceDMN11 = options?.forceDMN11 ?? this.defaultForceDMN11;
+    const enableAudit = options?.enableAudit ?? true;
 
     // 获取决策定义
     let decision: DmnDecisionEntity;
@@ -61,31 +108,60 @@ export class RuleEngineExecutorService {
 
       decision = await queryBuilder.getOne();
     } else {
-      throw new Error('Either decisionId or decisionKey must be provided');
+      throw new BadRequestException('Either decisionId or decisionKey must be provided');
     }
 
     if (!decision) {
-      throw new Error('Decision not found');
+      throw new BadRequestException('Decision not found');
     }
 
     if (decision.status !== DmnDecisionStatus.PUBLISHED) {
-      throw new Error(`Decision is not published. Current status: ${decision.status}`);
+      throw new BadRequestException(`Decision is not published. Current status: ${decision.status}`);
     }
+
+    // 初始化审计容器
+    const auditContainer: DecisionExecutionAuditContainer = {
+      decisionId: decision.id,
+      decisionKey: decision.decisionKey,
+      decisionName: decision.name,
+      ruleExecutions: [],
+      strictMode,
+      forceDMN11,
+    };
 
     try {
       // 解析决策表定义
       const decisionTable = this.parseDecisionTable(decision);
 
-      // 评估所有规则
-      const evaluationResults = this.evaluateRules(decisionTable, dto.inputData);
-
-      // 获取Hit Policy处理器并处理结果
+      // 获取Hit Policy处理器
       const handler = this.hitPolicyHandlerFactory.getHandler(decision.hitPolicy as HitPolicy);
+
+      // 创建规则执行上下文
+      const ruleContext: RuleExecutionContext = {
+        decisionTable,
+        inputData: dto.inputData,
+        auditContainer,
+        strictMode,
+        forceDMN11,
+        handler,
+      };
+
+      // 评估规则（使用行为接口）
+      const evaluationResults = this.evaluateRulesWithContext(ruleContext);
+
+      // 处理结果
       const hitPolicyResult = handler.handle(evaluationResults);
 
-      // 处理聚合（如果需要）
+      // 检查规则有效性（如果处理器支持）
+      if (this.hasEvaluateRuleValidityBehavior(handler)) {
+        this.validateRuleValidity(handler, evaluationResults, strictMode);
+      }
+
+      // 组合决策结果（如果处理器支持）
       let finalOutput = hitPolicyResult.output;
-      if (hitPolicyResult.needsAggregation && decision.aggregation !== AggregationType.NONE) {
+      if (this.hasComposeDecisionResultBehavior(handler)) {
+        finalOutput = handler.composeDecisionResults(evaluationResults, decisionTable.outputs);
+      } else if (hitPolicyResult.needsAggregation && decision.aggregation !== AggregationType.NONE) {
         finalOutput = this.applyAggregation(
           hitPolicyResult.output as Record<string, any>[],
           decision.aggregation,
@@ -107,11 +183,12 @@ export class RuleEngineExecutorService {
         matchedRules: hitPolicyResult.matchedRuleIds,
         matchedCount: hitPolicyResult.matchedRuleIds.length,
         executionTimeMs,
-        processInstanceId: dto.processInstanceId,
-        executionId: dto.executionId,
-        activityId: dto.activityId,
-        taskId: dto.taskId,
-        tenantId: dto.tenantId,
+        processInstanceId: dto.processInstanceId ?? options?.processInstanceId,
+        executionId: dto.executionId ?? options?.executionId,
+        activityId: dto.activityId ?? options?.activityId,
+        taskId: dto.taskId ?? options?.taskId,
+        tenantId: dto.tenantId ?? options?.tenantId,
+        auditContainer: enableAudit ? auditContainer : undefined,
       });
 
       return {
@@ -124,6 +201,7 @@ export class RuleEngineExecutorService {
         matchedRules: hitPolicyResult.matchedRuleIds,
         matchedCount: hitPolicyResult.matchedRuleIds.length,
         executionTimeMs,
+        audit: enableAudit ? auditContainer : undefined,
       };
     } catch (error) {
       const executionTimeMs = Date.now() - startTime;
@@ -138,17 +216,87 @@ export class RuleEngineExecutorService {
         status: DmnExecutionStatus.FAILED,
         inputData: dto.inputData,
         executionTimeMs,
-        processInstanceId: dto.processInstanceId,
-        executionId: dto.executionId,
-        activityId: dto.activityId,
-        taskId: dto.taskId,
-        tenantId: dto.tenantId,
+        processInstanceId: dto.processInstanceId ?? options?.processInstanceId,
+        executionId: dto.executionId ?? options?.executionId,
+        activityId: dto.activityId ?? options?.activityId,
+        taskId: dto.taskId ?? options?.taskId,
+        tenantId: dto.tenantId ?? options?.tenantId,
         errorMessage: error.message,
         errorDetails: error.stack,
+        auditContainer: enableAudit ? auditContainer : undefined,
       });
 
       throw error;
     }
+  }
+
+  /**
+   * 检查处理器是否支持ContinueEvaluating行为
+   */
+  private hasContinueEvaluatingBehavior(handler: HitPolicyHandler): handler is HitPolicyHandler & ContinueEvaluatingBehavior {
+    return typeof (handler as ContinueEvaluatingBehavior).shouldContinueEvaluating === 'function';
+  }
+
+  /**
+   * 检查处理器是否支持EvaluateRuleValidity行为
+   */
+  private hasEvaluateRuleValidityBehavior(handler: HitPolicyHandler): handler is HitPolicyHandler & EvaluateRuleValidityBehavior {
+    return typeof (handler as EvaluateRuleValidityBehavior).evaluateRuleValidity === 'function';
+  }
+
+  /**
+   * 检查处理器是否支持ComposeDecisionResult行为
+   */
+  private hasComposeDecisionResultBehavior(handler: HitPolicyHandler): handler is HitPolicyHandler & ComposeDecisionResultBehavior {
+    return typeof (handler as ComposeDecisionResultBehavior).composeDecisionResults === 'function';
+  }
+
+  /**
+   * 验证规则有效性（用于UNIQUE等策略）
+   */
+  private validateRuleValidity(
+    handler: HitPolicyHandler & EvaluateRuleValidityBehavior,
+    results: RuleEvaluationResult[],
+    strictMode: boolean,
+  ): void {
+    const matchedResults = results.filter(r => r.matched);
+    const validityResult = handler.evaluateRuleValidity(matchedResults);
+
+    if (!validityResult.valid) {
+      const message = validityResult.errorMessage || 'Rule validity check failed';
+      if (strictMode) {
+        throw new BadRequestException(message);
+      } else {
+        this.logger.warn(message);
+      }
+    }
+  }
+
+  /**
+   * 使用上下文评估所有规则
+   * 支持ContinueEvaluating行为接口
+   */
+  private evaluateRulesWithContext(context: RuleExecutionContext): RuleEvaluationResult[] {
+    const results: RuleEvaluationResult[] = [];
+    const { decisionTable, inputData, auditContainer, strictMode, handler } = context;
+    const hasContinueBehavior = this.hasContinueEvaluatingBehavior(handler);
+
+    for (let i = 0; i < decisionTable.rules.length; i++) {
+      const rule = decisionTable.rules[i];
+      const result = this.evaluateRuleWithAudit(rule, inputData, i, decisionTable.inputs, auditContainer);
+      results.push(result);
+
+      // 检查是否应该继续评估（如果处理器支持）
+      if (hasContinueBehavior && result.matched) {
+        const continueResult = (handler as ContinueEvaluatingBehavior).shouldContinueEvaluating(results);
+        if (!continueResult.shouldContinue) {
+          this.logger.debug(`Stopping rule evaluation at rule ${i}: ${continueResult.reason || 'Hit policy requires stop'}`);
+          break;
+        }
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -178,7 +326,7 @@ export class RuleEngineExecutorService {
   }
 
   /**
-   * 评估所有规则
+   * 评估所有规则（不带审计，保持向后兼容）
    */
   private evaluateRules(
     decisionTable: DecisionTableDefinition,
@@ -196,7 +344,90 @@ export class RuleEngineExecutorService {
   }
 
   /**
-   * 评估单个规则
+   * 评估单个规则（带审计跟踪）
+   * 与Flowable的RuleExecutionAudit匹配
+   */
+  private evaluateRuleWithAudit(
+    rule: RuleDefinition,
+    inputData: Record<string, any>,
+    ruleIndex: number,
+    inputDefinitions: any[],
+    auditContainer: DecisionExecutionAuditContainer,
+  ): RuleEvaluationResult {
+    const ruleAudit: RuleExecutionAudit = {
+      ruleId: rule.id,
+      ruleIndex,
+      matched: false,
+      inputEntries: [],
+      outputEntries: [],
+    };
+
+    // 评估所有条件
+    const conditionResults = rule.conditions.map((condition) => {
+      // 获取输入值
+      const inputDef = inputDefinitions.find((i) => i.id === condition.inputId);
+      let inputValue = inputData[condition.inputId];
+
+      // 如果输入值不存在，尝试使用表达式
+      if (inputValue === undefined && inputDef?.expression) {
+        inputValue = this.evaluateExpression(inputDef.expression, inputData);
+      }
+
+      // 评估条件
+      const matched = this.conditionEvaluator.evaluate(
+        inputValue,
+        condition.operator,
+        condition.value,
+      );
+
+      // 记录输入条目审计
+      const inputEntryAudit: InputEntryAudit = {
+        inputId: condition.inputId,
+        inputName: inputDef?.name || condition.inputId,
+        inputValue,
+        operator: condition.operator,
+        conditionValue: condition.value,
+        matched,
+      };
+      ruleAudit.inputEntries.push(inputEntryAudit);
+
+      return matched;
+    });
+
+    // 所有条件都必须满足
+    const allConditionsMet = conditionResults.every((result) => result === true);
+    ruleAudit.matched = allConditionsMet;
+
+    // 构建输出
+    const outputs: Record<string, any> = {};
+    if (allConditionsMet) {
+      for (const output of rule.outputs) {
+        outputs[output.outputId] = output.value;
+
+        // 记录输出条目审计
+        const outputEntryAudit: OutputEntryAudit = {
+          outputId: output.outputId,
+          outputName: output.outputId,
+          outputValue: output.value,
+        };
+        ruleAudit.outputEntries.push(outputEntryAudit);
+      }
+    }
+
+    // 添加到审计容器
+    auditContainer.ruleExecutions.push(ruleAudit);
+
+    return {
+      ruleId: rule.id,
+      ruleIndex,
+      matched: allConditionsMet,
+      outputs,
+      priority: rule.priority,
+    };
+  }
+
+  /**
+   * 评估单个规则（不带审计）
    */
   private evaluateRule(
     rule: RuleDefinition,
@@ -370,6 +601,7 @@ export class RuleEngineExecutorService {
     tenantId?: string;
     errorMessage?: string;
     errorDetails?: string;
+    auditContainer?: DecisionExecutionAuditContainer;
   }): Promise<void> {
     try {
       const execution = this.executionRepository.create({
@@ -391,6 +623,8 @@ export class RuleEngineExecutorService {
         errorMessage: data.errorMessage,
         errorDetails: data.errorDetails,
         createTime: new Date(),
+        // 存储审计信息（如果实体支持）
+        ...(data.auditContainer && { auditInfo: JSON.stringify(data.auditContainer) }),
       });
 
       await this.executionRepository.save(execution);
