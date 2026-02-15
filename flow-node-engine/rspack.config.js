@@ -65,10 +65,19 @@ export default defineConfig({
       },
     ],
   },
+  bail: true, // 遇到错误立即停止编译
   plugins: [
     new rspack.ProgressPlugin(),
     isDev && new RunScriptWebpackPlugin(runScriptOptions),
-    isDev && new rspack.DefinePlugin({}),
+    isDev && new rspack.DefinePlugin({
+      async: false,
+      issue: {
+        // 把类型错误视为致命错误（阻止编译）
+        severity: 'error',
+      },
+      include: ['src'],
+      "exclude": ["**/node_modules", "**/.*/"]
+    }),
     new TsCheckerRspackPlugin()
   ].filter(Boolean),
   externalsType: "commonjs",

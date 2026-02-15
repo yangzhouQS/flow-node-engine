@@ -28,13 +28,13 @@ export default defineConfig({
     testTimeout: 30000,
     hookTimeout: 30000,
     pool: 'threads',
-    poolOptions: {
+    /*poolOptions: {
       threads: {
         singleThread: true, // E2E tests should run sequentially
         minThreads: 1,
         maxThreads: 1,
       },
-    },
+    },*/
     reporters: ['default', 'html'],
     outputFile: {
       html: './coverage/e2e-test-report.html',
