@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DmnXmlExporterService } from './dmn-xml-exporter.service';
-import { DmnDecision, HitPolicy, AggregationType, DmnDecisionStatus } from '../entities/dmn-decision.entity';
+import { DmnDecisionEntity, HitPolicy, AggregationType, DmnDecisionStatus } from '../entities/dmn-decision.entity';
 import { DmnDefinitionXml } from '../interfaces/dmn-xml.interface';
 
 describe('DmnXmlExporterService', () => {
@@ -368,8 +368,8 @@ describe('DmnXmlExporterService', () => {
 /**
  * 创建模拟决策实体
  */
-function createMockDecision(overrides: Partial<DmnDecision> = {}): DmnDecision {
-  const decision = new DmnDecision();
+function createMockDecision(overrides: Partial<DmnDecisionEntity> = {}): DmnDecisionEntity {
+  const decision = new DmnDecisionEntity();
   decision.id = 'test-id';
   decision.decisionKey = overrides.decisionKey || 'test_decision';
   decision.name = overrides.name || 'Test Decision';

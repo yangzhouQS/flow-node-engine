@@ -1,3 +1,4 @@
+import { ApiProperty, ApiHideProperty } from '@nestjs/swagger';
 import {
   Entity,
   PrimaryColumn,
@@ -31,87 +32,87 @@ export enum DmnExecutionStatus {
 @Index('IDX_DMN_EXEC_PROCESS_INSTANCE', ['processInstanceId'])
 @Index('IDX_DMN_EXEC_TIME', ['createTime'])
 export class DmnExecutionEntity {
-  /** 执行ID */
+  @ApiProperty({ description: '执行ID' })
   @PrimaryColumn({ name: 'ID_', type: 'varchar', length: 64 })
   id: string;
 
-  /** 决策ID */
+  @ApiProperty({ description: '决策ID' })
   @Column({ name: 'DECISION_ID_', type: 'varchar', length: 64 })
   decisionId: string;
 
-  /** 决策Key */
+  @ApiProperty({ description: '决策Key' })
   @Column({ name: 'DECISION_KEY_', type: 'varchar', length: 255 })
   decisionKey: string;
 
-  /** 决策版本 */
+  @ApiProperty({ description: '决策版本' })
   @Column({ name: 'DECISION_VERSION_', type: 'int' })
   decisionVersion: number;
 
-  /** 执行状态 */
+  @ApiProperty({ description: '执行状态', enum: DmnExecutionStatus })
   @Column({ name: 'STATUS_', type: 'varchar', length: 20 })
   status: DmnExecutionStatus;
 
-  /** 输入数据（JSON格式） */
+  @ApiProperty({ description: '输入数据' })
   @Column({ name: 'INPUT_DATA_', type: 'text' })
   inputData: string;
 
-  /** 输出结果（JSON格式） */
+  @ApiProperty({ description: '输出结果', required: false })
   @Column({ name: 'OUTPUT_RESULT_', type: 'text', nullable: true })
   outputResult: string;
 
-  /** 匹配的规则ID列表（JSON格式） */
+  @ApiProperty({ description: '匹配的规则ID列表', required: false })
   @Column({ name: 'MATCHED_RULES_', type: 'text', nullable: true })
   matchedRules: string;
 
-  /** 匹配的规则数量 */
+  @ApiProperty({ description: '匹配的规则数量', example: 0 })
   @Column({ name: 'MATCHED_COUNT_', type: 'int', default: 0 })
   matchedCount: number;
 
-  /** 执行时间（毫秒） */
+  @ApiProperty({ description: '执行时间(毫秒)', required: false })
   @Column({ name: 'EXECUTION_TIME_MS_', type: 'int', nullable: true })
   executionTimeMs: number;
 
-  /** 流程实例ID */
+  @ApiProperty({ description: '流程实例ID', required: false })
   @Column({ name: 'PROCESS_INSTANCE_ID_', type: 'varchar', length: 64, nullable: true })
   processInstanceId: string;
 
-  /** 执行ID */
+  @ApiProperty({ description: '执行ID', required: false })
   @Column({ name: 'EXECUTION_ID_', type: 'varchar', length: 64, nullable: true })
   executionId: string;
 
-  /** 活动ID */
+  @ApiProperty({ description: '活动ID', required: false })
   @Column({ name: 'ACTIVITY_ID_', type: 'varchar', length: 255, nullable: true })
   activityId: string;
 
-  /** 任务ID */
+  @ApiProperty({ description: '任务ID', required: false })
   @Column({ name: 'TASK_ID_', type: 'varchar', length: 64, nullable: true })
   taskId: string;
 
-  /** 租户ID */
+  @ApiProperty({ description: '租户ID', required: false })
   @Column({ name: 'TENANT_ID_', type: 'varchar', length: 255, nullable: true })
   tenantId: string;
 
-  /** 执行者 */
+  @ApiProperty({ description: '执行者', required: false })
   @Column({ name: 'EXECUTOR_', type: 'varchar', length: 64, nullable: true })
   executor: string;
 
-  /** 创建时间 */
+  @ApiProperty({ description: '创建时间' })
   @CreateDateColumn({ name: 'CREATE_TIME_', type: 'datetime' })
   createTime: Date;
 
-  /** 错误信息 */
+  @ApiProperty({ description: '错误信息', required: false })
   @Column({ name: 'ERROR_MSG_', type: 'text', nullable: true })
   errorMessage: string;
 
-  /** 错误详情 */
+  @ApiProperty({ description: '错误详情', required: false })
   @Column({ name: 'ERROR_DETAILS_', type: 'text', nullable: true })
   errorDetails: string;
 
-  /** 扩展属性（JSON格式） */
+  @ApiProperty({ description: '扩展属性', required: false })
   @Column({ name: 'EXTRA_', type: 'text', nullable: true })
   extra: string;
 
-  /** 关联的决策 */
+  @ApiHideProperty()
   @ManyToOne(() => DmnDecisionEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'DECISION_ID_' })
   decision: DmnDecisionEntity;

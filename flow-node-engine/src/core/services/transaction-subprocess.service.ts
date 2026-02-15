@@ -334,10 +334,16 @@ export class TransactionSubProcessExecutor implements ITransactionSubProcessExec
         try {
           if (subscription.handler) {
             await subscription.handler.compensate({
+              compensationExecutionId: uuidv4(),
               activityId: subscription.activityId,
               executionId: subscription.executionId,
               processInstanceId: scope.processInstanceId,
               variables: scope.variables,
+              eventConfig: {
+                id: subscription.activityId,
+                eventType: subscription.eventType as any,
+              },
+              timestamp: new Date(),
             });
             
             executedCompensations.push(subscription.activityId);
@@ -404,10 +410,16 @@ export class TransactionSubProcessExecutor implements ITransactionSubProcessExec
       try {
         if (subscription.handler) {
           await subscription.handler.compensate({
+            compensationExecutionId: uuidv4(),
             activityId: subscription.activityId,
             executionId: subscription.executionId,
             processInstanceId: scope.processInstanceId,
             variables: scope.variables,
+            eventConfig: {
+              id: subscription.activityId,
+              eventType: subscription.eventType as any,
+            },
+            timestamp: new Date(),
           });
           
           executedCompensations.push(subscription.activityId);

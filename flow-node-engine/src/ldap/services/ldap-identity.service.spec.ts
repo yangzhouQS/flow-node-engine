@@ -35,6 +35,7 @@ describe('LdapUserQueryImpl', () => {
       userLastNameAttribute: 'sn',
       userEmailAttribute: 'mail',
       queryAllUsers: '(objectClass=person)',
+      queryUserByFullNameLike: '(|(givenName={0})(sn={0})(cn={0}))',
     });
   });
 

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
 import { ListenerRegistryService } from './listener-registry.service';
 import { BuiltinListenerFactory } from './builtin-listeners.service';
 import {
@@ -39,7 +40,7 @@ describe('ListenerRegistryService', () => {
   describe('registerExecutionListener', () => {
     it('should register an execution listener', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       const registrationId = service.registerExecutionListener(
@@ -58,7 +59,7 @@ describe('ListenerRegistryService', () => {
 
     it('should register listener with process definition key', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       const registrationId = service.registerExecutionListener(
@@ -79,7 +80,7 @@ describe('ListenerRegistryService', () => {
 
     it('should throw error if listener already exists', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -107,10 +108,10 @@ describe('ListenerRegistryService', () => {
 
     it('should overwrite listener if overwrite option is true', () => {
       const listener1: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
       const listener2: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -141,7 +142,7 @@ describe('ListenerRegistryService', () => {
   describe('registerTaskListener', () => {
     it('should register a task listener', () => {
       const listener: ITaskListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       const registrationId = service.registerTaskListener(
@@ -162,7 +163,7 @@ describe('ListenerRegistryService', () => {
   describe('unregisterListener', () => {
     it('should unregister a listener', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       const registrationId = service.registerExecutionListener(
@@ -190,7 +191,7 @@ describe('ListenerRegistryService', () => {
   describe('getExecutionListeners', () => {
     it('should return global listeners', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -208,7 +209,7 @@ describe('ListenerRegistryService', () => {
 
     it('should filter by event type', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -229,7 +230,7 @@ describe('ListenerRegistryService', () => {
 
     it('should filter by target element id', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -251,10 +252,10 @@ describe('ListenerRegistryService', () => {
 
     it('should sort listeners by order', () => {
       const listener1: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
       const listener2: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -287,10 +288,10 @@ describe('ListenerRegistryService', () => {
   describe('dispatchExecutionListeners', () => {
     it('should dispatch to all matching listeners', async () => {
       const listener1: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
       const listener2: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -329,7 +330,7 @@ describe('ListenerRegistryService', () => {
 
     it('should collect modified variables', async () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({
+        notify: vi.fn().mockReturnValue({
           success: true,
           modifiedVariables: { var1: 'value1', var2: 'value2' },
         }),
@@ -358,7 +359,7 @@ describe('ListenerRegistryService', () => {
 
     it('should handle listener errors', async () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({
+        notify: vi.fn().mockReturnValue({
           success: false,
           error: 'Test error',
         }),
@@ -389,7 +390,7 @@ describe('ListenerRegistryService', () => {
 
     it('should handle async listeners', async () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockResolvedValue({ success: true }),
+        notify: vi.fn().mockResolvedValue({ success: true }),
       };
 
       service.registerExecutionListener(
@@ -417,7 +418,7 @@ describe('ListenerRegistryService', () => {
   describe('dispatchTaskListeners', () => {
     it('should dispatch task listeners', async () => {
       const listener: ITaskListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerTaskListener(
@@ -449,7 +450,7 @@ describe('ListenerRegistryService', () => {
   describe('setListenerEnabled', () => {
     it('should enable/disable listener', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       const registrationId = service.registerExecutionListener(
@@ -478,7 +479,7 @@ describe('ListenerRegistryService', () => {
   describe('getStatistics', () => {
     it('should return statistics for a listener', async () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       const registrationId = service.registerExecutionListener(
@@ -510,9 +511,9 @@ describe('ListenerRegistryService', () => {
   describe('registerFactory', () => {
     it('should register a custom factory', () => {
       const customFactory = {
-        createExecutionListener: jest.fn(),
-        createTaskListener: jest.fn(),
-        supports: jest.fn().mockReturnValue(true),
+        createExecutionListener: vi.fn(),
+        createTaskListener: vi.fn(),
+        supports: vi.fn().mockReturnValue(true),
       };
 
       service.registerFactory(customFactory);
@@ -525,7 +526,7 @@ describe('ListenerRegistryService', () => {
   describe('clearAll', () => {
     it('should clear all listeners', () => {
       const listener: IExecutionListener = {
-        notify: jest.fn().mockReturnValue({ success: true }),
+        notify: vi.fn().mockReturnValue({ success: true }),
       };
 
       service.registerExecutionListener(

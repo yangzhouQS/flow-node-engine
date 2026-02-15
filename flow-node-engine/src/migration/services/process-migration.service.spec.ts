@@ -8,6 +8,10 @@ import { DataSource } from 'typeorm';
 import { ProcessMigrationService } from './process-migration.service';
 import { MigrationValidatorService } from './migration-validator.service';
 import { MigrationExecutorService } from './migration-executor.service';
+import { ProcessInstanceRepository } from '../../core/repositories/process-instance.repository';
+import { ProcessDefinitionRepository } from '../../core/repositories/process-definition.repository';
+import { BpmnParserService } from '../../core/services/bpmn-parser.service';
+import { EventPublishService } from '../../event/services/event-publish.service';
 import {
   MigrationPlan,
   MigrationResult,
@@ -61,11 +65,11 @@ describe('ProcessMigrationService', () => {
           },
         },
         {
-          provide: 'ProcessInstanceRepository',
+          provide: ProcessInstanceRepository,
           useValue: mockProcessInstanceRepository,
         },
         {
-          provide: 'ProcessDefinitionRepository',
+          provide: ProcessDefinitionRepository,
           useValue: mockProcessDefinitionRepository,
         },
       ],
@@ -273,11 +277,15 @@ describe('MigrationValidatorService', () => {
       providers: [
         MigrationValidatorService,
         {
-          provide: 'ProcessDefinitionRepository',
+          provide: ProcessDefinitionRepository,
           useValue: mockProcessDefinitionRepository,
         },
         {
-          provide: 'BpmnParserService',
+          provide: ProcessInstanceRepository,
+          useValue: mockProcessInstanceRepository,
+        },
+        {
+          provide: BpmnParserService,
           useValue: mockBpmnParser,
         },
       ],
@@ -351,19 +359,19 @@ describe('MigrationExecutorService', () => {
           useValue: { validatePlan: vi.fn() },
         },
         {
-          provide: 'ProcessInstanceRepository',
+          provide: ProcessInstanceRepository,
           useValue: mockProcessInstanceRepository,
         },
         {
-          provide: 'ProcessDefinitionRepository',
+          provide: ProcessDefinitionRepository,
           useValue: mockProcessDefinitionRepository,
         },
         {
-          provide: 'BpmnParserService',
+          provide: BpmnParserService,
           useValue: mockBpmnParser,
         },
         {
-          provide: 'EventPublishService',
+          provide: EventPublishService,
           useValue: mockEventPublishService,
         },
       ],

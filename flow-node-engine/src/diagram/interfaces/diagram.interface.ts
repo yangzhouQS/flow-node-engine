@@ -166,7 +166,7 @@ export interface IProcessDiagramGenerator {
  */
 export interface ISvgElement {
   /** 元素类型 */
-  type: 'rect' | 'circle' | 'path' | 'text' | 'g' | 'polygon' | 'ellipse';
+  type: 'rect' | 'circle' | 'path' | 'text' | 'g' | 'polygon' | 'ellipse' | 'defs' | 'marker';
   /** 属性 */
   attributes: Record<string, string>;
   /** 子元素 */

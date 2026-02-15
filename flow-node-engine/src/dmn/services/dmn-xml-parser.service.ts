@@ -51,10 +51,7 @@ export class DmnXmlParserService {
       textNodeName: '#text',
       parseAttributeValue: true,
       trimValues: true,
-      ignoreNameSpace: false,
       allowBooleanAttributes: true,
-      parseNodeValue: false,
-      parseTagValue: false,
       isArray: (name: string) => {
         const arrayElements = [
           'decision',
@@ -390,7 +387,6 @@ export class DmnXmlParserService {
       label: this.getAttribute(output, DMN_XML_ATTRIBUTES.LABEL),
       name: this.getAttribute(output, DMN_XML_ATTRIBUTES.NAME),
       typeRef: this.getAttribute(output, DMN_XML_ATTRIBUTES.TYPE_REF),
-      inputExpression: { text: '' },
     };
 
     // 解析OutputValues
@@ -644,7 +640,43 @@ export class DmnXmlParserService {
     // 简单的条件解析逻辑
     const trimmed = text.trim();
 
-    // 检查是否是简单比较
+    // 检查是否是 between 操作 [a..b] 格式
+    const bracketBetweenMatch = trimmed.match(/^\[(.+?)\s*\.\.\s*(.+?)\]$/);
+    if (bracketBetweenMatch) {
+      return {
+        inputId,
+        operator: 'between',
+        value: [
+          this.parseValue(bracketBetweenMatch[1].trim(), typeRef),
+          this.parseValue(bracketBetweenMatch[2].trim(), typeRef),
+        ],
+      };
+    }
+
+    // 检查是否是between操作 a..b 格式（无方括号）
+    const betweenMatch = trimmed.match(/^(.+?)\s*\.\.\s*(.+)$/);
+    if (betweenMatch) {
+      return {
+        inputId,
+        operator: 'between',
+        value: [
+          this.parseValue(betweenMatch[1].trim(), typeRef),
+          this.parseValue(betweenMatch[2].trim(), typeRef),
+        ],
+      };
+    }
+
+    // 检查是否是简单比较（以比较操作符开头的情况，如 "> 10"）
+    const leadingComparisonMatch = trimmed.match(/^(==|!=|>=|<=|>|<)\s*(.+)$/);
+    if (leadingComparisonMatch) {
+      return {
+        inputId,
+        operator: leadingComparisonMatch[1],
+        value: this.parseValue(leadingComparisonMatch[2].trim(), typeRef),
+      };
+    }
+
+    // 检查是否是简单比较（常规格式，如 "value > 10"）
     const comparisonMatch = trimmed.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
     if (comparisonMatch) {
       return {
@@ -662,19 +694,6 @@ export class DmnXmlParserService {
         inputId,
         operator: 'in',
         value: values,
-      };
-    }
-
-    // 检查是否是between操作
-    const betweenMatch = trimmed.match(/^(.+?)\s*\.\.\s*(.+)$/);
-    if (betweenMatch) {
-      return {
-        inputId,
-        operator: 'between',
-        value: [
-          this.parseValue(betweenMatch[1].trim(), typeRef),
-          this.parseValue(betweenMatch[2].trim(), typeRef),
-        ],
       };
     }
 
@@ -697,40 +716,44 @@ export class DmnXmlParserService {
    * 解析值
    */
   private parseValue(text: string, typeRef?: string): any {
-    if (!text) return text;
+    // 处理空值
+    if (text === undefined || text === null) return text;
+    if (text === '') return text;
+
+    const trimmed = text.trim();
 
     // 移除引号
-    if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
-      return text.slice(1, -1);
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      return trimmed.slice(1, -1);
     }
 
     // 根据类型解析
     if (typeRef) {
       const lowerType = typeRef.toLowerCase();
       if (lowerType.includes('int') || lowerType.includes('long') || lowerType.includes('short')) {
-        const parsed = parseInt(text, 10);
-        return isNaN(parsed) ? text : parsed;
+        const parsed = parseInt(trimmed, 10);
+        return isNaN(parsed) ? trimmed : parsed;
       }
       if (lowerType.includes('double') || lowerType.includes('float') || lowerType.includes('decimal')) {
-        const parsed = parseFloat(text);
-        return isNaN(parsed) ? text : parsed;
+        const parsed = parseFloat(trimmed);
+        return isNaN(parsed) ? trimmed : parsed;
       }
       if (lowerType.includes('boolean')) {
-        return text.toLowerCase() === 'true';
+        return trimmed.toLowerCase() === 'true';
       }
     }
 
     // 尝试自动检测类型
-    if (text.toLowerCase() === 'true') return true;
-    if (text.toLowerCase() === 'false') return false;
-    if (text.toLowerCase() === 'null') return null;
+    if (trimmed.toLowerCase() === 'true') return true;
+    if (trimmed.toLowerCase() === 'false') return false;
+    if (trimmed.toLowerCase() === 'null') return null;
 
-    const numValue = parseFloat(text);
+    const numValue = parseFloat(trimmed);
     if (!isNaN(numValue) && isFinite(numValue)) {
       return numValue;
     }
 
-    return text;
+    return trimmed;
   }
 
   /**
@@ -916,11 +939,28 @@ export class DmnXmlParserService {
     const element = this.getElement(parent, name);
     if (!element) return undefined;
 
+    // 处理基本类型（字符串、数字、布尔值）
     if (typeof element === 'string') {
       return element;
     }
+    
+    // 处理布尔值和数字类型
+    if (typeof element === 'boolean') {
+      return String(element);
+    }
+    
+    if (typeof element === 'number') {
+      return String(element);
+    }
 
-    return element['#text'];
+    // 处理对象类型
+    const text = element['#text'];
+    // 处理布尔值、数字等非字符串类型
+    if (text !== undefined && text !== null) {
+      return String(text);
+    }
+    
+    return undefined;
   }
 
   /**

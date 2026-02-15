@@ -166,3 +166,9 @@ export class DmnDecisionEntity {
   @Column({ name: 'EXTRA_', type: 'text', nullable: true })
   extra: string;
 }
+
+/**
+ * DmnDecision 类型别名
+ * 用于服务层操作
+ */
+export type DmnDecision = DmnDecisionEntity;

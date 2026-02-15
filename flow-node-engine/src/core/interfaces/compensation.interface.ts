@@ -90,6 +90,8 @@ export interface CompensationContext {
   executionId?: string;
   /** 流程定义Key */
   processDefinitionKey?: string;
+  /** 活动ID */
+  activityId?: string;
   /** 触发补偿的活动ID */
   triggerActivityId?: string;
   /** 补偿作用域ID */

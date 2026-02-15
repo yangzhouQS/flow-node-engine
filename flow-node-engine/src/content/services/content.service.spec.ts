@@ -5,7 +5,8 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Attachment } from '../entities/attachment.entity';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { Attachment, AttachmentType } from '../entities/attachment.entity';
 import { ContentItem, ContentItemType, ContentItemStatus } from '../entities/content-item.entity';
 import { ContentService } from './content.service';
 import { StorageService } from './storage.service';
@@ -16,87 +17,94 @@ describe('ContentService', () => {
   let attachmentRepository: Repository<Attachment>;
   let storageService: StorageService;
 
-  const mockContentItem: ContentItem = {
+  const mockContentItem: Partial<ContentItem> = {
     id: 'test-content-id',
     name: 'Test Document.pdf',
     type: ContentItemType.DOCUMENT,
     mimeType: 'application/pdf',
-    size: 1024,
-    content: Buffer.from('test content'),
-    path: '/uploads/test-document.pdf',
-    status: ContentItemStatus.AVAILABLE,
+    contentSize: 1024,
+    contentStoreId: 'store-1',
+    contentStoreName: 'local',
+    contentUrl: '/uploads/test-document.pdf',
+    status: ContentItemStatus.ACTIVE,
     version: 1,
     createdBy: 'user-1',
-    updatedBy: 'user-1',
+    lastModifiedBy: 'user-1',
     processInstanceId: 'process-1',
     taskId: 'task-1',
     tenantId: 'tenant-1',
     metadata: { key: 'value' },
     createTime: new Date(),
-    updateTime: new Date(),
-    isDeleted: false,
-    isArchived: false,
+    lastModified: new Date(),
   };
 
-  const mockAttachment: Attachment = {
+  const mockAttachment: Partial<Attachment> = {
     id: 'test-attachment-id',
     name: 'Attachment.pdf',
     description: 'Test attachment',
     url: '/contents/test-content-id/download',
     contentItemId: 'test-content-id',
-    contentItem: mockContentItem,
+    contentItem: null as any, // 设置为 null 避免在 map 中调用 this.toContentItemResponseDto 时出错
     processInstanceId: 'process-1',
     taskId: 'task-1',
+    attachmentType: AttachmentType.GENERAL,
     createdBy: 'user-1',
     tenantId: 'tenant-1',
     createTime: new Date(),
-    updateTime: new Date(),
     isDeleted: false,
   };
 
+  // 创建持久的 queryBuilder mock 对象
+  const mockContentItemQueryBuilder = {
+    where: vi.fn().mockReturnThis(),
+    andWhere: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    take: vi.fn().mockReturnThis(),
+    getManyAndCount: vi.fn(),
+    getOne: vi.fn(),
+    leftJoinAndSelect: vi.fn().mockReturnThis(),
+  };
+
+  const mockAttachmentQueryBuilder = {
+    where: vi.fn().mockReturnThis(),
+    andWhere: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    take: vi.fn().mockReturnThis(),
+    getManyAndCount: vi.fn(),
+    getOne: vi.fn(),
+    leftJoinAndSelect: vi.fn().mockReturnThis(),
+  };
+
   const mockContentItemRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
-    findOne: jest.fn(),
-    find: jest.fn(),
-    softRemove: jest.fn(),
-    update: jest.fn(),
-    createQueryBuilder: jest.fn(() => ({
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      skip: jest.fn().mockReturnThis(),
-      take: jest.fn().mockReturnThis(),
-      getManyAndCount: jest.fn(),
-      getOne: jest.fn(),
-    })),
+    create: vi.fn(),
+    save: vi.fn(),
+    findOne: vi.fn(),
+    find: vi.fn(),
+    update: vi.fn(),
+    createQueryBuilder: vi.fn(() => mockContentItemQueryBuilder),
   };
 
   const mockAttachmentRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
-    findOne: jest.fn(),
-    find: jest.fn(),
-    softRemove: jest.fn(),
-    createQueryBuilder: jest.fn(() => ({
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      skip: jest.fn().mockReturnThis(),
-      take: jest.fn().mockReturnThis(),
-      getManyAndCount: jest.fn(),
-      getOne: jest.fn(),
-    })),
+    create: vi.fn(),
+    save: vi.fn(),
+    findOne: vi.fn(),
+    find: vi.fn(),
+    update: vi.fn(),
+    createQueryBuilder: vi.fn(() => mockAttachmentQueryBuilder),
   };
 
   const mockStorageService = {
-    store: jest.fn(),
-    retrieve: jest.fn(),
-    delete: jest.fn(),
-    getSignedUrl: jest.fn(),
+    store: vi.fn(),
+    retrieve: vi.fn(),
+    delete: vi.fn(),
+    getUrl: vi.fn(),
   };
 
   beforeEach(async () => {
+    vi.clearAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ContentService,
@@ -122,7 +130,14 @@ describe('ContentService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    // 重置 queryBuilder mock
+    mockContentItemQueryBuilder.getManyAndCount.mockReset();
+    mockContentItemQueryBuilder.getOne.mockReset();
+    mockAttachmentQueryBuilder.getManyAndCount.mockReset();
+    mockAttachmentQueryBuilder.getOne.mockReset();
+    // 重置 mockContentItem 数据
+    mockContentItem.name = 'Test Document.pdf';
   });
 
   describe('createContentItem', () => {
@@ -131,8 +146,7 @@ describe('ContentService', () => {
         name: 'Test Document.pdf',
         type: ContentItemType.DOCUMENT,
         mimeType: 'application/pdf',
-        size: 1024,
-        content: Buffer.from('test content'),
+        contentSize: 1024,
         createdBy: 'user-1',
       };
 
@@ -151,8 +165,7 @@ describe('ContentService', () => {
         name: 'Test Document.pdf',
         type: ContentItemType.DOCUMENT,
         mimeType: 'application/pdf',
-        size: 1024,
-        content: Buffer.from('test content'),
+        contentSize: 1024,
         createdBy: 'user-1',
         processInstanceId: 'process-1',
       };
@@ -168,7 +181,7 @@ describe('ContentService', () => {
 
   describe('findContentItemById', () => {
     it('should return a content item when found', async () => {
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(mockContentItem);
+      mockContentItemRepository.findOne.mockResolvedValue(mockContentItem);
 
       const result = await service.findContentItemById('test-content-id');
 
@@ -176,7 +189,7 @@ describe('ContentService', () => {
     });
 
     it('should throw NotFoundException when content item not found', async () => {
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(null);
+      mockContentItemRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findContentItemById('non-existent-id')).rejects.toThrow(NotFoundException);
     });
@@ -186,12 +199,12 @@ describe('ContentService', () => {
     it('should successfully update a content item', async () => {
       const updateDto = {
         name: 'Updated Document.pdf',
-        updatedBy: 'user-1',
+        lastModifiedBy: 'user-1',
       };
 
-      const updatedItem = { ...mockContentItem, name: 'Updated Document.pdf' };
+      const updatedItem = { ...mockContentItem, name: 'Updated Document.pdf', version: 2 };
 
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(mockContentItem);
+      mockContentItemRepository.findOne.mockResolvedValue(mockContentItem);
       mockContentItemRepository.save.mockResolvedValue(updatedItem);
 
       const result = await service.updateContentItem('test-content-id', updateDto);
@@ -202,23 +215,26 @@ describe('ContentService', () => {
 
   describe('deleteContentItem', () => {
     it('should soft delete a content item', async () => {
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(mockContentItem);
-      mockContentItemRepository.softRemove.mockResolvedValue(mockContentItem);
+      mockContentItemRepository.findOne.mockResolvedValue(mockContentItem);
+      mockStorageService.delete.mockResolvedValue(undefined);
+      mockContentItemRepository.update.mockResolvedValue({ affected: 1 });
 
       await service.deleteContentItem('test-content-id');
 
-      expect(mockContentItemRepository.softRemove).toHaveBeenCalled();
+      expect(mockContentItemRepository.update).toHaveBeenCalled();
     });
   });
 
   describe('archiveContentItem', () => {
     it('should archive a content item', async () => {
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(mockContentItem);
-      mockContentItemRepository.save.mockResolvedValue({ ...mockContentItem, isArchived: true });
+      const archivedItem = { ...mockContentItem, status: ContentItemStatus.ARCHIVED };
+      
+      mockContentItemRepository.findOne.mockResolvedValue(mockContentItem);
+      mockContentItemRepository.save.mockResolvedValue(archivedItem);
 
       const result = await service.archiveContentItem('test-content-id');
 
-      expect(result.isArchived).toBe(true);
+      expect(result.status).toBe(ContentItemStatus.ARCHIVED);
     });
   });
 
@@ -262,7 +278,7 @@ describe('ContentService', () => {
         createdBy: 'user-1',
       };
 
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(mockContentItem);
+      mockContentItemRepository.findOne.mockResolvedValue(mockContentItem);
       mockAttachmentRepository.create.mockReturnValue(mockAttachment);
       mockAttachmentRepository.save.mockResolvedValue(mockAttachment);
 
@@ -280,109 +296,93 @@ describe('ContentService', () => {
         createdBy: 'user-1',
       };
 
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(null);
+      mockContentItemRepository.findOne.mockResolvedValue(null);
 
       await expect(service.createAttachment(createDto)).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('findAttachmentById', () => {
-    it('should return an attachment when found', async () => {
-      mockAttachmentRepository.createQueryBuilder().getOne.mockResolvedValue(mockAttachment);
+  describe('queryAttachments', () => {
+    it('should return paginated attachments', async () => {
+      const queryDto = {
+        page: 1,
+        pageSize: 10,
+      };
 
-      const result = await service.findAttachmentById('test-attachment-id');
+      mockAttachmentRepository.createQueryBuilder().getManyAndCount.mockResolvedValue([[mockAttachment], 1]);
 
-      expect(result).toEqual(mockAttachment);
-    });
+      const result = await service.queryAttachments(queryDto);
 
-    it('should throw NotFoundException when attachment not found', async () => {
-      mockAttachmentRepository.createQueryBuilder().getOne.mockResolvedValue(null);
-
-      await expect(service.findAttachmentById('non-existent-id')).rejects.toThrow(NotFoundException);
+      expect(result.data).toHaveLength(1);
+      expect(result.total).toBe(1);
     });
   });
 
   describe('deleteAttachment', () => {
     it('should soft delete an attachment', async () => {
-      mockAttachmentRepository.createQueryBuilder().getOne.mockResolvedValue(mockAttachment);
-      mockAttachmentRepository.softRemove.mockResolvedValue(mockAttachment);
+      mockAttachmentRepository.findOne.mockResolvedValue(mockAttachment);
+      mockAttachmentRepository.update.mockResolvedValue({ affected: 1 });
 
       await service.deleteAttachment('test-attachment-id');
 
-      expect(mockAttachmentRepository.softRemove).toHaveBeenCalled();
+      expect(mockAttachmentRepository.update).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when attachment not found', async () => {
+      mockAttachmentRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.deleteAttachment('non-existent-id')).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('getAttachmentsByProcessInstance', () => {
-    it('should return attachments for a process instance', async () => {
-      mockAttachmentRepository.find.mockResolvedValue([mockAttachment]);
+  describe('getContentFile', () => {
+    it('should return content file', async () => {
+      const buffer = Buffer.from('test content');
+      
+      mockContentItemRepository.findOne.mockResolvedValue(mockContentItem);
+      mockStorageService.retrieve.mockResolvedValue(buffer);
 
-      const result = await service.getAttachmentsByProcessInstance('process-1');
+      const result = await service.getContentFile('test-content-id');
 
-      expect(result).toHaveLength(1);
-      expect(result[0].processInstanceId).toBe('process-1');
-    });
-  });
-
-  describe('getAttachmentsByTask', () => {
-    it('should return attachments for a task', async () => {
-      mockAttachmentRepository.find.mockResolvedValue([mockAttachment]);
-
-      const result = await service.getAttachmentsByTask('task-1');
-
-      expect(result).toHaveLength(1);
-      expect(result[0].taskId).toBe('task-1');
-    });
-  });
-
-  describe('downloadContent', () => {
-    it('should return content for download', async () => {
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(mockContentItem);
-
-      const result = await service.downloadContent('test-content-id');
-
-      expect(result.content).toEqual(mockContentItem.content);
-      expect(result.name).toBe('Test Document.pdf');
+      expect(result.buffer).toEqual(buffer);
       expect(result.mimeType).toBe('application/pdf');
+      expect(result.name).toBe('Test Document.pdf');
     });
 
-    it('should throw NotFoundException when content not found for download', async () => {
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(null);
+    it('should throw BadRequestException when content has no stored file', async () => {
+      const itemWithoutStore = { ...mockContentItem, contentStoreId: null };
+      
+      mockContentItemRepository.findOne.mockResolvedValue(itemWithoutStore);
 
-      await expect(service.downloadContent('non-existent-id')).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('getContentUrl', () => {
-    it('should return signed URL for content', async () => {
-      mockContentItemRepository.createQueryBuilder().getOne.mockResolvedValue(mockContentItem);
-      mockStorageService.getSignedUrl.mockResolvedValue('https://storage.example.com/signed-url');
-
-      const result = await service.getContentUrl('test-content-id');
-
-      expect(result).toBe('https://storage.example.com/signed-url');
+      await expect(service.getContentFile('test-content-id')).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('getProcessInstanceContents', () => {
-    it('should return all content items for a process instance', async () => {
-      mockContentItemRepository.find.mockResolvedValue([mockContentItem]);
+  describe('uploadFile', () => {
+    it('should upload file and create content item', async () => {
+      const file = {
+        originalname: 'test.pdf',
+        mimetype: 'application/pdf',
+        size: 1024,
+        buffer: Buffer.from('test content'),
+      } as Express.Multer.File;
 
-      const result = await service.getProcessInstanceContents('process-1');
+      const uploadResult = {
+        storeId: 'store-1',
+        storeName: 'local',
+        url: '/uploads/test.pdf',
+        size: 1024,
+        mimeType: 'application/pdf',
+      };
 
-      expect(result).toHaveLength(1);
-      expect(result[0].processInstanceId).toBe('process-1');
-    });
-  });
+      mockStorageService.store.mockResolvedValue(uploadResult);
+      mockContentItemRepository.create.mockReturnValue(mockContentItem);
+      mockContentItemRepository.save.mockResolvedValue(mockContentItem);
 
-  describe('getTaskContents', () => {
-    it('should return all content items for a task', async () => {
-      mockContentItemRepository.find.mockResolvedValue([mockContentItem]);
+      const result = await service.uploadFile(file, { userId: 'user-1' });
 
-      const result = await service.getTaskContents('task-1');
-
-      expect(result).toHaveLength(1);
-      expect(result[0].taskId).toBe('task-1');
+      expect(result.name).toBe('Test Document.pdf');
+      expect(mockStorageService.store).toHaveBeenCalled();
     });
   });
 });

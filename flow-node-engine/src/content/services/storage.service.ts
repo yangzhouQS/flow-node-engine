@@ -24,6 +24,7 @@ export enum StorageType {
 export interface StorageConfig {
   type: StorageType;
   basePath: string;
+  baseUrl?: string;
   bucket?: string;
   region?: string;
   accessKeyId?: string;

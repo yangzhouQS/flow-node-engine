@@ -5,6 +5,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import { vi } from 'vitest';
 import { Comment, CommentType } from '../entities/comment.entity';
 import { CommentService } from './comment.service';
 
@@ -38,29 +39,32 @@ describe('CommentService', () => {
     updateTime: new Date(),
   };
 
+  // 创建一个持久的 queryBuilder mock 对象
+  const mockQueryBuilder = {
+    where: vi.fn().mockReturnThis(),
+    andWhere: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    addOrderBy: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    take: vi.fn().mockReturnThis(),
+    getOne: vi.fn(),
+    getMany: vi.fn(),
+    getManyAndCount: vi.fn(),
+  };
+
   const mockRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
-    findOne: jest.fn(),
-    find: jest.fn(),
-    update: jest.fn(),
-    increment: jest.fn(),
-    decrement: jest.fn(),
-    createQueryBuilder: jest.fn(() => ({
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      addOrderBy: jest.fn().mockReturnThis(),
-      skip: jest.fn().mockReturnThis(),
-      take: jest.fn().mockReturnThis(),
-      getOne: jest.fn(),
-      getMany: jest.fn(),
-      getManyAndCount: jest.fn(),
-    })),
+    create: vi.fn(),
+    save: vi.fn(),
+    findOne: vi.fn(),
+    find: vi.fn(),
+    update: vi.fn(),
+    increment: vi.fn(),
+    decrement: vi.fn(),
+    createQueryBuilder: vi.fn(() => mockQueryBuilder),
   };
 
   const mockDataSource = {
-    createQueryRunner: jest.fn(),
+    createQueryRunner: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -83,7 +87,11 @@ describe('CommentService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    // 重置 queryBuilder mock
+    mockQueryBuilder.getOne.mockReset();
+    mockQueryBuilder.getMany.mockReset();
+    mockQueryBuilder.getManyAndCount.mockReset();
   });
 
   describe('addComment', () => {

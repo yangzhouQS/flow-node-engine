@@ -304,7 +304,7 @@ export class PriorityHitPolicyHandler extends AbstractHitPolicy {
   handle(results: RuleEvaluationResult[], _context?: RuleExecutionContext): HitPolicyResult {
     const matchedResults = results
       .filter((r) => r.matched)
-      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+      .sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0)); // 优先级值越小优先级越高
 
     if (matchedResults.length === 0) {
       return {

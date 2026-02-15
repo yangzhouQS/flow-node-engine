@@ -22,7 +22,7 @@ async function bootstrap() {
   // API 前缀
   app.setGlobalPrefix('api/v1');
 
-  // Swagger 文档 - 使用 try-catch 避免枚举循环依赖问题
+  // Swagger 文档配置 - 必须在 setGlobalPrefix 之后、listen 之前配置
   try {
     const config = new DocumentBuilder()
       .setTitle('Flow Node Engine API')
@@ -30,19 +30,26 @@ async function bootstrap() {
       .setVersion('1.0')
       .addBearerAuth()
       .build();
+    
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+    // ignoreGlobalPrefix: true 使 Swagger UI 不受全局前缀影响
+    SwaggerModule.setup('api-docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+      },
+      customSiteTitle: 'Flow Node Engine API Docs',
+    });
     console.log('Swagger documentation initialized successfully');
   } catch (error) {
-    console.warn('Swagger documentation initialization failed:', error.message);
+    console.warn('Swagger documentation initialization failed:', error);
     console.warn('Application will continue without Swagger documentation');
   }
 
-  console.log(' process.env = ',  process.env)
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger documentation is available at: http://localhost:${port}/api`);
+  console.log(`Swagger documentation is available at: http://localhost:${port}/api-docs`);
 }
 
 bootstrap();

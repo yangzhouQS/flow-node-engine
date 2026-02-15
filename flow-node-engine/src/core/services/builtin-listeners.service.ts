@@ -297,9 +297,9 @@ export class ScriptExecutionListener implements IExecutionListener {
           getVariable: (name: string) => context.variables[name],
         },
         console: {
-          log: (...args: any[]) => this.logger.log(...args),
-          error: (...args: any[]) => this.logger.error(...args),
-          warn: (...args: any[]) => this.logger.warn(...args),
+          log: (...args: any[]) => this.logger.log(args.join(' ')),
+          error: (...args: any[]) => this.logger.error(args.join(' ')),
+          warn: (...args: any[]) => this.logger.warn(args.join(' ')),
         },
       };
 
@@ -370,9 +370,9 @@ export class ScriptTaskListener implements ITaskListener {
           getVariable: (name: string) => context.variables[name],
         },
         console: {
-          log: (...args: any[]) => this.logger.log(...args),
-          error: (...args: any[]) => this.logger.error(...args),
-          warn: (...args: any[]) => this.logger.warn(...args),
+          log: (...args: any[]) => this.logger.log(args.join(' ')),
+          error: (...args: any[]) => this.logger.error(args.join(' ')),
+          warn: (...args: any[]) => this.logger.warn(args.join(' ')),
         },
       };
 
@@ -549,13 +549,13 @@ export class BuiltinListenerFactory implements IListenerFactory {
 
     switch (type) {
       case BuiltinListenerType.LOG:
-        return new LogTaskListener(config as LogListenerConfig);
+        return new LogTaskListener(config as unknown as LogListenerConfig);
       
       case BuiltinListenerType.VARIABLE_SET:
-        return new VariableSetTaskListener(config as VariableSetListenerConfig);
+        return new VariableSetTaskListener(config as unknown as VariableSetListenerConfig);
       
       case BuiltinListenerType.SCRIPT:
-        return new ScriptTaskListener(config as ScriptListenerConfig);
+        return new ScriptTaskListener(config as unknown as ScriptListenerConfig);
       
       case BuiltinListenerType.AUDIT_LOG:
         return new AuditLogTaskListener(config);

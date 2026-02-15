@@ -8,15 +8,24 @@ import { MailService } from './mail.service';
 import { MailTemplateService } from './mail-template.service';
 import { MailTransport, ProcessNotificationType, TaskNotificationType } from '../interfaces/mail.interface';
 
-// Mock nodemailer
-vi.mock('nodemailer', () => ({
-  default: {
+// Mock nodemailer - 使用 import 原始模块的方式
+vi.mock(import('nodemailer'), async (importOriginal) => {
+  const original = await importOriginal();
+  return {
+    ...original,
+    default: {
+      ...original.default,
+      createTransport: vi.fn(() => ({
+        sendMail: vi.fn().mockResolvedValue({ messageId: 'test-message-id' }),
+        verify: vi.fn().mockResolvedValue(true),
+      })),
+    },
     createTransport: vi.fn(() => ({
       sendMail: vi.fn().mockResolvedValue({ messageId: 'test-message-id' }),
       verify: vi.fn().mockResolvedValue(true),
     })),
-  },
-}));
+  };
+});
 
 describe('MailService', () => {
   let mailService: MailService;

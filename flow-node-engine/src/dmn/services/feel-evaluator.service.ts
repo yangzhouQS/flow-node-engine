@@ -67,7 +67,7 @@ export class FeelEvaluatorService {
       return {
         success: false,
         error: errorMessage,
-        errorType: FeelErrorType.RUNTIME_ERROR,
+        errorType: this.getErrorType(error),
       };
     }
   }
@@ -626,6 +626,7 @@ export class FeelEvaluatorService {
 
   /**
    * 简单表达式求值（用于条件表达式）
+   * 按照运算符优先级从低到高处理：or -> and -> 比较 -> between/in -> 算术
    */
   private evaluateSimpleExpression(expression: string, variables: Record<string, any>): any {
     expression = expression.trim();
@@ -646,7 +647,31 @@ export class FeelEvaluatorService {
     if (expression.toLowerCase() === 'false') return false;
     if (expression.toLowerCase() === 'null') return null;
 
-    // 处理比较运算符
+    // 优先级1: 处理 or 逻辑运算符（最低优先级）
+    const orParts = this.splitExpression(expression, ' or ');
+    if (orParts) {
+      return this.toBoolean(this.evaluateSimpleExpression(orParts[0], variables)) ||
+             this.toBoolean(this.evaluateSimpleExpression(orParts[1], variables));
+    }
+
+    // 优先级2: 处理 and 逻辑运算符（需要排除between中的and）
+    // 先检查是否是between表达式
+    const betweenMatch = expression.match(/^(.+?)\s+between\s+(.+?)\s+and\s+(.+)$/i);
+    if (betweenMatch) {
+      const value = this.evaluateSimpleExpression(betweenMatch[1], variables);
+      const low = this.evaluateSimpleExpression(betweenMatch[2], variables);
+      const high = this.evaluateSimpleExpression(betweenMatch[3], variables);
+      return this.compare(value, low) >= 0 && this.compare(value, high) <= 0;
+    }
+
+    // 处理 and 逻辑运算符
+    const andParts = this.splitExpression(expression, ' and ');
+    if (andParts) {
+      return this.toBoolean(this.evaluateSimpleExpression(andParts[0], variables)) &&
+             this.toBoolean(this.evaluateSimpleExpression(andParts[1], variables));
+    }
+
+    // 优先级3: 处理比较运算符
     const comparisonOperators = ['<=', '>=', '!=', '<', '>', '='];
     for (const op of comparisonOperators) {
       const parts = this.splitExpression(expression, op);
@@ -664,28 +689,6 @@ export class FeelEvaluatorService {
       }
     }
 
-    // 处理逻辑运算符
-    const andParts = this.splitExpression(expression, ' and ');
-    if (andParts) {
-      return this.toBoolean(this.evaluateSimpleExpression(andParts[0], variables)) &&
-             this.toBoolean(this.evaluateSimpleExpression(andParts[1], variables));
-    }
-
-    const orParts = this.splitExpression(expression, ' or ');
-    if (orParts) {
-      return this.toBoolean(this.evaluateSimpleExpression(orParts[0], variables)) ||
-             this.toBoolean(this.evaluateSimpleExpression(orParts[1], variables));
-    }
-
-    // 处理between表达式
-    const betweenMatch = expression.match(/^(.+?)\s+between\s+(.+?)\s+and\s+(.+)$/i);
-    if (betweenMatch) {
-      const value = this.evaluateSimpleExpression(betweenMatch[1], variables);
-      const low = this.evaluateSimpleExpression(betweenMatch[2], variables);
-      const high = this.evaluateSimpleExpression(betweenMatch[3], variables);
-      return this.compare(value, low) >= 0 && this.compare(value, high) <= 0;
-    }
-
     // 处理in表达式
     const inMatch = expression.match(/^(.+?)\s+in\s+\[(.+)\]$/i);
     if (inMatch) {
@@ -695,7 +698,7 @@ export class FeelEvaluatorService {
       return items.some((item) => this.equals(value, item));
     }
 
-    // 处理算术运算符
+    // 优先级4: 处理算术运算符
     const arithmeticOperators = ['+', '-', '*', '/'];
     for (const op of arithmeticOperators) {
       const parts = this.splitExpression(expression, op);

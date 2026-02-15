@@ -173,6 +173,8 @@ export interface MultiInstanceResult {
   error?: string;
   /** 执行时间（毫秒） */
   executionTime?: number;
+  /** 完成原因 */
+  completionReason?: string;
 }
 
 /**

@@ -1,3 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger';
+
 // 统一API响应格式
 export interface ApiResponse<T = any> {
   code: number;
@@ -9,10 +11,19 @@ export interface ApiResponse<T = any> {
 
 // API响应DTO类
 export class ApiResponseDto<T = any> {
+  @ApiProperty({ description: '响应码', example: 0 })
   code: number;
+  
+  @ApiProperty({ description: '响应消息', example: 'Success' })
   message: string;
+  
+  @ApiProperty({ description: '响应数据' })
   data: T;
+  
+  @ApiProperty({ description: '时间戳' })
   timestamp: number;
+  
+  @ApiProperty({ description: '总数（分页时使用）', required: false })
   total?: number;
 
   constructor(code: number, message: string, data?: T, total?: number) {

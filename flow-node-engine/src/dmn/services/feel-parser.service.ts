@@ -19,6 +19,9 @@ import {
   FeelContextExpression,
   FeelFilterExpression,
   FeelConcatenationExpression,
+  FeelForExpression,
+  FeelSomeExpression,
+  FeelEveryExpression,
 } from '../interfaces/feel-expression.interface';
 
 /**
@@ -49,7 +52,7 @@ enum TokenType {
  */
 interface Token {
   type: TokenType;
-  value: string | number;
+  value: string | number | boolean | null;
   position: number;
   line: number;
   column: number;
@@ -433,7 +436,7 @@ class TokenParser {
       iterable,
       condition,
       source: this.source,
-    };
+    } as FeelSomeExpression | FeelEveryExpression;
   }
 
   /**
@@ -453,7 +456,7 @@ class TokenParser {
       iterable,
       body,
       source: this.source,
-    };
+    } as FeelForExpression;
   }
 
   /**
@@ -921,3 +924,4 @@ class TokenParser {
     return token;
   }
 }
+
