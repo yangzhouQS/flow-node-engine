@@ -33,7 +33,7 @@ export class QueryTaskDto {
   @IsString()
   taskDefinitionKey?: string;
 
-  @ApiProperty({ description: '任务状态', required: false, enum: TaskStatus, example: TaskStatus.ASSIGNED })
+  @ApiProperty({ description: '任务状态', required: false, enum: TaskStatus, example: 'ASSIGNED' })
   @IsOptional()
   @IsEnum(TaskStatus)
   status?: TaskStatus;
@@ -48,7 +48,7 @@ export class QueryTaskDto {
   @IsString()
   tenantId?: string;
 
-  @ApiProperty({ description: '任务状态列表', required: false, enum: TaskStatus, isArray: true, example: [TaskStatus.ASSIGNED, TaskStatus.UNASSIGNED] })
+  @ApiProperty({ description: '任务状态列表', required: false, enum: TaskStatus, isArray: true, example: ['ASSIGNED', 'UNASSIGNED'] })
   @IsOptional()
   @IsArray()
   @IsEnum(TaskStatus, { each: true })

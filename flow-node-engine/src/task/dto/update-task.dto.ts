@@ -47,7 +47,7 @@ export class UpdateTaskDto {
   @IsString()
   category?: string;
 
-  @ApiProperty({ description: '任务状态', required: false, enum: TaskStatus, example: TaskStatus.ASSIGNED })
+  @ApiProperty({ description: '任务状态', required: false, enum: TaskStatus, example: 'ASSIGNED' })
   @IsOptional()
   @IsEnum(TaskStatus)
   status?: TaskStatus;

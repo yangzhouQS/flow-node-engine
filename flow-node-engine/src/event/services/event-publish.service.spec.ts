@@ -5,7 +5,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventBusService } from '../../core/services/event-bus.service';
-import { Event, EventStatus, EventType } from '../entities/event.entity';
+import { Event } from '../entities/event.entity';
+// 直接从枚举文件导入，避免 Swagger 循环依赖问题
+import { EventStatus, EventType } from '../enums/event.enum';
 import { EventPublishService } from './event-publish.service';
 
 describe('EventPublishService', () => {

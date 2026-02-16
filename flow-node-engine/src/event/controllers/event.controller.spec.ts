@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { EventType, EventStatus } from '../entities/event.entity';
+// 直接从枚举文件导入，避免 Swagger 循环依赖问题
+import { EventType, EventStatus } from '../enums/event.enum';
 import { EventPublishService } from '../services/event-publish.service';
 import { EventSubscriptionService } from '../services/event-subscription.service';
 import { EventController } from './event.controller';

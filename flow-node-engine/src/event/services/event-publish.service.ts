@@ -4,7 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 
 import { EventBusService } from '../../core/services/event-bus.service';
-import { Event, EventStatus } from '../entities/event.entity';
+import { Event } from '../entities/event.entity';
+
+enum EventStatus {
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  PROCESSED = 'PROCESSED',
+  FAILED = 'FAILED',
+}
 
 @Injectable()
 export class EventPublishService {

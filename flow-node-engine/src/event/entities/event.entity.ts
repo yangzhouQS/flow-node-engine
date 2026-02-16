@@ -47,7 +47,7 @@ export class Event {
   @ApiProperty({ 
     description: '事件类型', 
     enum: EventType,
-    example: EventType.PROCESS_INSTANCE_START 
+    example: 'PROCESS_INSTANCE_START'
   })
   @Column({
     type: 'enum',
@@ -59,7 +59,7 @@ export class Event {
   @ApiProperty({ 
     description: '事件状态', 
     enum: EventStatus,
-    example: EventStatus.PENDING 
+    example: 'PENDING'
   })
   @Column({
     type: 'enum',

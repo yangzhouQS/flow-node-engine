@@ -87,7 +87,7 @@ export class ProcessInstance {
   @Column({ name: 'state', default: 'running' })
   state: string;
 
-  @ApiProperty({ description: '流程状态', enum: ProcessInstanceStatus, example: ProcessInstanceStatus.RUNNING })
+  @ApiProperty({ description: '流程状态', enum: ProcessInstanceStatus, example: 'RUNNING' })
   @Column({
     name: 'status',
     type: 'varchar',

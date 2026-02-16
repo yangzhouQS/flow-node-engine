@@ -97,7 +97,7 @@ export class Task {
   @Column({ name: 'tenant_id', length: 255, nullable: true })
   tenantId?: string;
 
-  @ApiProperty({ description: '任务状态', enum: TaskStatus, example: TaskStatus.CREATED })
+  @ApiProperty({ description: '任务状态', enum: TaskStatus, example: 'CREATED' })
   @Column({ name: 'status', type: 'enum', enum: TaskStatus, default: TaskStatus.CREATED })
   status: TaskStatus;
 

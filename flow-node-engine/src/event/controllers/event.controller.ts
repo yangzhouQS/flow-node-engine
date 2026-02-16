@@ -3,7 +3,38 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiParam }
 
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../identity/guards/jwt-auth.guard';
-import { EventType, EventStatus } from '../entities/event.entity';
+
+enum EventType {
+  PROCESS_INSTANCE_START = 'PROCESS_INSTANCE_START',
+  PROCESS_INSTANCE_END = 'PROCESS_INSTANCE_END',
+  PROCESS_INSTANCE_SUSPEND = 'PROCESS_INSTANCE_SUSPEND',
+  PROCESS_INSTANCE_ACTIVATE = 'PROCESS_INSTANCE_ACTIVATE',
+  TASK_CREATED = 'TASK_CREATED',
+  TASK_ASSIGNED = 'TASK_ASSIGNED',
+  TASK_COMPLETED = 'TASK_COMPLETED',
+  TASK_CANCELLED = 'TASK_CANCELLED',
+  ACTIVITY_STARTED = 'ACTIVITY_STARTED',
+  ACTIVITY_COMPLETED = 'ACTIVITY_COMPLETED',
+  VARIABLE_CREATED = 'VARIABLE_CREATED',
+  VARIABLE_UPDATED = 'VARIABLE_UPDATED',
+  VARIABLE_DELETED = 'VARIABLE_DELETED',
+  SIGNAL_THROWN = 'SIGNAL_THROWN',
+  SIGNAL_RECEIVED = 'SIGNAL_RECEIVED',
+  MESSAGE_SENT = 'MESSAGE_SENT',
+  MESSAGE_RECEIVED = 'MESSAGE_RECEIVED',
+  ERROR_THROWN = 'ERROR_THROWN',
+  ERROR_RECEIVED = 'ERROR_RECEIVED',
+  TIMER_FIRED = 'TIMER_FIRED',
+  COMPENSATION_TRIGGERED = 'COMPENSATION_TRIGGERED',
+  CUSTOM = 'CUSTOM',
+}
+
+enum EventStatus {
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  PROCESSED = 'PROCESSED',
+  FAILED = 'FAILED',
+}
 import { EventPublishService } from '../services/event-publish.service';
 import { EventSubscriptionService } from '../services/event-subscription.service';
 
