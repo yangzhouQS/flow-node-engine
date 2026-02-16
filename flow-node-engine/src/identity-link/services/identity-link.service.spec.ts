@@ -4,7 +4,7 @@
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository, In } from 'typeorm';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, Mocked } from 'vitest';
 
 import {
   HistoricIdentityLinkEntity,
@@ -63,8 +63,8 @@ const mockHistoricIdentityLink: HistoricIdentityLinkEntity = {
 
 describe('IdentityLinkService', () => {
   let service: IdentityLinkService;
-  let identityLinkRepository: vi.Mocked<Repository<IdentityLinkEntity>>;
-  let historicIdentityLinkRepository: vi.Mocked<Repository<HistoricIdentityLinkEntity>>;
+  let identityLinkRepository: Mocked<Repository<IdentityLinkEntity>>;
+  let historicIdentityLinkRepository: Mocked<Repository<HistoricIdentityLinkEntity>>;
 
   beforeEach(async () => {
     // 创建 mock repositories

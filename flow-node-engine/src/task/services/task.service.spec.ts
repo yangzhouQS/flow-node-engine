@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { BusinessException } from '../../common/exceptions/business.exception';
 import { EventBusService } from '../../core/services/event-bus.service';
@@ -12,9 +12,9 @@ import { TaskService } from './task.service';
 
 describe('TaskService', () => {
   let service: TaskService;
-  let taskRepository: vi.Mocked<Repository<Task>>;
-  let eventBusService: vi.Mocked<EventBusService>;
-  let processEngineService: vi.Mocked<ProcessEngineService>;
+  let taskRepository: Mocked<Repository<Task>>;
+  let eventBusService: Mocked<EventBusService>;
+  let processEngineService: Mocked<ProcessEngineService>;
 
   const mockTask: Partial<Task> = {
     id: 'task-123',
@@ -105,7 +105,7 @@ describe('TaskService', () => {
         take: vi.fn().mockReturnThis(),
         getManyAndCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<Task>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<Task>>;
     };
 
     it('应该返回分页任务列表', async () => {
@@ -476,7 +476,7 @@ describe('TaskService', () => {
         getCount: vi.fn().mockResolvedValueOnce(100).mockResolvedValueOnce(20).mockResolvedValueOnce(30)
           .mockResolvedValueOnce(10).mockResolvedValueOnce(35).mockResolvedValueOnce(5),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<Task>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<Task>>;
     };
 
     it('应该返回任务统计信息', async () => {

@@ -1,0 +1,436 @@
+src/batch/controllers/batch.controller.spec.ts(89,5): error TS2740: Type '{ createBatch: Mock<Procedure>; queryBatches: Mock<Procedure>; getBatchById: Mock<Procedure>; updateBatch: Mock<Procedure>; ... 8 more ...; toPartResponseDto: Mock<...>; }' is missing the following properties from type 'BatchService': logger, executors, processingBatches, isProcessing, and 13 more.
+src/batch/controllers/batch.controller.spec.ts(100,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: CreateBatchDto, userId?: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(116,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: CreateBatchDto, userId?: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(132,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: QueryBatchDto) => Promise<{ data: BatchEntity[]; total: number; }>'.
+src/batch/controllers/batch.controller.spec.ts(133,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(151,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: QueryBatchDto) => Promise<{ data: BatchEntity[]; total: number; }>'.
+src/batch/controllers/batch.controller.spec.ts(168,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: QueryBatchDto) => Promise<{ data: BatchEntity[]; total: number; }>'.
+src/batch/controllers/batch.controller.spec.ts(169,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(179,34): error TS2339: Property 'mockResolvedValue' does not exist on type '(tenantId?: string) => Promise<BatchStatisticsDto>'.
+src/batch/controllers/batch.controller.spec.ts(190,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(191,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(200,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(213,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string, dto: UpdateBatchDto) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(214,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(228,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string, dto: UpdateBatchDto) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(229,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(241,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(242,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(254,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(255,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(265,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<void>'.
+src/batch/controllers/batch.controller.spec.ts(273,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<void>'.
+src/batch/controllers/batch.controller.spec.ts(289,36): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: QueryBatchPartDto) => Promise<{ data: BatchPartEntity[]; total: number; }>'.
+src/batch/controllers/batch.controller.spec.ts(290,38): error TS2339: Property 'mockReturnValue' does not exist on type '(part: BatchPartEntity) => BatchPartResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(311,36): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: QueryBatchPartDto) => Promise<{ data: BatchPartEntity[]; total: number; }>'.
+src/batch/controllers/batch.controller.spec.ts(324,37): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchPartEntity>'.
+src/batch/controllers/batch.controller.spec.ts(325,38): error TS2339: Property 'mockReturnValue' does not exist on type '(part: BatchPartEntity) => BatchPartResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(334,37): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchPartEntity>'.
+src/batch/controllers/batch.controller.spec.ts(344,37): error TS2339: Property 'mockResolvedValue' does not exist on type '(batchId: string) => Promise<number>'.
+src/batch/controllers/batch.controller.spec.ts(353,37): error TS2339: Property 'mockResolvedValue' does not exist on type '(batchId: string) => Promise<number>'.
+src/batch/controllers/batch.controller.spec.ts(363,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(364,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(batch: BatchEntity) => Promise<void>'.
+src/batch/controllers/batch.controller.spec.ts(374,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(386,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(387,33): error TS2339: Property 'mockRejectedValue' does not exist on type '(batch: BatchEntity) => Promise<void>'.
+src/batch/controllers/batch.controller.spec.ts(403,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: CreateBatchDto, userId?: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(418,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(dto: QueryBatchDto) => Promise<{ data: BatchEntity[]; total: number; }>'.
+src/batch/controllers/batch.controller.spec.ts(427,33): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(433,32): error TS2339: Property 'mockResolvedValue' does not exist on type '(id: string, dto: UpdateBatchDto) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(434,34): error TS2339: Property 'mockReturnValue' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/controllers/batch.controller.spec.ts(448,33): error TS2339: Property 'mockImplementation' does not exist on type '(id: string) => Promise<BatchEntity>'.
+src/batch/controllers/batch.controller.spec.ts(453,34): error TS2339: Property 'mockImplementation' does not exist on type '(batch: BatchEntity) => BatchResponseDto'.
+src/batch/services/batch.service.spec.ts(228,50): error TS2345: Argument of type 'BatchPartEntity[]' is not assignable to parameter of type 'DeepPartial<BatchPartEntity> & BatchPartEntity'.
+src/batch/services/batch.service.spec.ts(231,50): error TS2554: Expected 1-2 arguments, but got 3.
+src/batch/services/batch.service.spec.ts(262,50): error TS2345: Argument of type 'BatchPartEntity[]' is not assignable to parameter of type 'DeepPartial<BatchPartEntity> & BatchPartEntity'.
+src/batch/services/batch.service.spec.ts(296,50): error TS2345: Argument of type 'BatchPartEntity[]' is not assignable to parameter of type 'DeepPartial<BatchPartEntity> & BatchPartEntity'.
+src/batch/services/batch.service.ts(444,69): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/batch/services/batch.service.ts(447,34): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/batch/services/batch.service.ts(491,35): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/batch/services/batch.service.ts(492,35): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/comment/services/comment.service.spec.ts(16,9): error TS2739: Type '{ id: string; userId: string; userName: string; processInstanceId: string; taskId: string; type: CommentType.COMMENT; message: string; parentId: null; rootId: null; replyToUserId: null; replyToUserName: null; ... 11 more ...; updateTime: Date; }' is missing the following properties from type 'Comment': parent, replies
+src/common/filters/validation-exception.filter.spec.ts(125,40): error TS2503: Cannot find namespace 'vi'.
+src/common/interceptors/cache.interceptor.spec.ts(57,55): error TS2345: Argument of type '(key: string) => string' is not assignable to parameter of type '(metadataKey: unknown, target: Function | Type<any>) => unknown'.
+  Types of parameters 'key' and 'metadataKey' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+src/common/interceptors/cache.interceptor.spec.ts(83,55): error TS2345: Argument of type '(key: string) => 3600 | "test-cache-key"' is not assignable to parameter of type '(metadataKey: unknown, target: Function | Type<any>) => unknown'.
+  Types of parameters 'key' and 'metadataKey' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+src/common/interceptors/cache.interceptor.spec.ts(110,55): error TS2345: Argument of type '(key: string) => string' is not assignable to parameter of type '(metadataKey: unknown, target: Function | Type<any>) => unknown'.
+  Types of parameters 'key' and 'metadataKey' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+src/common/interceptors/transaction.interceptor.ts(50,58): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/common/middlewares/logger.middleware.spec.ts(9,17): error TS2503: Cannot find namespace 'vi'.
+src/common/middlewares/logger.middleware.spec.ts(64,50): error TS2503: Cannot find namespace 'vi'.
+src/common/middlewares/logger.middleware.spec.ts(81,50): error TS2503: Cannot find namespace 'vi'.
+src/common/middlewares/logger.middleware.spec.ts(98,50): error TS2503: Cannot find namespace 'vi'.
+src/common/middlewares/request-id.middleware.spec.ts(9,17): error TS2503: Cannot find namespace 'vi'.
+src/common/middlewares/request-id.middleware.spec.ts(58,55): error TS2503: Cannot find namespace 'vi'.
+src/common/services/process-definition-cache.service.ts(193,66): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/process-definition-cache.service.ts(240,66): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/process-definition-cache.service.ts(287,79): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/process-definition-cache.service.ts(333,70): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/process-definition-cache.service.ts(367,64): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/process-definition-cache.service.ts(399,62): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/process-definition-cache.service.ts(421,69): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/process-definition-cache.service.ts(438,61): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/common/services/slow-query-log.service.ts(123,45): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/content/controllers/content.controller.ts(70,35): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/controllers/content.controller.ts(96,37): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/content.service.spec.ts(368,20): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/content.service.ts(76,19): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/storage.service.spec.ts(80,20): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/storage.service.spec.ts(98,20): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/storage.service.ts(54,23): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/storage.service.ts(84,29): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/storage.service.ts(171,29): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/storage.service.ts(242,29): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/content/services/storage.service.ts(278,38): error TS2694: Namespace 'global.Express' has no exported member 'Multer'.
+src/core/services/bpmn-parser.service.ts(144,59): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/core/services/bpmn-parser.service.ts(147,22): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/bpmn-parser.service.ts(153,24): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/bpmn-parser.service.ts(199,46): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/bpmn-parser.service.ts(224,66): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/core/services/bpmn-parser.service.ts(227,22): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/dynamic-modification.service.spec.ts(38,7): error TS2353: Object literal may only specify known properties, and 'initialActivityId' does not exist in type 'IBpmnProcess'.
+src/core/services/dynamic-modification.service.ts(241,66): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/dynamic-modification.service.ts(245,82): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/dynamic-modification.service.ts(281,63): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/dynamic-modification.service.ts(281,80): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/core/services/dynamic-modification.service.ts(285,29): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/expression-evaluator.service.ts(43,15): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/core/services/expression-evaluator.service.ts(48,22): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/process-executor.service.spec.ts(62,5): error TS2353: Object literal may only specify known properties, and 'elements' does not exist in type 'BpmnProcessDefinition'.
+src/core/services/process-executor.service.ts(346,29): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/process-executor.service.ts(350,15): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/core/services/process-executor.service.ts(355,22): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/core/services/transaction-subprocess.service.spec.ts(297,9): error TS2741: Property 'getConfig' is missing in type '{ compensate: Mock<Procedure>; }' but required in type 'ICompensationHandler'.
+src/core/services/transaction-subprocess.service.spec.ts(326,9): error TS2741: Property 'getConfig' is missing in type '{ compensate: Mock<Procedure>; }' but required in type 'ICompensationHandler'.
+src/core/services/transaction-subprocess.service.spec.ts(357,9): error TS2741: Property 'getConfig' is missing in type '{ compensate: Mock<Procedure>; }' but required in type 'ICompensationHandler'.
+src/core/services/transaction-subprocess.service.spec.ts(366,9): error TS2741: Property 'getConfig' is missing in type '{ compensate: Mock<Procedure>; }' but required in type 'ICompensationHandler'.
+src/core/services/transaction-subprocess.service.spec.ts(389,20): error TS2322: Type '() => Promise<void>' is not assignable to type '(context: CompensationContext) => CompensationHandlerResult | Promise<CompensationHandlerResult>'.
+  Type 'Promise<void>' is not assignable to type 'CompensationHandlerResult | Promise<CompensationHandlerResult>'.
+    Type 'Promise<void>' is not assignable to type 'Promise<CompensationHandlerResult>'.
+      Type 'void' is not assignable to type 'CompensationHandlerResult'.
+src/core/services/transaction-subprocess.service.spec.ts(398,20): error TS2322: Type '() => Promise<void>' is not assignable to type '(context: CompensationContext) => CompensationHandlerResult | Promise<CompensationHandlerResult>'.
+  Type 'Promise<void>' is not assignable to type 'CompensationHandlerResult | Promise<CompensationHandlerResult>'.
+    Type 'Promise<void>' is not assignable to type 'Promise<CompensationHandlerResult>'.
+      Type 'void' is not assignable to type 'CompensationHandlerResult'.
+src/dmn/services/condition-evaluator.service.ts(118,62): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(44,9): error TS2322: Type '{ id: string; label: string; expression: string; type: string; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(48,9): error TS2322: Type '{ id: string; label: string; name: string; type: string; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(65,9): error TS2322: Type '{ id: string; conditions: { inputId: string; operator: string; value: number; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(220,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: string; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(234,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: number; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(248,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: number[]; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(262,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: string[]; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(278,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: string; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(294,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: string; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(309,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: number; }[]; outputs: { outputId: string; value: number; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(324,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: true; }[]; outputs: { outputId: string; value: false; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(338,9): error TS2322: Type '{ conditions: { inputId: string; operator: string; value: null; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(382,3): error TS2322: Type 'string | { id: string; label: string; expression: string; type: string; }[]' is not assignable to type 'string'.
+  Type '{ id: string; label: string; expression: string; type: string; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(385,3): error TS2322: Type 'string | { id: string; label: string; name: string; type: string; }[]' is not assignable to type 'string'.
+  Type '{ id: string; label: string; name: string; type: string; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn-xml-exporter.service.spec.ts(388,3): error TS2322: Type 'string | { id: string; conditions: { inputId: string; operator: string; value: string; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+  Type '{ id: string; conditions: { inputId: string; operator: string; value: string; }[]; outputs: { outputId: string; value: string; }[]; }[]' is not assignable to type 'string'.
+src/dmn/services/dmn.service.spec.ts(26,5): error TS2322: Type '"FIRST"' is not assignable to type 'HitPolicy'.
+src/dmn/services/dmn.service.spec.ts(39,9): error TS2740: Type '{ id: string; decisionId: string; decisionKey: string; decisionVersion: number; status: DmnExecutionStatus.SUCCESS; inputData: string; outputResult: string; errorMessage: null; ... 4 more ...; createTime: Date; }' is missing the following properties from type 'DmnExecutionEntity': matchedRules, executionId, taskId, tenantId, and 4 more.
+src/dmn/services/dmn.service.spec.ts(108,9): error TS2322: Type '"FIRST"' is not assignable to type 'HitPolicy'.
+src/dmn/services/dmn.service.spec.ts(109,20): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'DecisionInputDto'.
+src/dmn/services/dmn.service.spec.ts(110,19): error TS2739: Type '{ name: string; type: string; }' is missing the following properties from type 'DecisionOutputDto': id, label
+src/dmn/services/dmn.service.spec.ts(111,19): error TS2353: Object literal may only specify known properties, and 'input' does not exist in type 'DecisionRuleDto'.
+src/dmn/services/dmn.service.spec.ts(125,11): error TS2322: Type '"FIRST"' is not assignable to type 'HitPolicy'.
+src/dmn/services/dmn.service.spec.ts(142,9): error TS2322: Type '"FIRST"' is not assignable to type 'HitPolicy'.
+src/dmn/services/dmn.service.spec.ts(195,13): error TS2353: Object literal may only specify known properties, and 'input' does not exist in type 'DecisionRuleDto'.
+src/dmn/services/dmn.service.spec.ts(196,13): error TS2353: Object literal may only specify known properties, and 'input' does not exist in type 'DecisionRuleDto'.
+src/dmn/services/dmn.service.spec.ts(197,13): error TS2353: Object literal may only specify known properties, and 'input' does not exist in type 'DecisionRuleDto'.
+src/dmn/services/dmn.service.spec.ts(462,9): error TS2353: Object literal may only specify known properties, and 'matched' does not exist in type 'DecisionResultDto'.
+src/dmn/services/dmn.service.spec.ts(472,21): error TS2339: Property 'matched' does not exist on type 'DecisionResultDto'.
+src/dmn/services/dmn.service.spec.ts(473,21): error TS2339: Property 'results' does not exist on type 'DecisionResultDto'.
+src/dmn/services/dmn.service.spec.ts(596,9): error TS2322: Type '"FIRST"' is not assignable to type 'HitPolicy'.
+src/dmn/services/dmn.service.spec.ts(597,20): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'DecisionInputDto'.
+src/dmn/services/dmn.service.spec.ts(598,19): error TS2739: Type '{ name: string; type: string; }' is missing the following properties from type 'DecisionOutputDto': id, label
+src/dmn/services/rule-engine-executor.service.ts(214,61): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/dmn/services/rule-engine-executor.service.ts(214,78): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/dmn/services/rule-engine-executor.service.ts(230,29): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/dmn/services/rule-engine-executor.service.ts(231,29): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/dmn/services/rule-engine-executor.service.ts(527,85): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/dmn/services/rule-engine-executor.service.ts(649,68): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/dmn/services/rule-engine-executor.service.ts(678,31): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/dmn/services/rule-engine-executor.service.ts(716,60): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event-subscription/services/event-subscription.service.spec.ts(525,53): error TS2345: Argument of type '{}' is not assignable to parameter of type 'DeepPartial<EventSubscription> & EventSubscription'.
+src/event-subscription/services/event-subscription.service.spec.ts(778,53): error TS2345: Argument of type '{}' is not assignable to parameter of type 'DeepPartial<EventSubscription> & EventSubscription'.
+src/event/controllers/event.controller.spec.ts(137,65): error TS2339: Property 'TIMER' does not exist on type 'typeof EventType'.
+src/event/controllers/event.controller.spec.ts(140,65): error TS2339: Property 'TIMER' does not exist on type 'typeof EventType'.
+src/event/controllers/event.controller.spec.ts(142,91): error TS2339: Property 'TIMER' does not exist on type 'typeof EventType'.
+src/event/services/event-publish.service.ts(41,68): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(41,85): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(69,65): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(69,82): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(102,64): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(102,81): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(121,71): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(121,88): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(126,34): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(144,69): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(144,86): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(162,80): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-publish.service.ts(162,97): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(86,81): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(86,98): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(106,79): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(106,96): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(125,83): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(125,100): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(144,84): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(144,101): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(165,71): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(165,88): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(186,72): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(186,89): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(207,73): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(207,90): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(227,73): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(227,90): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(248,75): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(248,92): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(269,77): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(269,94): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(288,75): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(288,92): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(307,75): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(307,92): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(326,75): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(326,92): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(345,72): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(345,89): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(364,74): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(364,91): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(383,71): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(383,88): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(402,75): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(402,92): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(421,71): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(421,88): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(440,73): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(440,90): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(459,70): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(459,87): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(479,81): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(479,98): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(499,65): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/event/services/event-subscription.service.ts(499,82): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/history/controllers/history.controller.spec.ts(8,34): error TS2344: Type '{ findHistoricActivityInstances: Mock<Procedure>; findHistoricActivityInstanceById: Mock<Procedure>; findHistoricActivityInstancesByProcessInstanceId: Mock<...>; ... 11 more ...; deleteHistoricActivityInstance: Mock<...>; }' does not satisfy the constraint '(...args: any) => any'.
+  Type '{ findHistoricActivityInstances: Mock<Procedure>; findHistoricActivityInstanceById: Mock<Procedure>; findHistoricActivityInstancesByProcessInstanceId: Mock<...>; ... 11 more ...; deleteHistoricActivityInstance: Mock<...>; }' provides no match for the signature '(...args: any): any'.
+src/history/services/historic-variable-instance.service.spec.ts(22,9): error TS2739: Type '{ id_: string; proc_inst_id_: string; execution_id_: string; task_id_: string; act_inst_id_: string; name_: string; var_type_: HistoricVariableType; text_: string; text2_: null; ... 9 more ...; state_: string; }' is missing the following properties from type 'HistoricVariableInstanceEntity': proc_def_id_, proc_def_key_
+src/history/services/historic-variable-instance.service.spec.ts(456,41): error TS2345: Argument of type 'HistoricVariableInstanceEntity[]' is not assignable to parameter of type 'DeepPartial<HistoricVariableInstanceEntity> & HistoricVariableInstanceEntity'.
+src/history/services/historic-variable-instance.service.spec.ts(467,43): error TS2345: Argument of type '{ affected: number; raw: {}; }' is not assignable to parameter of type 'UpdateResult'.
+  Property 'generatedMaps' is missing in type '{ affected: number; raw: {}; }' but required in type 'UpdateResult'.
+src/history/services/historic-variable-instance.service.spec.ts(482,43): error TS2345: Argument of type '{ affected: number; raw: {}; }' is not assignable to parameter of type 'UpdateResult'.
+  Property 'generatedMaps' is missing in type '{ affected: number; raw: {}; }' but required in type 'UpdateResult'.
+src/history/services/history-archive.service.spec.ts(19,24): error TS2503: Cannot find namespace 'vi'.
+src/history/services/history-archive.service.spec.ts(20,12): error TS2503: Cannot find namespace 'vi'.
+src/history/services/history.service.spec.ts(24,5): error TS2820: Type '"userTask"' is not assignable to type 'ActivityType'. Did you mean 'ActivityType.USER_TASK'?
+src/history/services/history.service.spec.ts(31,9): error TS2739: Type '{ id: string; taskId: string; taskDefinitionKey: string; taskDefinitionId: string; taskDefinitionVersion: number; processInstanceId: string; processDefinitionId: string; processDefinitionKey: string; ... 17 more ...; variables: { ...; }; }' is missing the following properties from type 'HistoricTaskInstance': startTime, endTime
+src/history/services/history.service.spec.ts(72,5): error TS2322: Type '"COMPLETED"' is not assignable to type 'HistoricProcessStatus'.
+src/identity-link/controllers/identity-link.controller.spec.ts(8,39): error TS2344: Type '{ create: Mock<Procedure>; batchCreate: Mock<Procedure>; query: Mock<Procedure>; getTaskCandidates: Mock<Procedure>; ... 8 more ...; checkTaskAccess: Mock<...>; }' does not satisfy the constraint '(...args: any) => any'.
+  Type '{ create: Mock<Procedure>; batchCreate: Mock<Procedure>; query: Mock<Procedure>; getTaskCandidates: Mock<Procedure>; ... 8 more ...; checkTaskAccess: Mock<...>; }' provides no match for the signature '(...args: any): any'.
+src/identity-link/controllers/identity-link.controller.spec.ts(77,46): error TS2345: Argument of type '{ taskId: string; type: string; userId: string; }' is not assignable to parameter of type 'CreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(101,46): error TS2345: Argument of type '{ taskId: string; type: string; groupId: string; }' is not assignable to parameter of type 'CreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(126,46): error TS2345: Argument of type '{ processInstanceId: string; type: string; userId: string; }' is not assignable to parameter of type 'CreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(153,51): error TS2345: Argument of type '{ taskId: string; type: string; userIds: string[]; }' is not assignable to parameter of type 'BatchCreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(176,51): error TS2345: Argument of type '{ taskId: string; type: string; groupIds: string[]; }' is not assignable to parameter of type 'BatchCreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(200,51): error TS2345: Argument of type '{ taskId: string; type: string; userIds: string[]; groupIds: string[]; }' is not assignable to parameter of type 'BatchCreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(215,51): error TS2345: Argument of type '{ taskId: string; type: string; userIds: any[]; groupIds: any[]; }' is not assignable to parameter of type 'BatchCreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(392,31): error TS2345: Argument of type '{ taskId: string; type: string; userId: string; }' is not assignable to parameter of type 'DeleteIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(418,31): error TS2345: Argument of type '{ taskId: string; type: string; }' is not assignable to parameter of type 'DeleteIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(431,31): error TS2345: Argument of type '{ taskId: string; type: string; }' is not assignable to parameter of type 'DeleteIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(485,9): error TS2322: Type '"candidate"' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(516,46): error TS2345: Argument of type '{ type: string; }' is not assignable to parameter of type 'CreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/controllers/identity-link.controller.spec.ts(538,51): error TS2345: Argument of type '{ taskId: string; type: string; userIds: string[]; }' is not assignable to parameter of type 'BatchCreateIdentityLinkDto'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type 'IdentityLinkType'.
+src/identity-link/services/identity-link.service.spec.ts(172,53): error TS2345: Argument of type 'IdentityLinkEntity[]' is not assignable to parameter of type 'DeepPartial<IdentityLinkEntity> & IdentityLinkEntity'.
+src/identity-link/services/identity-link.service.spec.ts(657,53): error TS2345: Argument of type 'IdentityLinkEntity[]' is not assignable to parameter of type 'DeepPartial<IdentityLinkEntity> & IdentityLinkEntity'.
+src/integration/services/process-comment-integration.service.ts(34,63): error TS2339: Property 'startProcess' does not exist on type 'ProcessInstanceService'.
+src/integration/services/process-comment-integration.service.ts(129,63): error TS2339: Property 'cancel' does not exist on type 'ProcessInstanceService'.
+src/job/controllers/job.controller.spec.ts(111,9): error TS2353: Object literal may only specify known properties, and 'jobType' does not exist in type 'CreateJobDto'.
+src/job/controllers/job.controller.spec.ts(127,9): error TS2353: Object literal may only specify known properties, and 'jobType' does not exist in type 'CreateJobDto'.
+src/job/controllers/job.controller.spec.ts(257,9): error TS2353: Object literal may only specify known properties, and 'jobType' does not exist in type 'CreateTimerJobDto'.
+src/job/controllers/job.controller.spec.ts(300,9): error TS2353: Object literal may only specify known properties, and 'jobType' does not exist in type 'CreateExternalWorkerJobDto'.
+src/job/controllers/job.controller.spec.ts(330,9): error TS2561: Object literal may only specify known properties, but 'workerId' does not exist in type 'FetchAndLockDto'. Did you mean to write 'worker_id_'?
+src/job/controllers/job.controller.spec.ts(348,9): error TS2561: Object literal may only specify known properties, but 'jobId' does not exist in type 'CompleteExternalWorkerJobDto'. Did you mean to write 'job_id_'?
+src/job/controllers/job.controller.spec.ts(362,9): error TS2561: Object literal may only specify known properties, but 'jobId' does not exist in type 'CompleteExternalWorkerJobDto'. Did you mean to write 'job_id_'?
+src/job/controllers/job.controller.spec.ts(375,9): error TS2561: Object literal may only specify known properties, but 'jobId' does not exist in type 'FailExternalWorkerJobDto'. Did you mean to write 'job_id_'?
+src/job/controllers/job.controller.spec.ts(389,9): error TS2561: Object literal may only specify known properties, but 'jobId' does not exist in type 'FailExternalWorkerJobDto'. Did you mean to write 'job_id_'?
+src/job/controllers/job.controller.spec.ts(417,9): error TS2353: Object literal may only specify known properties, and 'deadLetterJobId' does not exist in type 'ProcessDeadLetterJobDto'.
+src/job/controllers/job.controller.spec.ts(430,9): error TS2353: Object literal may only specify known properties, and 'deadLetterJobId' does not exist in type 'ProcessDeadLetterJobDto'.
+src/job/services/job.service.spec.ts(86,7): error TS2739: Type '{ id_: string; topic_: string; status_: ExternalWorkerJobStatus; process_inst_id_: string; execution_id_: string; process_def_id_: string; activity_id_: string; ... 20 more ...; extra_data_: null; }' is missing the following properties from type 'ExternalWorkerJob': process_def_key_, activity_name_, exception_stack_trace_, start_time_
+src/job/services/job.service.spec.ts(117,7): error TS2740: Type '{ id_: string; original_job_id_: string; type_: JobType; process_inst_id_: string; execution_id_: string; process_def_id_: string; process_def_key_: string; task_id_: string; handler_type_: string; ... 12 more ...; extra_data_: null; }' is missing the following properties from type 'DeadLetterJob': activity_id_, activity_name_, element_type_, callback_config_, and 2 more.
+src/job/services/job.service.spec.ts(242,46): error TS2345: Argument of type '{ type_: JobType; process_inst_id_: string; handler_type_: string; handler_config_: string; payload_: string; }' is not assignable to parameter of type 'CreateJobDto'.
+  Property 'id_' is missing in type '{ type_: JobType; process_inst_id_: string; handler_type_: string; handler_config_: string; payload_: string; }' but required in type 'CreateJobDto'.
+src/job/services/job.service.spec.ts(282,46): error TS2345: Argument of type '{ type_: JobType; }' is not assignable to parameter of type 'CreateJobDto'.
+  Property 'id_' is missing in type '{ type_: JobType; }' but required in type 'CreateJobDto'.
+src/job/services/job.service.spec.ts(609,51): error TS2345: Argument of type '{ timer_type_: TimerType; timer_expression_: string; due_date_: Date; process_inst_id_: string; }' is not assignable to parameter of type 'CreateTimerJobDto'.
+  Property 'id_' is missing in type '{ timer_type_: TimerType; timer_expression_: string; due_date_: Date; process_inst_id_: string; }' but required in type 'CreateTimerJobDto'.
+src/job/services/job.service.spec.ts(636,51): error TS2345: Argument of type '{ timer_type_: TimerType; timer_expression_: string; due_date_: Date; repeat_: boolean; repeat_interval_: number; max_executions_: number; }' is not assignable to parameter of type 'CreateTimerJobDto'.
+  Property 'id_' is missing in type '{ timer_type_: TimerType; timer_expression_: string; due_date_: Date; repeat_: boolean; repeat_interval_: number; max_executions_: number; }' but required in type 'CreateTimerJobDto'.
+src/job/services/job.service.spec.ts(711,60): error TS2345: Argument of type '{ topic_: string; process_inst_id_: string; payload_: string; }' is not assignable to parameter of type 'CreateExternalWorkerJobDto'.
+  Property 'id_' is missing in type '{ topic_: string; process_inst_id_: string; payload_: string; }' but required in type 'CreateExternalWorkerJobDto'.
+src/job/services/timer.service.ts(370,46): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/ldap/index.ts(22,3): error TS2305: Module '"./interfaces/ldap.interface"' has no exported member 'LdapConnectionContext'.
+src/ldap/index.ts(32,3): error TS2459: Module '"./services/ldap-group-cache.service"' declares 'LdapGroupCacheEntry' locally, but it is not exported.
+src/ldap/services/ldap-identity.service.spec.ts(30,7): error TS2561: Object literal may only specify known properties, but 'serverUrl' does not exist in type 'LdapConfigOptions'. Did you mean to write 'server'?
+src/ldap/services/ldap-identity.service.spec.ts(193,7): error TS2561: Object literal may only specify known properties, but 'serverUrl' does not exist in type 'LdapConfigOptions'. Did you mean to write 'server'?
+src/ldap/services/ldap-identity.service.spec.ts(304,7): error TS2561: Object literal may only specify known properties, but 'serverUrl' does not exist in type 'LdapConfigOptions'. Did you mean to write 'server'?
+src/mail/services/mail-template.service.ts(13,10): error TS2305: Module '"handlebars"' has no exported member 'HandlebarsTemplateDelegate'.
+src/mail/services/mail.service.spec.ts(12,4): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(path: string, factory?: MockFactoryWithHelper<unknown> | MockOptions): void', gave the following error.
+    Argument of type 'Promise<{ default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: SendmailTransport | O...' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(module: Promise<{ default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: SendmailTransport | Options, defaults?: Options): Transporter<...>; createTransport(transport: StreamTransport | Options, defaults?: Options): Transporter<...>; createTransport(transport: JSONTransport | Options, defaults?: Options): Transporter<...>; createTransport(transport: SESTransport | Options, defaults?: Options): Transporter<...>; createTransport(transport?: string | ... 1 more ... | Options, defaults?: Options): Transporter<...>; createTransport<T>(transport: TransportOptions | Transport<...>, defaults?: TransportOptions): Transporter<...>; createTestAccount(apiUrl: string, callback: (err: Error, testAccount: TestAccount) => void): void; createTestAccount(callback: (err: Error, testAccount: TestAccount) => void): void; createTestAccount(apiUrl?: string): Promise<...>; getTestMessageUrl(info: import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/lib/ses-transport/index").SentMessageInfo | import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/lib/smtp-transport/index").SentMessageInfo): string | false; }>, factory?: MockOptions | MockFactoryWithHelper<...>): void', gave the following error.
+    Argument of type '(importOriginal: <T extends { default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: S...' is not assignable to parameter of type 'MockOptions | MockFactoryWithHelper<{ default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(tran...'.
+      Type '(importOriginal: <T extends { default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: S...' is not assignable to type 'MockFactoryWithHelper<{ default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: Sendmai...'.
+        Type 'Promise<{ default: { createTransport: Mock<() => { sendMail: Mock<Procedure>; verify: Mock<Procedure>; }>; createTestAccount(apiUrl: string, callback: (err: Error, testAccount: TestAccount) => void): void; createTestAccount(callback: (err: Error, testAccount: TestAccount) => void): void; createTestAccount(apiUrl?: s...' is not assignable to type 'Promisable<Partial<{ default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: SendmailTr...'.
+          Type 'Promise<{ default: { createTransport: Mock<() => { sendMail: Mock<Procedure>; verify: Mock<Procedure>; }>; createTestAccount(apiUrl: string, callback: (err: Error, testAccount: TestAccount) => void): void; createTestAccount(callback: (err: Error, testAccount: TestAccount) => void): void; createTestAccount(apiUrl?: s...' is not assignable to type 'Promise<Partial<{ default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: SendmailTrans...'.
+            Type '{ default: { createTransport: Mock<() => { sendMail: Mock<Procedure>; verify: Mock<Procedure>; }>; createTestAccount(apiUrl: string, callback: (err: Error | null, testAccount: TestAccount) => void): void; createTestAccount(callback: (err: Error | null, testAccount: TestAccount) => void): void; createTestAccount(apiU...' is not assignable to type 'Partial<{ default: typeof import("H:/2026code/demo/doc-flow/source-flowable-engine/flow-node-engine/node_modules/.pnpm/@types+nodemailer@7.0.9/node_modules/@types/nodemailer/index"); createTransport(transport: SMTPPool | Options, defaults?: Options): Transporter<...>; createTransport(transport: SendmailTransport | O...'.
+              The types returned by 'default.createTransport(...)' are incompatible between these types.
+                Type '{ sendMail: Mock<Procedure>; verify: Mock<Procedure>; }' is missing the following properties from type 'Mail<SentMessageInfo, Options>': options, meta, dkim, transporter, and 25 more.
+src/mail/services/mail.service.ts(61,17): error TS2352: Conversion of type 'number' to type '"low" | "high" | "normal"' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/migration/services/migration-executor.service.ts(326,9): error TS2554: Expected 1 arguments, but got 2.
+src/migration/services/migration-executor.service.ts(617,36): error TS2339: Property 'publish' does not exist on type 'EventPublishService'.
+src/migration/services/process-migration.service.ts(10,3): error TS2305: Module '"../interfaces/migration.interface"' has no exported member 'MigrationPlanBuilder'.
+src/notification/controllers/notification.controller.spec.ts(61,9): error TS2345: Argument of type '"TASK"' is not assignable to parameter of type 'NotificationType'.
+src/notification/services/notification.service.ts(165,60): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/notification/services/notification.service.ts(166,68): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/notification/services/notification.service.ts(176,42): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/notification/services/notification.service.ts(179,22): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/notification/services/notification.service.ts(455,49): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/process-definition/controllers/process-definition.controller.spec.ts(11,52): error TS2352: Conversion of type '{ id: string; key: string; name: string; version: number; category: string; bpmnXml: string; deploymentId: string; resourceName: string; suspensionState: string; tenantId: string; startTime: Date; endTime: null; created: Date; updated: Date; }' to type 'ProcessDefinition' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: string; key: string; name: string; version: number; category: string; bpmnXml: string; deploymentId: string; resourceName: string; suspensionState: string; tenantId: string; startTime: Date; endTime: null; created: Date; updated: Date; }' is missing the following properties from type 'ProcessDefinition': deployment, isSuspended, createTime
+src/process-definition/services/process-definition.service.ts(82,63): error TS2339: Property 'stack' does not exist on type 'unknown'.
+src/process-instance/services/variable.service.spec.ts(314,41): error TS2322: Type '{ key: string; }' is not assignable to type 'string'.
+src/progress-tracking/controllers/progress.controller.spec.ts(61,46): error TS2345: Argument of type '{ processInstanceId: string; processDefinitionKey: string; tenantId: string; }' is not assignable to parameter of type 'CreateProgressDto'.
+  Property 'id_' is missing in type '{ processInstanceId: string; processDefinitionKey: string; tenantId: string; }' but required in type 'CreateProgressDto'.
+src/progress-tracking/controllers/progress.controller.spec.ts(71,38): error TS2345: Argument of type '{ processInstanceId: string; }' is not assignable to parameter of type 'CreateProgressDto'.
+  Property 'id_' is missing in type '{ processInstanceId: string; }' but required in type 'CreateProgressDto'.
+src/progress-tracking/controllers/progress.controller.spec.ts(81,60): error TS2559: Type '{ percentage: number; }' has no properties in common with type 'UpdateProgressDto'.
+src/progress-tracking/controllers/progress.controller.spec.ts(91,53): error TS2559: Type '{ percentage: number; }' has no properties in common with type 'UpdateProgressDto'.
+src/progress-tracking/controllers/progress.controller.spec.ts(214,53): error TS2559: Type '{ tenantId: string; }' has no properties in common with type 'ProgressStatisticsQueryDto'.
+src/progress-tracking/controllers/progress.controller.spec.ts(279,37): error TS2345: Argument of type '{ name: string; value: number; labels: { processKey: string; }; }' is not assignable to parameter of type 'CreateProgressMetricDto'.
+  Type '{ name: string; value: number; labels: { processKey: string; }; }' is missing the following properties from type 'CreateProgressMetricDto': id_, name_, value_
+src/progress-tracking/controllers/progress.controller.spec.ts(294,52): error TS2559: Type '{ name: string; startTime: Date; endTime: Date; }' has no properties in common with type 'ProgressMetricQueryDto'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(154,51): error TS2345: Argument of type '{ process_inst_id_: string; process_def_id_: string; type_: ProgressType; name_: string; total_steps_: number; tenant_id_: string; }' is not assignable to parameter of type 'CreateProgressDto'.
+  Property 'id_' is missing in type '{ process_inst_id_: string; process_def_id_: string; type_: ProgressType; name_: string; total_steps_: number; tenant_id_: string; }' but required in type 'CreateProgressDto'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(179,51): error TS2345: Argument of type '{ process_inst_id_: string; }' is not assignable to parameter of type 'CreateProgressDto'.
+  Property 'id_' is missing in type '{ process_inst_id_: string; }' but required in type 'CreateProgressDto'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(203,36): error TS2345: Argument of type '{ process_inst_id_: string; type_: ProgressType; }' is not assignable to parameter of type 'CreateProgressDto'.
+  Property 'id_' is missing in type '{ process_inst_id_: string; type_: ProgressType; }' but required in type 'CreateProgressDto'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(551,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(578,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(594,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(913,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(947,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(975,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(1026,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(1046,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(1068,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(1107,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/progress-tracking/services/progress-tracking.service.spec.ts(1121,74): error TS2322: Type 'Promise<DeepPartial<Progress>>' is not assignable to type 'Promise<DeepPartial<Progress> & Progress>'.
+  Type 'DeepPartial<Progress>' is not assignable to type 'DeepPartial<Progress> & Progress'.
+    Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'DeepPartial<Progress> & Progress'.
+      Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; } & Progress'.
+        Type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' is not assignable to type 'Progress'.
+          Property 'id_' is optional in type '{ id_?: string; type_?: string; process_inst_id_?: string; task_id_?: string; process_def_id_?: string; task_def_key_?: string; name_?: string; description_?: string; status_?: string; percentage_?: number; ... 18 more ...; update_time_?: DeepPartial<...>; }' but required in type 'Progress'.
+src/task/controllers/task-reject.controller.spec.ts(49,60): error TS2345: Argument of type '{ reason: string; comment: string; }' is not assignable to parameter of type 'CreateTaskRejectDto'.
+  Property 'taskId' is missing in type '{ reason: string; comment: string; }' but required in type 'CreateTaskRejectDto'.
+src/task/controllers/task-reject.controller.spec.ts(79,60): error TS2345: Argument of type '{ rejectType: RejectType; strategy: RejectStrategy; targetActivityId: string; reason: string; }' is not assignable to parameter of type 'CreateTaskRejectDto'.
+  Property 'taskId' is missing in type '{ rejectType: RejectType; strategy: RejectStrategy; targetActivityId: string; reason: string; }' but required in type 'CreateTaskRejectDto'.
+src/task/controllers/task-reject.controller.spec.ts(238,69): error TS2345: Argument of type '{ strategy: MultiInstanceRejectStrategy; reason: string; }' is not assignable to parameter of type 'MultiInstanceRejectDto'.
+  Property 'taskId' is missing in type '{ strategy: MultiInstanceRejectStrategy; reason: string; }' but required in type 'MultiInstanceRejectDto'.
+src/task/controllers/task-reject.controller.spec.ts(264,69): error TS2345: Argument of type '{ strategy: MultiInstanceRejectStrategy; reason: string; variables: { majorityThreshold: number; }; }' is not assignable to parameter of type 'MultiInstanceRejectDto'.
+  Property 'taskId' is missing in type '{ strategy: MultiInstanceRejectStrategy; reason: string; variables: { majorityThreshold: number; }; }' but required in type 'MultiInstanceRejectDto'.
+src/task/controllers/task-reject.controller.spec.ts(281,65): error TS2551: Property 'TO_START' does not exist on type 'typeof RejectStrategy'. Did you mean 'TO_STARTER'?
+src/task/controllers/task.controller.spec.ts(62,46): error TS2345: Argument of type '{ name: string; processInstanceId: string; assignee: string; }' is not assignable to parameter of type 'CreateTaskDto'.
+  Type '{ name: string; processInstanceId: string; assignee: string; }' is missing the following properties from type 'CreateTaskDto': taskDefinitionKey, taskDefinitionId, taskDefinitionVersion
+src/task/controllers/task.controller.spec.ts(78,38): error TS2345: Argument of type '{ name: string; processInstanceId: string; }' is not assignable to parameter of type 'CreateTaskDto'.
+  Type '{ name: string; processInstanceId: string; }' is missing the following properties from type 'CreateTaskDto': taskDefinitionKey, taskDefinitionId, taskDefinitionVersion
+src/task/services/cc.service.spec.ts(105,49): error TS2345: Argument of type 'CcRecordEntity[]' is not assignable to parameter of type 'DeepPartial<CcRecordEntity> & CcRecordEntity'.
+src/task/services/cc.service.spec.ts(117,49): error TS2345: Argument of type 'CcRecordEntity[]' is not assignable to parameter of type 'DeepPartial<CcRecordEntity> & CcRecordEntity'.
+src/task/services/cc.service.spec.ts(130,49): error TS2345: Argument of type 'CcRecordEntity[]' is not assignable to parameter of type 'DeepPartial<CcRecordEntity> & CcRecordEntity'.
+src/task/services/cc.service.spec.ts(512,49): error TS2345: Argument of type 'CcRecordEntity[]' is not assignable to parameter of type 'DeepPartial<CcRecordEntity> & CcRecordEntity'.
+src/task/services/multi-instance-reject.service.spec.ts(22,9): error TS2741: Property 'processInstance' is missing in type '{ id: string; name: string; description: null; priority: number; assignee: string; assigneeFullName: string; owner: null; parentTaskId: null; taskDefinitionId: string; taskDefinitionKey: string; ... 8 more ...; tenantId: null; }' but required in type 'Task'.
+src/task/services/multi-instance-reject.service.spec.ts(57,5): error TS2353: Object literal may only specify known properties, and 'nr_of_instances_' does not exist in type 'MultiInstanceConfigEntity'.

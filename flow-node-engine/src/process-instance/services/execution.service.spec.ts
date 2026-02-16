@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { Execution } from '../entities/execution.entity';
 import { ProcessInstance } from '../entities/process-instance.entity';
@@ -11,9 +11,9 @@ import { ExecutionService } from './execution.service';
 
 describe('ExecutionService', () => {
   let service: ExecutionService;
-  let executionRepository: vi.Mocked<Repository<Execution>>;
-  let processInstanceRepository: vi.Mocked<Repository<ProcessInstance>>;
-  let variableRepository: vi.Mocked<Repository<Variable>>;
+  let executionRepository: Mocked<Repository<Execution>>;
+  let processInstanceRepository: Mocked<Repository<ProcessInstance>>;
+  let variableRepository: Mocked<Repository<Variable>>;
 
   const mockProcessInstance: Partial<ProcessInstance> = {
     id: 'pi-123',
@@ -221,7 +221,7 @@ describe('ExecutionService', () => {
         take: vi.fn().mockReturnThis(),
         getManyAndCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<Execution>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<Execution>>;
     };
 
     it('应该返回分页执行实例列表', async () => {
@@ -499,7 +499,7 @@ describe('ExecutionService', () => {
         andWhere: vi.fn().mockReturnThis(),
         getCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<Execution>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<Execution>>;
     };
 
     it('应该返回执行实例总数', async () => {

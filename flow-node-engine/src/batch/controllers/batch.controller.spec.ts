@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BatchPartEntity } from '../entities/batch-part.entity';
-import { BatchEntity } from '../entities/batch.entity';
+import { BatchPartEntity, BatchPartStatus } from '../entities/batch-part.entity';
+import { BatchEntity, BatchStatus, BatchType } from '../entities/batch.entity';
 import { BatchService } from '../services/batch.service';
 import { BatchController } from './batch.controller';
 
 describe('BatchController', () => {
   let controller: BatchController;
-  let batchService: ReturnType<typeof mockBatchService>;
+  let batchService: BatchService;
 
   // Mock BatchService
   const mockBatchService = {
@@ -29,40 +29,39 @@ describe('BatchController', () => {
   // Mock data
   const mockBatch: Partial<BatchEntity> = {
     id: 'batch-1',
-    batchType: 'process-migration',
-    status: 'running',
-    totalParts: 10,
-    completedParts: 5,
-    failedParts: 1,
+    type: BatchType.CUSTOM,
+    status: BatchStatus.RUNNING,
+    total: 10,
+    processedTotal: 5,
+    failTotal: 1,
     searchKey: 'test-key',
     tenantId: 'tenant-1',
     createTime: new Date('2024-01-01T00:00:00Z'),
-    startTime: new Date('2024-01-01T00:01:00Z'),
   };
 
   const mockBatchPart: Partial<BatchPartEntity> = {
     id: 'part-1',
     batchId: 'batch-1',
-    status: 'completed',
-    result: { success: true },
+    status: BatchPartStatus.COMPLETED,
+    result: JSON.stringify({ success: true }),
     createTime: new Date('2024-01-01T00:00:00Z'),
     startTime: new Date('2024-01-01T00:01:00Z'),
-    endTime: new Date('2024-01-01T00:02:00Z'),
+    completeTime: new Date('2024-01-01T00:02:00Z'),
   };
 
   const mockResponseDto = {
     id: 'batch-1',
-    batchType: 'process-migration',
-    status: 'running',
-    totalParts: 10,
-    completedParts: 5,
-    failedParts: 1,
+    type: BatchType.CUSTOM,
+    status: BatchStatus.RUNNING,
+    total: 10,
+    processedTotal: 5,
+    failTotal: 1,
   };
 
   const mockPartResponseDto = {
     id: 'part-1',
     batchId: 'batch-1',
-    status: 'completed',
+    status: BatchPartStatus.COMPLETED,
   };
 
   const mockStatistics = {
@@ -93,7 +92,7 @@ describe('BatchController', () => {
   describe('createBatch', () => {
     it('应该成功创建批处理', async () => {
       const createDto = {
-        batchType: 'process-migration',
+        type: BatchType.CUSTOM,
         searchKey: 'test-key',
         tenantId: 'tenant-1',
       };
@@ -108,10 +107,10 @@ describe('BatchController', () => {
 
     it('创建批处理时应该传递正确的参数', async () => {
       const createDto = {
-        batchType: 'task-reassignment',
+        type: BatchType.CUSTOM,
         searchKey: 'user-123',
         tenantId: 'tenant-1',
-        batchDefinition: { batchSize: 100 },
+        config: { batchSize: 100 },
       };
 
       batchService.createBatch.mockResolvedValue(mockBatch);
@@ -143,7 +142,7 @@ describe('BatchController', () => {
     });
 
     it('应该正确处理空结果', async () => {
-      const queryDto = { status: 'completed' };
+      const queryDto = { status: BatchStatus.COMPLETED };
       const queryResult = {
         data: [],
         total: 0,
@@ -160,7 +159,7 @@ describe('BatchController', () => {
     });
 
     it('应该支持按状态筛选', async () => {
-      const queryDto = { status: 'running' };
+      const queryDto = { status: BatchStatus.RUNNING };
       const queryResult = {
         data: [mockBatch],
         total: 1,
@@ -208,23 +207,23 @@ describe('BatchController', () => {
 
   describe('updateBatch', () => {
     it('应该成功更新批处理', async () => {
-      const updateDto = { searchKey: 'updated-key' };
-      const updatedBatch = { ...mockBatch, searchKey: 'updated-key' };
+      const updateDto = { description: 'updated-description' };
+      const updatedBatch = { ...mockBatch, description: 'updated-description' };
 
       batchService.updateBatch.mockResolvedValue(updatedBatch);
       batchService.toResponseDto.mockReturnValue({
         ...mockResponseDto,
-        searchKey: 'updated-key',
+        description: 'updated-description',
       });
 
       const result = await controller.updateBatch('batch-1', updateDto);
 
       expect(batchService.updateBatch).toHaveBeenCalledWith('batch-1', updateDto);
-      expect(result.searchKey).toBe('updated-key');
+      expect(result.description).toBe('updated-description');
     });
 
     it('更新时应该传递正确的ID和DTO', async () => {
-      const updateDto = { status: 'paused' };
+      const updateDto = { status: BatchStatus.CANCELLED };
 
       batchService.updateBatch.mockResolvedValue(mockBatch);
       batchService.toResponseDto.mockReturnValue(mockResponseDto);
@@ -237,18 +236,18 @@ describe('BatchController', () => {
 
   describe('cancelBatch', () => {
     it('应该成功取消批处理', async () => {
-      const cancelledBatch = { ...mockBatch, status: 'cancelled' };
+      const cancelledBatch = { ...mockBatch, status: BatchStatus.CANCELLED };
 
       batchService.cancelBatch.mockResolvedValue(cancelledBatch);
       batchService.toResponseDto.mockReturnValue({
         ...mockResponseDto,
-        status: 'cancelled',
+        status: BatchStatus.CANCELLED,
       });
 
       const result = await controller.cancelBatch('batch-1');
 
       expect(batchService.cancelBatch).toHaveBeenCalledWith('batch-1');
-      expect(result.status).toBe('cancelled');
+      expect(result.status).toBe(BatchStatus.CANCELLED);
     });
 
     it('取消时应该传递正确的ID', async () => {
@@ -303,7 +302,7 @@ describe('BatchController', () => {
     });
 
     it('应该正确处理空部分列表', async () => {
-      const queryDto = { status: 'failed' };
+      const queryDto = { status: BatchPartStatus.FAILED, batchId: 'batch-1' };
       const queryResult = {
         data: [],
         total: 0,

@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { Execution } from '../entities/execution.entity';
 import { ProcessInstance } from '../entities/process-instance.entity';
@@ -11,9 +11,9 @@ import { VariableService } from './variable.service';
 
 describe('VariableService', () => {
   let service: VariableService;
-  let variableRepository: vi.Mocked<Repository<Variable>>;
-  let processInstanceRepository: vi.Mocked<Repository<ProcessInstance>>;
-  let executionRepository: vi.Mocked<Repository<Execution>>;
+  let variableRepository: Mocked<Repository<Variable>>;
+  let processInstanceRepository: Mocked<Repository<ProcessInstance>>;
+  let executionRepository: Mocked<Repository<Execution>>;
 
   const mockProcessInstance: Partial<ProcessInstance> = {
     id: 'pi-123',
@@ -258,7 +258,7 @@ describe('VariableService', () => {
         take: vi.fn().mockReturnThis(),
         getManyAndCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<Variable>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<Variable>>;
     };
 
     it('应该返回分页变量列表', async () => {
@@ -490,7 +490,7 @@ describe('VariableService', () => {
         andWhere: vi.fn().mockReturnThis(),
         getCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<Variable>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<Variable>>;
     };
 
     it('应该返回变量总数', async () => {

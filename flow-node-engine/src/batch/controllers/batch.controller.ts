@@ -41,7 +41,7 @@ export class BatchController {
 
   @Post()
   @ApiOperation({ summary: '创建批处理' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: BatchEntity })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: () => BatchEntity })
   async createBatch(@Body() dto: CreateBatchDto): Promise<BatchEntity> {
     return this.batchService.createBatch(dto);
   }
@@ -59,7 +59,7 @@ export class BatchController {
 
   @Get('statistics')
   @ApiOperation({ summary: '获取批处理统计' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: BatchStatisticsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: () => BatchStatisticsDto })
   async getStatistics(): Promise<BatchStatisticsDto> {
     return this.batchService.getStatistics();
   }
@@ -67,7 +67,7 @@ export class BatchController {
   @Get(':id')
   @ApiOperation({ summary: '获取批处理详情' })
   @ApiParam({ name: 'id', description: '批处理ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: BatchResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: () => BatchResponseDto })
   async getBatch(@Param('id') id: string): Promise<BatchResponseDto> {
     const batch = await this.batchService.getBatchById(id);
     if (!batch) {
@@ -79,7 +79,7 @@ export class BatchController {
   @Put(':id')
   @ApiOperation({ summary: '更新批处理' })
   @ApiParam({ name: 'id', description: '批处理ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '更新成功', type: BatchResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '更新成功', type: () => BatchResponseDto })
   async updateBatch(
     @Param('id') id: string,
     @Body() dto: UpdateBatchDto,
@@ -92,7 +92,7 @@ export class BatchController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '取消批处理' })
   @ApiParam({ name: 'id', description: '批处理ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '取消成功', type: BatchResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '取消成功', type: () => BatchResponseDto })
   async cancelBatch(@Param('id') id: string): Promise<BatchResponseDto> {
     const batch = await this.batchService.cancelBatch(id);
     return this.batchService.toResponseDto(batch);
@@ -131,7 +131,7 @@ export class BatchController {
   @ApiOperation({ summary: '获取批处理部分详情' })
   @ApiParam({ name: 'batchId', description: '批处理ID' })
   @ApiParam({ name: 'partId', description: '部分ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: BatchPartResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: () => BatchPartResponseDto })
   async getBatchPart(
     @Param('batchId') batchId: string,
     @Param('partId') partId: string,

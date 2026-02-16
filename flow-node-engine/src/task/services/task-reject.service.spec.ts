@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { MultiInstanceConfigEntity, MultiInstanceRejectStrategy } from '../entities/multi-instance-config.entity';
 import { RejectConfigEntity } from '../entities/reject-config.entity';
@@ -11,10 +11,10 @@ import { TaskRejectService } from './task-reject.service';
 
 describe('TaskRejectService', () => {
   let service: TaskRejectService;
-  let taskRejectRepository: vi.Mocked<Repository<TaskRejectEntity>>;
-  let rejectConfigRepository: vi.Mocked<Repository<RejectConfigEntity>>;
-  let multiInstanceConfigRepository: vi.Mocked<Repository<MultiInstanceConfigEntity>>;
-  let dataSource: vi.Mocked<DataSource>;
+  let taskRejectRepository: Mocked<Repository<TaskRejectEntity>>;
+  let rejectConfigRepository: Mocked<Repository<RejectConfigEntity>>;
+  let multiInstanceConfigRepository: Mocked<Repository<MultiInstanceConfigEntity>>;
+  let dataSource: Mocked<DataSource>;
 
   const mockTaskReject: Partial<TaskRejectEntity> = {
     id_: 'reject-123',
@@ -149,7 +149,7 @@ describe('TaskRejectService', () => {
         orderBy: vi.fn().mockReturnThis(),
         getMany: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<TaskRejectEntity>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<TaskRejectEntity>>;
     };
 
     it('应该返回查询结果', async () => {
@@ -541,7 +541,7 @@ describe('TaskRejectService', () => {
         take: vi.fn().mockReturnThis(),
         getManyAndCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<TaskRejectEntity>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<TaskRejectEntity>>;
     };
 
     it('应该返回分页结果', async () => {

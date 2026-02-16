@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource, QueryRunner } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked, Mock } from 'vitest';
 
 import { HistoricActivityInstance } from '../../history/entities/historic-activity-instance.entity';
 import { MultiInstanceRejectStrategy } from '../dto/task-reject.dto';
@@ -12,11 +12,17 @@ import { MultiInstanceRejectService, HandleMultiInstanceRejectParams, MultiInsta
 
 describe('MultiInstanceRejectService', () => {
   let service: MultiInstanceRejectService;
-  let configRepository: vi.Mocked<Repository<MultiInstanceConfigEntity>>;
-  let taskRepository: vi.Mocked<Repository<Task>>;
-  let historicActivityRepository: vi.Mocked<Repository<HistoricActivityInstance>>;
+  let configRepository: Mocked<Repository<MultiInstanceConfigEntity>>;
+  let taskRepository: Mocked<Repository<Task>>;
+  let historicActivityRepository: Mocked<Repository<HistoricActivityInstance>>;
   let dataSource: {
-    createQueryRunner: vi.Mock;
+    createQueryRunner: Mock;
+  };
+
+  const mockProcessInstance = {
+    id: 'pi-1',
+    processDefinitionId: 'proc-def-1',
+    status: 'RUNNING',
   };
 
   const mockTask: Task = {
@@ -25,17 +31,18 @@ describe('MultiInstanceRejectService', () => {
     description: null,
     priority: 50,
     assignee: 'user1',
+    assigneeFullName: 'User One',
     owner: null,
     parentTaskId: null,
     taskDefinitionId: 'proc-def-1',
     taskDefinitionKey: 'approveTask',
+    taskDefinitionVersion: 1,
     processInstanceId: 'pi-1',
-    executionId: 'exec-1',
-    processDefinitionId: 'pd-1',
+    processInstance: mockProcessInstance as any,
     createTime: new Date(),
     dueDate: null,
     completionTime: null,
-    status: TaskStatus.ACTIVE,
+    status: TaskStatus.ASSIGNED,
     category: null,
     formKey: null,
     tenantId: null,
@@ -50,6 +57,14 @@ describe('MultiInstanceRejectService', () => {
     sequential_: false,
     reject_strategy_: MultiInstanceRejectStrategy.ALL_BACK,
     reject_percentage_: null,
+    completion_condition_: null,
+    collection_variable_: null,
+    element_variable_: null,
+    cardinality_: null,
+    extra_config_: null,
+    tenant_id_: null,
+    create_time_: new Date(),
+    update_time_: new Date(),
   };
 
   const mockSiblingTasks: Task[] = [
@@ -87,7 +102,7 @@ describe('MultiInstanceRejectService', () => {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
-    } as unknown as vi.Mocked<Repository<MultiInstanceConfigEntity>>;
+    } as unknown as Mocked<Repository<MultiInstanceConfigEntity>>;
 
     taskRepository = {
       findOne: vi.fn(),
@@ -97,14 +112,14 @@ describe('MultiInstanceRejectService', () => {
       update: vi.fn(),
       delete: vi.fn(),
       createQueryBuilder: vi.fn(),
-    } as unknown as vi.Mocked<Repository<Task>>;
+    } as unknown as Mocked<Repository<Task>>;
 
     historicActivityRepository = {
       findOne: vi.fn(),
       find: vi.fn(),
       save: vi.fn(),
       create: vi.fn(),
-    } as unknown as vi.Mocked<Repository<HistoricActivityInstance>>;
+    } as unknown as Mocked<Repository<HistoricActivityInstance>>;
 
     dataSource = {
       createQueryRunner: vi.fn(),

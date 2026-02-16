@@ -253,10 +253,12 @@ export class TaskListenerService {
       try {
         this.logger.debug(`Executing task listener: ${listener.name}`);
         await Promise.resolve(listener.handle(context));
-      } catch (error) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
         this.logger.error(
-          `Error executing task listener ${listener.name}: ${error.message}`,
-          error.stack
+          `Error executing task listener ${listener.name}: ${errorMessage}`,
+          errorStack
         );
         
         // 根据配置决定是否继续执行后续监听器

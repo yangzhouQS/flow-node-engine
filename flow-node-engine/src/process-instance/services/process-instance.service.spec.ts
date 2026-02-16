@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { ProcessDefinition } from '../../process-definition/entities/process-definition.entity';
 import { Execution } from '../entities/execution.entity';
@@ -12,10 +12,10 @@ import { ProcessInstanceService } from './process-instance.service';
 
 describe('ProcessInstanceService', () => {
   let service: ProcessInstanceService;
-  let processInstanceRepository: vi.Mocked<Repository<ProcessInstance>>;
-  let executionRepository: vi.Mocked<Repository<Execution>>;
-  let variableRepository: vi.Mocked<Repository<Variable>>;
-  let processDefinitionRepository: vi.Mocked<Repository<ProcessDefinition>>;
+  let processInstanceRepository: Mocked<Repository<ProcessInstance>>;
+  let executionRepository: Mocked<Repository<Execution>>;
+  let variableRepository: Mocked<Repository<Variable>>;
+  let processDefinitionRepository: Mocked<Repository<ProcessDefinition>>;
 
   const mockProcessDefinition: Partial<ProcessDefinition> = {
     id: 'pd-123',
@@ -214,7 +214,7 @@ describe('ProcessInstanceService', () => {
         take: vi.fn().mockReturnThis(),
         getManyAndCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<ProcessInstance>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<ProcessInstance>>;
     };
 
     it('应该返回分页流程实例列表', async () => {
@@ -504,7 +504,7 @@ describe('ProcessInstanceService', () => {
         andWhere: vi.fn().mockReturnThis(),
         getCount: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<ProcessInstance>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<ProcessInstance>>;
     };
 
     it('应该返回流程实例总数', async () => {

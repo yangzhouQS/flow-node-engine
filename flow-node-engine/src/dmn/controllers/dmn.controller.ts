@@ -33,7 +33,7 @@ export class DmnController {
    */
   @Post('decisions')
   @ApiOperation({ summary: '创建决策', description: '创建一个新的决策表定义' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误' })
   async createDecision(@Body() dto: CreateDecisionDto): Promise<DecisionResponseDto> {
     return this.dmnService.createDecision(dto);
@@ -45,7 +45,7 @@ export class DmnController {
   @Put('decisions/:id')
   @ApiOperation({ summary: '更新决策', description: '更新决策表定义（仅限草稿状态）' })
   @ApiParam({ name: 'id', description: '决策ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '更新成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '更新成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误或决策已发布' })
   async updateDecision(
@@ -61,7 +61,7 @@ export class DmnController {
   @Post('decisions/:id/publish')
   @ApiOperation({ summary: '发布决策', description: '将决策表发布为可用状态' })
   @ApiParam({ name: 'id', description: '决策ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '发布成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '发布成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '决策已发布或验证失败' })
   async publishDecision(@Param('id') id: string): Promise<DecisionResponseDto> {
@@ -74,7 +74,7 @@ export class DmnController {
   @Post('decisions/:id/versions')
   @ApiOperation({ summary: '创建新版本', description: '基于现有决策创建新版本' })
   @ApiParam({ name: 'id', description: '决策ID' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   async createNewVersion(@Param('id') id: string): Promise<DecisionResponseDto> {
     return this.dmnService.createNewVersion(id);
@@ -86,7 +86,7 @@ export class DmnController {
   @Post('decisions/:id/suspend')
   @ApiOperation({ summary: '挂起决策', description: '挂起已发布的决策' })
   @ApiParam({ name: 'id', description: '决策ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '挂起成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '挂起成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '只有已发布的决策可以挂起' })
   async suspendDecision(@Param('id') id: string): Promise<DecisionResponseDto> {
@@ -99,7 +99,7 @@ export class DmnController {
   @Post('decisions/:id/activate')
   @ApiOperation({ summary: '激活决策', description: '激活已挂起的决策' })
   @ApiParam({ name: 'id', description: '决策ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '激活成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '激活成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '只有已挂起的决策可以激活' })
   async activateDecision(@Param('id') id: string): Promise<DecisionResponseDto> {
@@ -138,7 +138,7 @@ export class DmnController {
   @Get('decisions/:id')
   @ApiOperation({ summary: '获取决策详情', description: '根据ID获取决策详细信息' })
   @ApiParam({ name: 'id', description: '决策ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   async getDecision(@Param('id') id: string): Promise<DecisionResponseDto> {
     return this.dmnService.getDecision(id);
@@ -151,7 +151,7 @@ export class DmnController {
   @ApiOperation({ summary: '通过Key获取决策', description: '通过Key获取最新版本的已发布决策' })
   @ApiParam({ name: 'key', description: '决策Key' })
   @ApiQuery({ name: 'tenantId', description: '租户ID', required: false })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: DecisionResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => DecisionResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   async getDecisionByKey(
     @Param('key') key: string,
@@ -165,7 +165,7 @@ export class DmnController {
    */
   @Post('execute')
   @ApiOperation({ summary: '执行决策', description: '根据输入数据执行决策并返回结果' })
-  @ApiResponse({ status: HttpStatus.OK, description: '执行成功', type: DecisionResultDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '执行成功', type: () => DecisionResultDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '决策不存在' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误或决策未发布' })
   async executeDecision(@Body() dto: ExecuteDecisionDto): Promise<DecisionResultDto> {

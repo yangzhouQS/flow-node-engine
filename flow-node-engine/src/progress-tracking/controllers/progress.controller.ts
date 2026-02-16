@@ -47,7 +47,7 @@ export class ProgressController {
    */
   @Post()
   @ApiOperation({ summary: '创建进度记录' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: Progress })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: () => Progress })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误' })
   async create(@Body() dto: CreateProgressDto): Promise<Progress> {
     try {
@@ -63,7 +63,7 @@ export class ProgressController {
   @Put(':id')
   @ApiOperation({ summary: '更新进度' })
   @ApiParam({ name: 'id', description: '进度ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '更新成功', type: Progress })
+  @ApiResponse({ status: HttpStatus.OK, description: '更新成功', type: () => Progress })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '进度记录不存在' })
   async update(@Param('id') id: string, @Body() dto: UpdateProgressDto): Promise<Progress> {
     try {
@@ -82,7 +82,7 @@ export class ProgressController {
   @Get(':id')
   @ApiOperation({ summary: '根据ID获取进度' })
   @ApiParam({ name: 'id', description: '进度ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: Progress })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => Progress })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '进度记录不存在' })
   async getById(@Param('id') id: string): Promise<Progress> {
     const progress = await this.progressTrackingService.getProgressById(id);
@@ -98,7 +98,7 @@ export class ProgressController {
   @Get('process-instance/:processInstanceId')
   @ApiOperation({ summary: '根据流程实例ID获取进度' })
   @ApiParam({ name: 'processInstanceId', description: '流程实例ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: Progress })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => Progress })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '进度记录不存在' })
   async getByProcessInstanceId(@Param('processInstanceId') processInstanceId: string): Promise<Progress> {
     const progress = await this.progressTrackingService.getProgressByProcessInstanceId(processInstanceId);
@@ -114,7 +114,7 @@ export class ProgressController {
   @Get('task/:taskId')
   @ApiOperation({ summary: '根据任务ID获取进度' })
   @ApiParam({ name: 'taskId', description: '任务ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: Progress })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => Progress })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '进度记录不存在' })
   async getByTaskId(@Param('taskId') taskId: string): Promise<Progress> {
     const progress = await this.progressTrackingService.getProgressByTaskId(taskId);
@@ -154,7 +154,7 @@ export class ProgressController {
   @Post('process-instance/:processInstanceId/complete')
   @ApiOperation({ summary: '完成流程进度' })
   @ApiParam({ name: 'processInstanceId', description: '流程实例ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '操作成功', type: Progress })
+  @ApiResponse({ status: HttpStatus.OK, description: '操作成功', type: () => Progress })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '进度记录不存在' })
   async completeProcessProgress(@Param('processInstanceId') processInstanceId: string): Promise<Progress> {
     try {
@@ -186,7 +186,7 @@ export class ProgressController {
    */
   @Get('statistics')
   @ApiOperation({ summary: '获取进度统计' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: ProgressStatisticsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => ProgressStatisticsDto })
   async getStatistics(@Query() query: ProgressStatisticsQueryDto): Promise<ProgressStatisticsDto> {
     return this.progressTrackingService.getStatistics(query);
   }
@@ -197,7 +197,7 @@ export class ProgressController {
   @Get('dashboard')
   @ApiOperation({ summary: '获取进度看板数据' })
   @ApiQuery({ name: 'tenantId', required: false, description: '租户ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: ProgressDashboardDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => ProgressDashboardDto })
   async getDashboard(@Query('tenantId') tenantId?: string): Promise<ProgressDashboardDto> {
     return this.progressTrackingService.getDashboard(tenantId);
   }

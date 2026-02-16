@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { CcConfigEntity } from '../entities/cc-config.entity';
 import { CcRecordEntity, CcType, CcStatus } from '../entities/cc-record.entity';
@@ -10,8 +10,8 @@ import { CcService } from './cc.service';
 
 describe('CcService', () => {
   let service: CcService;
-  let ccRecordRepository: vi.Mocked<Repository<CcRecordEntity>>;
-  let ccConfigRepository: vi.Mocked<Repository<CcConfigEntity>>;
+  let ccRecordRepository: Mocked<Repository<CcRecordEntity>>;
+  let ccConfigRepository: Mocked<Repository<CcConfigEntity>>;
 
   const mockCcRecord: Partial<CcRecordEntity> = {
     id_: 'cc-123',
@@ -166,7 +166,7 @@ describe('CcService', () => {
         orderBy: vi.fn().mockReturnThis(),
         getMany: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<CcRecordEntity>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<CcRecordEntity>>;
     };
 
     it('应该返回查询结果', async () => {
@@ -240,7 +240,7 @@ describe('CcService', () => {
         getCount: vi.fn(),
         getMany: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<CcRecordEntity>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<CcRecordEntity>>;
     };
 
     it('应该返回用户收件箱', async () => {
@@ -278,7 +278,7 @@ describe('CcService', () => {
         getCount: vi.fn(),
         getMany: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<CcRecordEntity>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<CcRecordEntity>>;
     };
 
     it('应该返回用户发件箱', async () => {
@@ -480,7 +480,7 @@ describe('CcService', () => {
         andWhere: vi.fn().mockReturnThis(),
         getMany: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<CcConfigEntity>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<CcConfigEntity>>;
     };
 
     it('应该返回启用的配置', async () => {
@@ -532,7 +532,7 @@ describe('CcService', () => {
         getCount: vi.fn(),
         getMany: vi.fn(),
       };
-      return qb as unknown as vi.Mocked<SelectQueryBuilder<CcRecordEntity>>;
+      return qb as unknown as Mocked<SelectQueryBuilder<CcRecordEntity>>;
     };
 
     it('应该返回用户抄送列表', async () => {

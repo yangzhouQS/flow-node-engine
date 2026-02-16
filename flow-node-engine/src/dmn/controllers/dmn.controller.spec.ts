@@ -6,6 +6,7 @@ import {
   QueryDecisionDto,
   ExecuteDecisionDto,
 } from '../dto/dmn.dto';
+import { HitPolicy, DmnDecisionStatus } from '../entities/dmn-decision.entity';
 import { DmnService } from '../services/dmn.service';
 import { DmnController } from './dmn.controller';
 
@@ -32,26 +33,29 @@ describe('DmnController', () => {
 
   const mockDecisionResponse = {
     id: 'decision-1',
-    key: 'test-decision',
+    decisionKey: 'test-decision',
     name: 'Test Decision',
     version: 1,
-    status: 'DRAFT',
-    hitPolicy: 'FIRST',
+    status: DmnDecisionStatus.DRAFT,
+    hitPolicy: HitPolicy.FIRST,
     inputs: [],
     outputs: [],
     rules: [],
     tenantId: 'tenant-1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createTime: new Date(),
+    updateTime: new Date(),
   };
 
   const mockDecisionResult = {
+    executionId: 'exec-1',
     decisionId: 'decision-1',
     decisionKey: 'test-decision',
-    inputs: { age: 25 },
-    outputs: { result: 'approved' },
-    matchedRules: [0],
-    executionTime: 10,
+    decisionVersion: 1,
+    status: 'SUCCESS',
+    outputResult: { result: 'approved' },
+    matchedRules: ['rule-1'],
+    matchedCount: 1,
+    executionTimeMs: 10,
   };
 
   beforeEach(async () => {
@@ -78,9 +82,9 @@ describe('DmnController', () => {
   describe('createDecision', () => {
     it('should create a decision successfully', async () => {
       const dto: CreateDecisionDto = {
-        key: 'test-decision',
+        decisionKey: 'test-decision',
         name: 'Test Decision',
-        hitPolicy: 'FIRST',
+        hitPolicy: HitPolicy.FIRST,
         inputs: [],
         outputs: [],
         rules: [],
@@ -97,9 +101,9 @@ describe('DmnController', () => {
 
     it('should throw error when creation fails', async () => {
       const dto: CreateDecisionDto = {
-        key: 'test-decision',
+        decisionKey: 'test-decision',
         name: 'Test Decision',
-        hitPolicy: 'FIRST',
+        hitPolicy: HitPolicy.FIRST,
         inputs: [],
         outputs: [],
         rules: [],
@@ -141,13 +145,13 @@ describe('DmnController', () => {
     it('should publish a decision successfully', async () => {
       mockDmnService.publishDecision.mockResolvedValue({
         ...mockDecisionResponse,
-        status: 'PUBLISHED',
+        status: DmnDecisionStatus.PUBLISHED,
       });
 
       const result = await controller.publishDecision('decision-1');
 
       expect(service.publishDecision).toHaveBeenCalledWith('decision-1');
-      expect(result.status).toBe('PUBLISHED');
+      expect(result.status).toBe(DmnDecisionStatus.PUBLISHED);
     });
 
     it('should throw error when decision already published', async () => {
@@ -181,13 +185,13 @@ describe('DmnController', () => {
     it('should suspend a decision successfully', async () => {
       mockDmnService.suspendDecision.mockResolvedValue({
         ...mockDecisionResponse,
-        status: 'SUSPENDED',
+        status: DmnDecisionStatus.SUSPENDED,
       });
 
       const result = await controller.suspendDecision('decision-1');
 
       expect(service.suspendDecision).toHaveBeenCalledWith('decision-1');
-      expect(result.status).toBe('SUSPENDED');
+      expect(result.status).toBe(DmnDecisionStatus.SUSPENDED);
     });
 
     it('should throw error when decision is not published', async () => {
@@ -201,13 +205,13 @@ describe('DmnController', () => {
     it('should activate a decision successfully', async () => {
       mockDmnService.activateDecision.mockResolvedValue({
         ...mockDecisionResponse,
-        status: 'PUBLISHED',
+        status: DmnDecisionStatus.PUBLISHED,
       });
 
       const result = await controller.activateDecision('decision-1');
 
       expect(service.activateDecision).toHaveBeenCalledWith('decision-1');
-      expect(result.status).toBe('PUBLISHED');
+      expect(result.status).toBe(DmnDecisionStatus.PUBLISHED);
     });
 
     it('should throw error when decision is not suspended', async () => {
@@ -255,20 +259,20 @@ describe('DmnController', () => {
 
     it('should filter decisions by status', async () => {
       const queryDto: QueryDecisionDto = {
-        status: 'PUBLISHED',
+        status: DmnDecisionStatus.PUBLISHED,
         page: 1,
         size: 10,
       };
 
       mockDmnService.queryDecisions.mockResolvedValue({
-        data: [{ ...mockDecisionResponse, status: 'PUBLISHED' }],
+        data: [{ ...mockDecisionResponse, status: DmnDecisionStatus.PUBLISHED }],
         total: 1,
       });
 
       const result = await controller.queryDecisions(queryDto);
 
       expect(service.queryDecisions).toHaveBeenCalledWith(queryDto);
-      expect(result.data[0].status).toBe('PUBLISHED');
+      expect(result.data[0].status).toBe(DmnDecisionStatus.PUBLISHED);
     });
   });
 
@@ -319,7 +323,7 @@ describe('DmnController', () => {
     it('should execute a decision successfully', async () => {
       const dto: ExecuteDecisionDto = {
         decisionKey: 'test-decision',
-        inputs: { age: 25 },
+        inputData: { age: 25 },
       };
 
       mockDmnService.executeDecision.mockResolvedValue(mockDecisionResult);
@@ -333,7 +337,7 @@ describe('DmnController', () => {
     it('should execute a decision by id', async () => {
       const dto: ExecuteDecisionDto = {
         decisionId: 'decision-1',
-        inputs: { age: 25 },
+        inputData: { age: 25 },
       };
 
       mockDmnService.executeDecision.mockResolvedValue(mockDecisionResult);
@@ -347,7 +351,7 @@ describe('DmnController', () => {
     it('should throw error when decision not found', async () => {
       const dto: ExecuteDecisionDto = {
         decisionKey: 'non-existent',
-        inputs: {},
+        inputData: {},
       };
 
       mockDmnService.executeDecision.mockRejectedValue(new Error('Decision not found'));

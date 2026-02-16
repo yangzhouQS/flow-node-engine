@@ -19,7 +19,7 @@ export class EventController {
 
   @Get()
   @ApiOperation({ summary: '查询所有事件（分页）' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   @ApiQuery({ name: 'page', required: false, type: Number, description: '页码，默认1' })
   @ApiQuery({ name: 'pageSize', required: false, type: Number, description: '每页数量，默认10' })
   async findAll(@Query('page') page?: number, @Query('pageSize') pageSize?: number) {
@@ -31,7 +31,7 @@ export class EventController {
 
   @Get(':id')
   @ApiOperation({ summary: '根据ID查询事件' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'id', description: '事件ID' })
   async findById(@Param('id') id: string) {
     const event = await this.eventSubscriptionService.findById(id);
@@ -40,7 +40,7 @@ export class EventController {
 
   @Get('process-instance/:processInstanceId')
   @ApiOperation({ summary: '根据流程实例ID查询事件' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'processInstanceId', description: '流程实例ID' })
   async findByProcessInstanceId(@Param('processInstanceId') processInstanceId: string) {
     const events = await this.eventSubscriptionService.findByProcessInstanceId(processInstanceId);
@@ -49,7 +49,7 @@ export class EventController {
 
   @Get('task/:taskId')
   @ApiOperation({ summary: '根据任务ID查询事件' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'taskId', description: '任务ID' })
   async findByTaskId(@Param('taskId') taskId: string) {
     const events = await this.eventSubscriptionService.findByTaskId(taskId);
@@ -58,7 +58,7 @@ export class EventController {
 
   @Get('type/:eventType')
   @ApiOperation({ summary: '根据事件类型查询事件' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'eventType', description: '事件类型', enum: EventType })
   async findByEventType(@Param('eventType') eventType: EventType) {
     const events = await this.eventSubscriptionService.findByEventType(eventType);
@@ -67,7 +67,7 @@ export class EventController {
 
   @Get('status/:eventStatus')
   @ApiOperation({ summary: '根据事件状态查询事件' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'eventStatus', description: '事件状态', enum: EventStatus })
   async findByEventStatus(@Param('eventStatus') eventStatus: EventStatus) {
     const events = await this.eventSubscriptionService.findByEventStatus(eventStatus);
@@ -76,7 +76,7 @@ export class EventController {
 
   @Put(':id/status')
   @ApiOperation({ summary: '更新事件状态' })
-  @ApiResponse({ status: 200, description: '更新成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '更新成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'id', description: '事件ID' })
   async updateEventStatus(
     @Param('id') id: string,
@@ -92,7 +92,7 @@ export class EventController {
 
   @Post(':id/retry')
   @ApiOperation({ summary: '重试失败的事件' })
-  @ApiResponse({ status: 200, description: '重试成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '重试成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'id', description: '事件ID' })
   async retryFailedEvent(@Param('id') id: string) {
     const event = await this.eventSubscriptionService.retryFailedEvent(id);
@@ -101,7 +101,7 @@ export class EventController {
 
   @Post(':id/process')
   @ApiOperation({ summary: '标记事件为已处理' })
-  @ApiResponse({ status: 200, description: '标记成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '标记成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'id', description: '事件ID' })
   async markEventAsProcessed(@Param('id') id: string) {
     const event = await this.eventPublishService.markEventAsProcessed(id);
@@ -110,7 +110,7 @@ export class EventController {
 
   @Post('process/batch')
   @ApiOperation({ summary: '批量标记事件为已处理' })
-  @ApiResponse({ status: 200, description: '标记成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '标记成功', type: () => ApiResponseDto })
   async markEventsAsProcessed(@Body() body: { eventIds: string[] }) {
     await this.eventPublishService.markEventsAsProcessed(body.eventIds);
     return ApiResponseDto.success(null, '批量标记成功');
@@ -118,7 +118,7 @@ export class EventController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除事件' })
-  @ApiResponse({ status: 200, description: '删除成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '删除成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'id', description: '事件ID' })
   async delete(@Param('id') id: string) {
     await this.eventSubscriptionService.delete(id);
@@ -127,7 +127,7 @@ export class EventController {
 
   @Post('delete/batch')
   @ApiOperation({ summary: '批量删除事件' })
-  @ApiResponse({ status: 200, description: '删除成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '删除成功', type: () => ApiResponseDto })
   async deleteMany(@Body() body: { ids: string[] }) {
     await this.eventSubscriptionService.deleteMany(body.ids);
     return ApiResponseDto.success(null, '批量删除成功');
@@ -135,7 +135,7 @@ export class EventController {
 
   @Get('count/total')
   @ApiOperation({ summary: '统计事件总数' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async count() {
     const count = await this.eventSubscriptionService.count();
     return ApiResponseDto.success({ count });
@@ -143,7 +143,7 @@ export class EventController {
 
   @Get('count/status/:eventStatus')
   @ApiOperation({ summary: '根据状态统计事件数量' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   @ApiParam({ name: 'eventStatus', description: '事件状态', enum: EventStatus })
   async countByStatus(@Param('eventStatus') eventStatus: EventStatus) {
     const count = await this.eventSubscriptionService.countByStatus(eventStatus);
@@ -152,7 +152,7 @@ export class EventController {
 
   @Get('statistics')
   @ApiOperation({ summary: '获取事件统计信息' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getStatistics() {
     const statistics = await this.eventPublishService.getEventStatistics();
     return ApiResponseDto.success(statistics);
@@ -160,7 +160,7 @@ export class EventController {
 
   @Get('count/pending')
   @ApiOperation({ summary: '获取待发布事件数量' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getPendingEventCount() {
     const count = await this.eventPublishService.getPendingEventCount();
     return ApiResponseDto.success({ count });
@@ -168,7 +168,7 @@ export class EventController {
 
   @Get('count/failed')
   @ApiOperation({ summary: '获取失败事件数量' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getFailedEventCount() {
     const count = await this.eventPublishService.getFailedEventCount();
     return ApiResponseDto.success({ count });
@@ -176,7 +176,7 @@ export class EventController {
 
   @Get('count/processed')
   @ApiOperation({ summary: '获取已处理事件数量' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getProcessedEventCount() {
     const count = await this.eventPublishService.getProcessedEventCount();
     return ApiResponseDto.success({ count });

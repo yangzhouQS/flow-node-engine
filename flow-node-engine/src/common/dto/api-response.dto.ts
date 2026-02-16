@@ -9,27 +9,27 @@ export interface ApiResponse<T = any> {
   total?: number;
 }
 
-// API响应DTO类
-export class ApiResponseDto<T = any> {
+// API响应DTO类- 使用 any 类型避免 Swagger 循环依赖问题
+export class ApiResponseDto {
   @ApiProperty({ description: '响应码', example: 0 })
   code: number;
-  
+
   @ApiProperty({ description: '响应消息', example: 'Success' })
   message: string;
-  
+
   @ApiProperty({ description: '响应数据' })
-  data: T;
-  
+  data: any;
+
   @ApiProperty({ description: '时间戳' })
   timestamp: number;
-  
+
   @ApiProperty({ description: '总数（分页时使用）', required: false })
   total?: number;
 
-  constructor(code: number, message: string, data?: T, total?: number) {
+  constructor(code: number, message: string, data?: any, total?: number) {
     this.code = code;
     this.message = message;
-    this.data = data as T;
+    this.data = data;
     this.timestamp = Date.now();
     if (total !== undefined) {
       this.total = total;
@@ -39,22 +39,22 @@ export class ApiResponseDto<T = any> {
   /**
    * 创建成功响应
    */
-  static success<T>(data: T, message = 'Success'): ApiResponseDto<T> {
-    return new ApiResponseDto<T>(0, message, data);
+  static success<T>(data: T, message = 'Success'): ApiResponseDto {
+    return new ApiResponseDto(0, message, data);
   }
 
   /**
    * 创建错误响应
    */
-  static error<T>(message: string, code = -1, data?: T): ApiResponseDto<T> {
-    return new ApiResponseDto<T>(code, message, data);
+  static error(message: string, code = -1, data?: any): ApiResponseDto {
+    return new ApiResponseDto(code, message, data);
   }
 
   /**
    * 创建分页响应
    */
-  static page<T>(items: T[], total: number, message = 'Success'): ApiResponseDto<T[]> {
-    const response = new ApiResponseDto<T[]>(0, message, items);
+  static page<T>(items: T[], total: number, message = 'Success'): ApiResponseDto {
+    const response = new ApiResponseDto(0, message, items);
     response.total = total;
     return response;
   }

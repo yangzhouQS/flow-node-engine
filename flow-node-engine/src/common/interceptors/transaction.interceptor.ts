@@ -44,10 +44,11 @@ export class TransactionInterceptor implements NestInterceptor {
       this.logger.debug('Transaction committed');
 
       return result;
-    } catch (error) {
+    } catch (error: unknown) {
       // 回滚事务
       await queryRunner.rollbackTransaction();
-      this.logger.error('Transaction rolled back', error.stack);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error('Transaction rolled back', errorStack);
 
       throw error;
     } finally {

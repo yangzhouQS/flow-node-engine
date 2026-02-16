@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, QueryRunner } from 'typeorm';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, Mocked } from 'vitest';
 import { 
   SlowQueryLogService, 
   SlowQueryLog, 
@@ -12,9 +12,9 @@ import {
 
 describe('SlowQueryLogService', () => {
   let service: SlowQueryLogService;
-  let dataSource: vi.Mocked<DataSource>;
-  let configService: vi.Mocked<ConfigService>;
-  let eventEmitter: vi.Mocked<EventEmitter2>;
+  let dataSource: Mocked<DataSource>;
+  let configService: Mocked<ConfigService>;
+  let eventEmitter: Mocked<EventEmitter2>;
 
   beforeEach(async () => {
     // 创建 mock DataSource

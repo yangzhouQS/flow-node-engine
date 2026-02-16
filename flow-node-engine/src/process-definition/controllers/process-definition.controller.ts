@@ -37,7 +37,7 @@ export class ProcessDefinitionController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: '部署成功',
-    type: ProcessDefinition,
+    type: () => ProcessDefinition,
   })
   async deploy(@Body() dto: DeployProcessDto): Promise<ProcessDefinition> {
     return this.processDefinitionService.deploy(dto);
@@ -48,7 +48,7 @@ export class ProcessDefinitionController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: '查询成功',
-    type: [ProcessDefinition],
+    type: () => [ProcessDefinition],
   })
   async findAll(
     @Query('key') key?: string,
@@ -63,7 +63,7 @@ export class ProcessDefinitionController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: '查询成功',
-    type: ProcessDefinition,
+    type: () => ProcessDefinition,
   })
   async findById(@Param('id') id: string): Promise<ProcessDefinition | null> {
     return this.processDefinitionService.findById(id);
@@ -75,7 +75,7 @@ export class ProcessDefinitionController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: '查询成功',
-    type: ProcessDefinition,
+    type: () => ProcessDefinition,
   })
   async findByKey(@Param('key') key: string): Promise<ProcessDefinition | null> {
     return this.processDefinitionService.findByKey(key);
@@ -88,7 +88,7 @@ export class ProcessDefinitionController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: '查询成功',
-    type: ProcessDefinition,
+    type: () => ProcessDefinition,
   })
   async findByKeyAndVersion(
     @Param('key') key: string,

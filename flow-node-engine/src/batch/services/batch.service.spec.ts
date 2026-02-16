@@ -5,7 +5,7 @@
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, Repository, QueryRunner } from 'typeorm';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, Mocked } from 'vitest';
 
 import { CreateBatchDto, BatchPartItemDto } from '../dto/batch.dto';
 import { BatchPartEntity, BatchPartStatus } from '../entities/batch-part.entity';
@@ -58,9 +58,9 @@ const mockBatchPart: BatchPartEntity = {
 
 describe('BatchService', () => {
   let service: BatchService;
-  let batchRepository: vi.Mocked<Repository<BatchEntity>>;
-  let batchPartRepository: vi.Mocked<Repository<BatchPartEntity>>;
-  let dataSource: vi.Mocked<DataSource>;
+  let batchRepository: Mocked<Repository<BatchEntity>>;
+  let batchPartRepository: Mocked<Repository<BatchPartEntity>>;
+  let dataSource: Mocked<DataSource>;
 
   beforeEach(async () => {
     // 创建 mock repositories

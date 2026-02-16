@@ -5,7 +5,7 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, Repository } from 'typeorm';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, Mocked } from 'vitest';
 
 import {
   EventSubscription,
@@ -62,8 +62,8 @@ const mockSignalSubscription: EventSubscription = {
 
 describe('EventSubscriptionService', () => {
   let service: EventSubscriptionService;
-  let subscriptionRepository: vi.Mocked<Repository<EventSubscription>>;
-  let eventEmitter: vi.Mocked<EventEmitter2>;
+  let subscriptionRepository: Mocked<Repository<EventSubscription>>;
+  let eventEmitter: Mocked<EventEmitter2>;
 
   beforeEach(async () => {
     // 创建 mock repository

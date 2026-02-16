@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource, QueryRunner } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { HistoricActivityInstance } from '../entities/historic-activity-instance.entity';
 import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
@@ -11,10 +11,10 @@ import { HistoryArchiveService, ArchiveConfig, ArchiveResult } from './history-a
 
 describe('HistoryArchiveService', () => {
   let service: HistoryArchiveService;
-  let taskRepository: vi.Mocked<Repository<HistoricTaskInstance>>;
-  let activityRepository: vi.Mocked<Repository<HistoricActivityInstance>>;
-  let processRepository: vi.Mocked<Repository<HistoricProcessInstance>>;
-  let variableRepository: vi.Mocked<Repository<HistoricVariableInstanceEntity>>;
+  let taskRepository: Mocked<Repository<HistoricTaskInstance>>;
+  let activityRepository: Mocked<Repository<HistoricActivityInstance>>;
+  let processRepository: Mocked<Repository<HistoricProcessInstance>>;
+  let variableRepository: Mocked<Repository<HistoricVariableInstanceEntity>>;
   let dataSource: {
     createQueryRunner: vi.Mock;
     query: vi.Mock;

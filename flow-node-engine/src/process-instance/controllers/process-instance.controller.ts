@@ -18,7 +18,7 @@ export class ProcessInstanceController {
 
   @Post()
   @ApiOperation({ summary: '创建流程实例' })
-  @ApiResponse({ status: 201, description: '创建成功', type: ApiResponseDto })
+  @ApiResponse({ status: 201, description: '创建成功', type: () => ApiResponseDto })
   async create(@Body() createProcessInstanceDto: CreateProcessInstanceDto) {
     const processInstance = await this.processInstanceService.create(
       createProcessInstanceDto.processDefinitionId,
@@ -32,7 +32,7 @@ export class ProcessInstanceController {
 
   @Get()
   @ApiOperation({ summary: '查询所有流程实例' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async findAll(@Query() query: QueryProcessInstanceDto) {
     const { page, pageSize, state, tenantId, processDefinitionId, businessKey } = query;
 
@@ -55,7 +55,7 @@ export class ProcessInstanceController {
 
   @Get(':id')
   @ApiOperation({ summary: '根据ID查询流程实例' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async findById(@Param('id') id: string) {
     const processInstance = await this.processInstanceService.findById(id);
     return new ApiResponseDto(200, '查询成功', processInstance);
@@ -63,7 +63,7 @@ export class ProcessInstanceController {
 
   @Get('business-key/:businessKey')
   @ApiOperation({ summary: '根据业务键查询流程实例' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async findByBusinessKey(
     @Param('businessKey') businessKey: string,
     @Query('tenantId') tenantId?: string,
@@ -74,7 +74,7 @@ export class ProcessInstanceController {
 
   @Put(':id')
   @ApiOperation({ summary: '更新流程实例' })
-  @ApiResponse({ status: 200, description: '更新成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '更新成功', type: () => ApiResponseDto })
   async update(
     @Param('id') id: string,
     @Body() updateProcessInstanceDto: UpdateProcessInstanceDto,
@@ -85,7 +85,7 @@ export class ProcessInstanceController {
 
   @Put(':id/variables')
   @ApiOperation({ summary: '更新流程实例变量' })
-  @ApiResponse({ status: 200, description: '更新成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '更新成功', type: () => ApiResponseDto })
   async updateVariables(
     @Param('id') id: string,
     @Body() updateVariablesDto: UpdateVariablesDto,
@@ -99,7 +99,7 @@ export class ProcessInstanceController {
 
   @Get(':id/variables')
   @ApiOperation({ summary: '获取流程实例变量' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getVariables(@Param('id') id: string) {
     const variables = await this.processInstanceService.getVariables(id);
     return new ApiResponseDto(200, '查询成功', variables);
@@ -107,7 +107,7 @@ export class ProcessInstanceController {
 
   @Get(':id/variables/:name')
   @ApiOperation({ summary: '获取流程实例单个变量' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getVariable(@Param('id') id: string, @Param('name') name: string) {
     const variable = await this.processInstanceService.getVariable(id, name);
     return new ApiResponseDto(200, '查询成功', { name, value: variable });
@@ -115,7 +115,7 @@ export class ProcessInstanceController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除流程实例' })
-  @ApiResponse({ status: 200, description: '删除成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '删除成功', type: () => ApiResponseDto })
   async delete(
     @Param('id') id: string,
     @Body('deleteReason') deleteReason?: string,
@@ -126,7 +126,7 @@ export class ProcessInstanceController {
 
   @Delete()
   @ApiOperation({ summary: '批量删除流程实例' })
-  @ApiResponse({ status: 200, description: '删除成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '删除成功', type: () => ApiResponseDto })
   async deleteMany(
     @Body('ids') ids: string[],
     @Body('deleteReason') deleteReason?: string,
@@ -137,7 +137,7 @@ export class ProcessInstanceController {
 
   @Put(':id/suspend')
   @ApiOperation({ summary: '挂起流程实例' })
-  @ApiResponse({ status: 200, description: '挂起成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '挂起成功', type: () => ApiResponseDto })
   async suspend(@Param('id') id: string) {
     const processInstance = await this.processInstanceService.suspend(id);
     return new ApiResponseDto(200, '挂起成功', processInstance);
@@ -145,7 +145,7 @@ export class ProcessInstanceController {
 
   @Put(':id/activate')
   @ApiOperation({ summary: '激活流程实例' })
-  @ApiResponse({ status: 200, description: '激活成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '激活成功', type: () => ApiResponseDto })
   async activate(@Param('id') id: string) {
     const processInstance = await this.processInstanceService.activate(id);
     return new ApiResponseDto(200, '激活成功', processInstance);
@@ -153,7 +153,7 @@ export class ProcessInstanceController {
 
   @Put(':id/complete')
   @ApiOperation({ summary: '完成流程实例' })
-  @ApiResponse({ status: 200, description: '完成成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '完成成功', type: () => ApiResponseDto })
   async complete(@Param('id') id: string) {
     const processInstance = await this.processInstanceService.complete(id);
     return new ApiResponseDto(200, '完成成功', processInstance);
@@ -161,7 +161,7 @@ export class ProcessInstanceController {
 
   @Get(':id/executions')
   @ApiOperation({ summary: '获取流程实例的执行实例列表' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getExecutions(@Param('id') id: string) {
     const executions = await this.processInstanceService.getExecutions(id);
     return new ApiResponseDto(200, '查询成功', executions);
@@ -169,7 +169,7 @@ export class ProcessInstanceController {
 
   @Get(':id/variables-list')
   @ApiOperation({ summary: '获取流程实例的变量列表' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async getVariableList(@Param('id') id: string) {
     const variables = await this.processInstanceService.getVariableList(id);
     return new ApiResponseDto(200, '查询成功', variables);
@@ -177,7 +177,7 @@ export class ProcessInstanceController {
 
   @Get('count')
   @ApiOperation({ summary: '统计流程实例数量' })
-  @ApiResponse({ status: 200, description: '查询成功', type: ApiResponseDto })
+  @ApiResponse({ status: 200, description: '查询成功', type: () => ApiResponseDto })
   async count(@Query('state') state?: string, @Query('tenantId') tenantId?: string) {
     const count = await this.processInstanceService.count(state, tenantId);
     return new ApiResponseDto(200, '查询成功', { count });

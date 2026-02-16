@@ -50,7 +50,7 @@ export class JobController {
    */
   @Post()
   @ApiOperation({ summary: '创建作业' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: Job })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: () => Job })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误' })
   async createJob(@Body() dto: CreateJobDto): Promise<Job> {
     try {
@@ -66,7 +66,7 @@ export class JobController {
   @Get(':id')
   @ApiOperation({ summary: '根据ID获取作业' })
   @ApiParam({ name: 'id', description: '作业ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: Job })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => Job })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '作业不存在' })
   async getJobById(@Param('id') id: string): Promise<Job> {
     const job = await this.jobService.getJobById(id);
@@ -145,7 +145,7 @@ export class JobController {
    */
   @Get('statistics')
   @ApiOperation({ summary: '获取作业统计' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: JobStatisticsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功', type: () => JobStatisticsDto })
   async getStatistics(): Promise<JobStatisticsDto> {
     return this.jobService.getStatistics();
   }
@@ -157,7 +157,7 @@ export class JobController {
    */
   @Post('timer')
   @ApiOperation({ summary: '创建定时器作业' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: TimerJob })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: () => TimerJob })
   async createTimerJob(@Body() dto: CreateTimerJobDto): Promise<TimerJob> {
     return this.jobService.createTimerJob(dto);
   }
@@ -191,7 +191,7 @@ export class JobController {
    */
   @Post('external-worker')
   @ApiOperation({ summary: '创建外部工作者作业' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: ExternalWorkerJob })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功', type: () => ExternalWorkerJob })
   async createExternalWorkerJob(@Body() dto: CreateExternalWorkerJobDto): Promise<ExternalWorkerJob> {
     return this.jobService.createExternalWorkerJob(dto);
   }

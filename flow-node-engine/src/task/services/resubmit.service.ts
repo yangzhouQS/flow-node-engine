@@ -298,8 +298,9 @@ export class ResubmitService {
       }
 
       return { canResubmit: true };
-    } catch (error) {
-      return { canResubmit: false, reason: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { canResubmit: false, reason: message };
     }
   }
 

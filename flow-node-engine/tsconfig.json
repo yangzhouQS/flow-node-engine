@@ -11,6 +11,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "strict": true,
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -20,6 +21,9 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
 //      "@/*": ["src/*"]
-    }
-  }
+    },
+    "types": ["vitest/globals"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

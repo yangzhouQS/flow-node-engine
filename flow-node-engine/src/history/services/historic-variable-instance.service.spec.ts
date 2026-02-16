@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import {
   HistoricVariableInstanceEntity,
@@ -17,7 +17,7 @@ import {
 
 describe('HistoricVariableInstanceService', () => {
   let service: HistoricVariableInstanceService;
-  let repository: vi.Mocked<Repository<HistoricVariableInstanceEntity>>;
+  let repository: Mocked<Repository<HistoricVariableInstanceEntity>>;
 
   const mockVariable: HistoricVariableInstanceEntity = {
     id_: 'var-1',

@@ -2,7 +2,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { DmnDecisionEntity, DmnDecisionStatus, AggregationType } from '../entities/dmn-decision.entity';
 import { DmnExecutionEntity, DmnExecutionStatus } from '../entities/dmn-execution.entity';
@@ -11,9 +11,9 @@ import { RuleEngineExecutorService } from './rule-engine-executor.service';
 
 describe('DmnService', () => {
   let service: DmnService;
-  let decisionRepository: vi.Mocked<Repository<DmnDecisionEntity>>;
-  let executionRepository: vi.Mocked<Repository<DmnExecutionEntity>>;
-  let ruleEngineExecutor: vi.Mocked<RuleEngineExecutorService>;
+  let decisionRepository: Mocked<Repository<DmnDecisionEntity>>;
+  let executionRepository: Mocked<Repository<DmnExecutionEntity>>;
+  let ruleEngineExecutor: Mocked<RuleEngineExecutorService>;
 
   const mockDecision: DmnDecisionEntity = {
     id: 'decision-1',
@@ -60,7 +60,7 @@ describe('DmnService', () => {
       create: vi.fn(),
       remove: vi.fn(),
       createQueryBuilder: vi.fn(),
-    } as unknown as vi.Mocked<Repository<DmnDecisionEntity>>;
+    } as unknown as Mocked<Repository<DmnDecisionEntity>>;
 
     executionRepository = {
       findOne: vi.fn(),
@@ -68,12 +68,12 @@ describe('DmnService', () => {
       save: vi.fn(),
       create: vi.fn(),
       createQueryBuilder: vi.fn(),
-    } as unknown as vi.Mocked<Repository<DmnExecutionEntity>>;
+    } as unknown as Mocked<Repository<DmnExecutionEntity>>;
 
     ruleEngineExecutor = {
       execute: vi.fn(),
       validateDecision: vi.fn(),
-    } as unknown as vi.Mocked<RuleEngineExecutorService>;
+    } as unknown as Mocked<RuleEngineExecutorService>;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

@@ -73,12 +73,18 @@ export default defineConfig({
       async: false,
       issue: {
         // 把类型错误视为致命错误（阻止编译）
-        severity: 'error',
+        // severity: 'error',
+        severity: ['error', 'warning']
       },
       include: ['src'],
       "exclude": ["**/node_modules", "**/.*/"]
     }),
-    new TsCheckerRspackPlugin()
+    new TsCheckerRspackPlugin({
+      issue: {
+        include: [{ file: '**/src/**/*' }],
+        exclude: [{ file: '**/node_modules/**/*' }, { file: '**/test/**/*' }]
+      }
+    })
   ].filter(Boolean),
   externalsType: "commonjs",
   ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/],

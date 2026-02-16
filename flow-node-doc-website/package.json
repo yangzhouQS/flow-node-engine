@@ -1,0 +1,25 @@
+{
+  "name": "flow-node-doc-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rspress build",
+    "check": "biome check --write",
+    "dev": "rspress dev",
+    "format": "prettier --write .",
+    "preview": "rspress preview"
+  },
+  "dependencies": {
+    "@rspress/core": "^2.0.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.0",
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}

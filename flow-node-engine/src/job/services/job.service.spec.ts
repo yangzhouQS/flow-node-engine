@@ -5,7 +5,7 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource, Repository } from 'typeorm';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, Mocked } from 'vitest';
 
 import { DeadLetterJob } from '../entities/dead-letter-job.entity';
 import { ExternalWorkerJob, ExternalWorkerJobStatus } from '../entities/external-worker-job.entity';
@@ -141,12 +141,12 @@ const mockDeadLetterJob: DeadLetterJob = {
 
 describe('JobService', () => {
   let service: JobService;
-  let jobRepository: vi.Mocked<Repository<Job>>;
-  let deadLetterJobRepository: vi.Mocked<Repository<DeadLetterJob>>;
-  let timerJobRepository: vi.Mocked<Repository<TimerJob>>;
-  let externalWorkerJobRepository: vi.Mocked<Repository<ExternalWorkerJob>>;
-  let eventEmitter: vi.Mocked<EventEmitter2>;
-  let dataSource: vi.Mocked<DataSource>;
+  let jobRepository: Mocked<Repository<Job>>;
+  let deadLetterJobRepository: Mocked<Repository<DeadLetterJob>>;
+  let timerJobRepository: Mocked<Repository<TimerJob>>;
+  let externalWorkerJobRepository: Mocked<Repository<ExternalWorkerJob>>;
+  let eventEmitter: Mocked<EventEmitter2>;
+  let dataSource: Mocked<DataSource>;
 
   beforeEach(async () => {
     // 创建 mock repositories

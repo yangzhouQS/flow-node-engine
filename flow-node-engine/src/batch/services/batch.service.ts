@@ -439,12 +439,13 @@ export class BatchService implements OnModuleInit, OnModuleDestroy {
       await this.updateBatchStats(queryRunner, batch.id);
 
       await queryRunner.commitTransaction();
-    } catch (error) {
+    } catch (error: unknown) {
       await queryRunner.rollbackTransaction();
-      this.logger.error(`Error executing batch ${batch.id}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error executing batch ${batch.id}: ${errorMessage}`);
       
       // 更新批处理错误状态
-      batch.errorMessage = error.message;
+      batch.errorMessage = errorMessage;
       await this.batchRepository.save(batch);
     } finally {
       await queryRunner.release();
@@ -483,13 +484,13 @@ export class BatchService implements OnModuleInit, OnModuleDestroy {
 
       part.completeTime = new Date();
       await queryRunner.manager.save(part);
-    } catch (error) {
+    } catch (error: unknown) {
       part.retryCount += 1;
       
       if (part.retryCount >= batch.maxRetries) {
         part.status = BatchPartStatus.FAILED;
-        part.errorMessage = error.message;
-        part.errorDetails = error.stack;
+        part.errorMessage = error instanceof Error ? error.message : String(error);
+        part.errorDetails = error instanceof Error ? error.stack : undefined;
       } else {
         part.status = BatchPartStatus.PENDING;
       }

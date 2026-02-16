@@ -467,14 +467,15 @@ export class TaskRejectService {
         targetTaskDefKey,
         message: '驳回成功',
       };
-    } catch (error) {
+    } catch (error: unknown) {
       // 更新驳回状态为失败
       await this.updateRejectStatus(rejectRecord.id_, RejectStatus.FAILED);
 
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         success: false,
         rejectRecord: this.toTaskRejectInfo(rejectRecord),
-        message: `驳回失败: ${error.message}`,
+        message: `驳回失败: ${errorMessage}`,
       };
     }
   }
@@ -535,14 +536,15 @@ export class TaskRejectService {
         rejectRecord: this.toTaskRejectInfo(rejectRecord),
         message: '多实例驳回成功',
       };
-    } catch (error) {
+    } catch (error: unknown) {
       // 更新驳回状态为失败
       await this.updateRejectStatus(rejectRecord.id_, RejectStatus.FAILED);
 
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         success: false,
         rejectRecord: this.toTaskRejectInfo(rejectRecord),
-        message: `多实例驳回失败: ${error.message}`,
+        message: `多实例驳回失败: ${errorMessage}`,
       };
     }
   }
@@ -741,10 +743,11 @@ export class TaskRejectService {
         message: '多实例驳回处理成功',
         shouldReject: true,
       };
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        message: `多实例驳回处理失败: ${error.message}`,
+        message: `多实例驳回处理失败: ${errorMessage}`,
         shouldReject: false,
       };
     }

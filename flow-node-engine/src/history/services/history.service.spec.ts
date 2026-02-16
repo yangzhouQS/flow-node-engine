@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { HistoricActivityInstance } from '../entities/historic-activity-instance.entity';
 import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
@@ -11,9 +11,9 @@ import { HistoryService } from './history.service';
 
 describe('HistoryService', () => {
   let service: HistoryService;
-  let activityRepository: vi.Mocked<Repository<HistoricActivityInstance>>;
-  let taskRepository: vi.Mocked<Repository<HistoricTaskInstance>>;
-  let processRepository: vi.Mocked<Repository<HistoricProcessInstance>>;
+  let activityRepository: Mocked<Repository<HistoricActivityInstance>>;
+  let taskRepository: Mocked<Repository<HistoricTaskInstance>>;
+  let processRepository: Mocked<Repository<HistoricProcessInstance>>;
 
   const mockActivityInstance: HistoricActivityInstance = {
     id: 'activity-1',
