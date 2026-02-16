@@ -14,7 +14,7 @@ async function globalSetup() {
     port: parseInt(process.env.DB_PORT || '3306', 10),
     username: process.env.DB_USERNAME || 'test',
     password: process.env.DB_PASSWORD || 'test',
-    database: process.env.DB_DATABASE || 'flow_node_engine_e2e_test',
+    database: process.env.DB_DATABASE || 'flow_node_engine_test',
     synchronize: true,
     dropSchema: true, // 每次测试前清空数据库
     entities: ['src/**/*.entity.ts'],
