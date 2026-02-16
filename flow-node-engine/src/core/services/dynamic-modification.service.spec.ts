@@ -35,7 +35,7 @@ describe('DynamicProcessService', () => {
         { id: 'flow2', sourceRef: 'userTask1', targetRef: 'serviceTask1' },
         { id: 'flow3', sourceRef: 'serviceTask1', targetRef: 'endEvent' },
       ],
-      initialActivityId: 'startEvent',
+      // initialActivityId: 'startEvent',
     };
 
     service.registerProcessDefinition(testProcessDefinitionId, testProcess);

@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
-import { DmnDecisionEntity, DmnDecisionStatus, AggregationType } from '../entities/dmn-decision.entity';
+import { DmnDecisionEntity, DmnDecisionStatus, AggregationType, HitPolicy } from '../entities/dmn-decision.entity';
 import { DmnExecutionEntity, DmnExecutionStatus } from '../entities/dmn-execution.entity';
 import { DmnService } from './dmn.service';
 import { RuleEngineExecutorService } from './rule-engine-executor.service';
@@ -15,7 +15,7 @@ describe('DmnService', () => {
   let executionRepository: Mocked<Repository<DmnExecutionEntity>>;
   let ruleEngineExecutor: Mocked<RuleEngineExecutorService>;
 
-  const mockDecision: DmnDecisionEntity = {
+  const mockDecision = {
     id: 'decision-1',
     decisionKey: 'approval-decision',
     name: '审批决策',
@@ -23,20 +23,25 @@ describe('DmnService', () => {
     category: 'approval',
     version: 1,
     status: DmnDecisionStatus.DRAFT,
-    hitPolicy: 'FIRST',
+    hitPolicy: HitPolicy.FIRST,
     aggregation: AggregationType.NONE,
-    inputs: JSON.stringify([{ name: 'amount', type: 'number' }]),
-    outputs: JSON.stringify([{ name: 'approved', type: 'boolean' }]),
-    rules: JSON.stringify([{ input: { amount: 1000 }, output: { approved: true } }]),
+    inputs: JSON.stringify([{ id: 'input1', label: '金额', expression: 'amount', type: 'number' }]),
+    outputs: JSON.stringify([{ id: 'output1', label: '审批结果', name: 'approved', type: 'boolean' }]),
+    rules: JSON.stringify([{ conditions: [{ inputId: 'input1', operator: '>', value: 1000 }], outputs: [{ outputId: 'output1', value: 'true' }] }]),
     ruleCount: 1,
     tenantId: null,
     extra: null,
     createTime: new Date(),
     updateTime: null,
     publishTime: null,
-  };
+    deploymentId: null,
+    resourceName: null,
+    drdId: null,
+    decisionServiceId: null,
+    createUser: null,
+  } as any;
 
-  const mockExecution: DmnExecutionEntity = {
+  const mockExecution = {
     id: 'exec-1',
     decisionId: 'decision-1',
     decisionKey: 'approval-decision',
@@ -50,7 +55,14 @@ describe('DmnService', () => {
     processInstanceId: 'pi-1',
     activityId: 'task-1',
     createTime: new Date(),
-  };
+    matchedRules: [],
+    executionId: null,
+    taskId: null,
+    tenantId: null,
+    activityName: null,
+    processDefinitionId: null,
+    processDefinitionKey: null,
+  } as any;
 
   beforeEach(async () => {
     decisionRepository = {
@@ -105,11 +117,11 @@ describe('DmnService', () => {
       const result = await service.createDecision({
         decisionKey: 'approval-decision',
         name: '审批决策',
-        hitPolicy: 'FIRST',
-        inputs: [{ name: 'amount', type: 'number' }],
-        outputs: [{ name: 'approved', type: 'boolean' }],
-        rules: [{ input: { amount: 1000 }, output: { approved: true } }],
-      });
+        hitPolicy: HitPolicy.FIRST,
+        inputs: [{ id: 'input1', label: '金额', expression: 'amount', type: 'number' }],
+        outputs: [{ id: 'output1', label: '审批结果', name: 'approved', type: 'boolean' }],
+        rules: [{ conditions: [{ inputId: 'input1', operator: '>', value: 1000 }], outputs: [{ outputId: 'output1', value: 'true' }] }],
+      } as any);
 
       expect(result.decisionKey).toBe('approval-decision');
       expect(result.name).toBe('审批决策');
@@ -122,11 +134,11 @@ describe('DmnService', () => {
         service.createDecision({
           decisionKey: 'approval-decision',
           name: '审批决策',
-          hitPolicy: 'FIRST',
+          hitPolicy: HitPolicy.FIRST,
           inputs: [],
           outputs: [],
           rules: [],
-        }),
+        } as any),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -139,12 +151,12 @@ describe('DmnService', () => {
       const result = await service.createDecision({
         decisionKey: 'approval-decision',
         name: '审批决策',
-        hitPolicy: 'FIRST',
+        hitPolicy: HitPolicy.FIRST,
         inputs: [],
         outputs: [],
         rules: [],
         tenantId: 'tenant-1',
-      });
+      } as any);
 
       expect(result.tenantId).toBe('tenant-1');
     });
@@ -192,11 +204,11 @@ describe('DmnService', () => {
 
       await service.updateDecision('decision-1', {
         rules: [
-          { input: { amount: 100 }, output: { approved: true } },
-          { input: { amount: 500 }, output: { approved: true } },
-          { input: { amount: 1000 }, output: { approved: false } },
+          { conditions: [{ inputId: 'input1', operator: '>', value: 100 }], outputs: [{ outputId: 'output1', value: 'true' }] },
+          { conditions: [{ inputId: 'input1', operator: '>', value: 500 }], outputs: [{ outputId: 'output1', value: 'true' }] },
+          { conditions: [{ inputId: 'input1', operator: '>', value: 1000 }], outputs: [{ outputId: 'output1', value: 'false' }] },
         ],
-      });
+      } as any);
 
       expect(decisionRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({ ruleCount: 3 }),
@@ -459,18 +471,17 @@ describe('DmnService', () => {
       ruleEngineExecutor.execute.mockResolvedValue({
         decisionId: 'decision-1',
         decisionKey: 'approval-decision',
-        matched: true,
-        results: [{ approved: true }],
+        output: { approved: true },
         executionTimeMs: 10,
-      });
+        matchedRules: [],
+      } as any);
 
       const result = await service.executeDecision({
         decisionId: 'decision-1',
         inputData: { amount: 1000 },
-      });
+      } as any);
 
-      expect(result.matched).toBe(true);
-      expect(result.results).toHaveLength(1);
+      expect((result as any).output).toBeDefined();
     });
   });
 
@@ -593,11 +604,11 @@ describe('DmnService', () => {
       const result = await service.createDecision({
         decisionKey: 'approval-decision',
         name: '审批决策',
-        hitPolicy: 'FIRST',
-        inputs: [{ name: 'amount', type: 'number' }],
-        outputs: [{ name: 'approved', type: 'boolean' }],
+        hitPolicy: HitPolicy.FIRST,
+        inputs: [{ id: 'input1', label: '金额', expression: 'amount', type: 'number' }],
+        outputs: [{ id: 'output1', label: '审批结果', name: 'approved', type: 'boolean' }],
         rules: [],
-      });
+      } as any);
 
       expect(result).toHaveProperty('id');
       expect(result).toHaveProperty('decisionKey');

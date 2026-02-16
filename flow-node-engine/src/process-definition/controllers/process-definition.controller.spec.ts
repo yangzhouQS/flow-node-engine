@@ -8,7 +8,7 @@ describe('ProcessDefinitionController', () => {
   let controller: ProcessDefinitionController;
   let service: ProcessDefinitionService;
 
-  const mockProcessDefinition: ProcessDefinition = {
+  const mockProcessDefinition: any = {
     id: 'pd-1',
     key: 'test-process',
     name: 'Test Process',

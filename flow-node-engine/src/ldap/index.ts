@@ -19,17 +19,17 @@ export {
   LdapIdentityService,
   LdapSearchOptions,
   LdapSearchResult,
-  LdapConnectionContext,
+  LdapContext,
   LdapGroupCacheListener,
 } from './interfaces/ldap.interface';
 
 // 服务
 export { LdapConnectionService } from './services/ldap-connection.service';
 export { LdapTemplateService } from './services/ldap-template.service';
-export { 
-  LdapGroupCacheService, 
+export {
+  LdapGroupCacheService,
   createLdapGroupCache,
-  LdapGroupCacheEntry 
+  LdapGroupCacheOptions
 } from './services/ldap-group-cache.service';
 export { 
   LdapIdentityServiceImpl,

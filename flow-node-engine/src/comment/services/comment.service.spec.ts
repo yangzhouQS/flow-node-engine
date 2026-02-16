@@ -13,7 +13,7 @@ describe('CommentService', () => {
   let service: CommentService;
   let repository: Repository<Comment>;
 
-  const mockComment: Comment = {
+  const mockComment: any = {
     id: 'test-comment-id',
     userId: 'user-1',
     userName: 'Test User',

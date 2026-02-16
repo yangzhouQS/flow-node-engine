@@ -8,7 +8,7 @@ describe('HistoryController', () => {
   let historyService: ReturnType<typeof mockHistoryService>;
 
   // Mock HistoryService
-  const mockHistoryService = {
+  const mockHistoryService: any = {
     findHistoricActivityInstances: vi.fn(),
     findHistoricActivityInstanceById: vi.fn(),
     findHistoricActivityInstancesByProcessInstanceId: vi.fn(),

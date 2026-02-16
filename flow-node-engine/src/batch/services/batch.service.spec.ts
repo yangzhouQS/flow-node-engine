@@ -225,10 +225,10 @@ describe('BatchService', () => {
       batchRepository.save.mockResolvedValue(mockBatch);
       batchRepository.findOne.mockResolvedValue(mockBatch);
       batchPartRepository.create.mockReturnValue(mockBatchPart);
-      batchPartRepository.save.mockResolvedValue([mockBatchPart, mockBatchPart]);
+      batchPartRepository.save.mockResolvedValue([mockBatchPart, mockBatchPart] as any);
       batchRepository.update.mockResolvedValue(undefined);
 
-      await service.createBatch(dto, 'user-123', 'tenant-123');
+      await service.createBatch(dto, 'user-123');
 
       expect(batchPartRepository.save).toHaveBeenCalled();
     });
@@ -259,7 +259,7 @@ describe('BatchService', () => {
 
       batchRepository.findOne.mockResolvedValue(mockBatch);
       batchPartRepository.create.mockReturnValue(mockBatchPart);
-      batchPartRepository.save.mockResolvedValue([mockBatchPart]);
+      batchPartRepository.save.mockResolvedValue([mockBatchPart] as any);
       batchRepository.update.mockResolvedValue(undefined);
 
       const result = await service.addBatchParts('batch-123', items, 'tenant-123');
@@ -293,7 +293,7 @@ describe('BatchService', () => {
 
       batchRepository.findOne.mockResolvedValue(mockBatch);
       batchPartRepository.create.mockReturnValue(mockBatchPart);
-      batchPartRepository.save.mockResolvedValue([mockBatchPart, mockBatchPart]);
+      batchPartRepository.save.mockResolvedValue([mockBatchPart, mockBatchPart] as any);
       batchRepository.update.mockResolvedValue(undefined);
 
       await service.addBatchParts('batch-123', items);

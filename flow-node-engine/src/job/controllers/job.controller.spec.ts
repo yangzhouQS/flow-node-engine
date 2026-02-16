@@ -327,7 +327,7 @@ describe('JobController', () => {
   describe('fetchAndLock', () => {
     it('should fetch and lock jobs successfully', async () => {
       const dto: FetchAndLockDto = {
-        workerId: 'worker-1',
+        worker_id_: 'worker-1',
         topic: 'test-topic',
         maxTasks: 10,
         lockDuration: 60000,
@@ -414,7 +414,7 @@ describe('JobController', () => {
   describe('processDeadLetterJob', () => {
     it('should process a dead letter job successfully', async () => {
       const dto: ProcessDeadLetterJobDto = {
-        deadLetterJobId: 'dead-letter-job-1',
+        id_: 'dead-letter-job-1',
         action: 'RETRY',
       };
 

@@ -58,7 +58,7 @@ class ExecutableSendMailRequest implements IExecutableSendMailRequest {
       text: message.plainContent,
       html: message.htmlContent,
       headers: message.headers,
-      priority: message.priority as 'high' | 'normal' | 'low',
+      priority: this.convertPriority(message.priority),
       attachments: message.attachments?.map((att) => ({
         filename: att.filename,
         content: att.content,
@@ -80,6 +80,17 @@ class ExecutableSendMailRequest implements IExecutableSendMailRequest {
         error: error instanceof Error ? error.message : String(error),
       };
     }
+  }
+
+  /**
+   * 转换优先级数字到 nodemailer 格式
+   * @param priority 优先级 (1-5, 1最高)
+   */
+  private convertPriority(priority?: number): 'high' | 'normal' | 'low' | undefined {
+    if (priority === undefined) return undefined;
+    if (priority <= 2) return 'high';
+    if (priority >= 4) return 'low';
+    return 'normal';
   }
 }
 

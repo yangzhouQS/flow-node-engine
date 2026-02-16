@@ -190,7 +190,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
         return cached;
       }
     } catch (error) {
-      this.logger.error(`Failed to get from Redis cache: ${error.message}`);
+      this.logger.error(`Failed to get from Redis cache: ${(error as Error).message}`);
     }
 
     this.stats.misses++;
@@ -237,7 +237,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
         return cached;
       }
     } catch (error) {
-      this.logger.error(`Failed to get from Redis cache: ${error.message}`);
+      this.logger.error(`Failed to get from Redis cache: ${(error as Error).message}`);
     }
 
     this.stats.misses++;
@@ -284,7 +284,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
         return cached;
       }
     } catch (error) {
-      this.logger.error(`Failed to get parse result from Redis cache: ${error.message}`);
+      this.logger.error(`Failed to get parse result from Redis cache: ${(error as Error).message}`);
     }
 
     this.stats.misses++;
@@ -330,7 +330,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
 
       this.logger.debug(`Cached process definition: ${definition.key} v${definition.version}`);
     } catch (error) {
-      this.logger.error(`Failed to cache process definition: ${error.message}`);
+      this.logger.error(`Failed to cache process definition: ${(error as Error).message}`);
     }
   }
 
@@ -364,7 +364,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
 
       this.logger.debug(`Cached parse result for: ${processDefinitionId}`);
     } catch (error) {
-      this.logger.error(`Failed to cache parse result: ${error.message}`);
+      this.logger.error(`Failed to cache parse result: ${(error as Error).message}`);
     }
   }
 
@@ -396,7 +396,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
 
       this.logger.log(`Invalidated cache for process definition: ${key} (${id})`);
     } catch (error) {
-      this.logger.error(`Failed to invalidate cache: ${error.message}`);
+      this.logger.error(`Failed to invalidate cache: ${(error as Error).message}`);
     }
   }
 
@@ -418,7 +418,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
 
       this.logger.log(`Invalidated cache for process definition key: ${key}`);
     } catch (error) {
-      this.logger.error(`Failed to invalidate cache by key: ${error.message}`);
+      this.logger.error(`Failed to invalidate cache by key: ${(error as Error).message}`);
     }
   }
 
@@ -435,7 +435,7 @@ export class ProcessDefinitionCacheService implements OnModuleInit {
       // 可以通过设置较短的TTL让缓存自动过期
       this.logger.warn('Clear all cache: only local cache cleared. Redis cache will expire by TTL.');
     } catch (error) {
-      this.logger.error(`Failed to clear all cache: ${error.message}`);
+      this.logger.error(`Failed to clear all cache: ${(error as Error).message}`);
     }
   }
 

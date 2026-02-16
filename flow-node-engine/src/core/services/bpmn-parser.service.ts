@@ -141,16 +141,16 @@ export class BpmnParserService {
 
       return parseResult;
     } catch (error) {
-      this.logger.error('Failed to parse BPMN XML', error.stack);
+      this.logger.error('Failed to parse BPMN XML', (error as Error).stack);
       this.eventBusService.emit('bpmn.parse.error', {
         bpmnXml,
-        error: error.message,
+        error: (error as Error).message,
       });
 
       return {
         processDefinition: null as any,
         isValid: false,
-        errors: [error.message],
+        errors: [(error as Error).message],
         warnings: [],
       };
     }
@@ -196,7 +196,7 @@ export class BpmnParserService {
         warnings,
       };
     } catch (error) {
-      errors.push(`Validation error: ${error.message}`);
+      errors.push(`Validation error: ${(error as Error).message}`);
       return { isValid: false, errors, warnings };
     }
   }
@@ -221,10 +221,10 @@ export class BpmnParserService {
       this.eventBusService.emit('bpmn.diagram.success', { svg });
       return svg;
     } catch (error) {
-      this.logger.error('Failed to generate BPMN diagram', error.stack);
+      this.logger.error('Failed to generate BPMN diagram', (error as Error).stack);
       this.eventBusService.emit('bpmn.diagram.error', {
         bpmnXml,
-        error: error.message,
+        error: (error as Error).message,
       });
       throw error;
     }

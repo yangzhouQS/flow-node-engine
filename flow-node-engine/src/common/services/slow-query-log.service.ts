@@ -120,7 +120,7 @@ export class SlowQueryLogService implements OnModuleInit, OnModuleDestroy {
       this.dataSource.logger = new SlowQueryLogger(this);
       this.queryListenerAttached = true;
     } catch (error) {
-      this.logger.error(`附加查询监听器失败: ${error.message}`);
+      this.logger.error(`附加查询监听器失败: ${(error as Error).message}`);
     }
   }
 

@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 import { LoggerMiddleware } from './logger.middleware';
 
 describe('LoggerMiddleware', () => {
   let middleware: LoggerMiddleware;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let mockNext: vi.Mock;
+  let mockNext: Mock;
 
   beforeEach(() => {
     middleware = new LoggerMiddleware();
@@ -61,7 +61,7 @@ describe('LoggerMiddleware', () => {
       middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
       
       // Simulate finish event
-      const finishCallback = (mockResponse.on as vi.Mock).mock.calls.find(
+      const finishCallback = (mockResponse.on as Mock).mock.calls.find(
         (call: any[]) => call[0] === 'finish'
       )?.[1];
       
@@ -78,7 +78,7 @@ describe('LoggerMiddleware', () => {
       
       middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
       
-      const finishCallback = (mockResponse.on as vi.Mock).mock.calls.find(
+      const finishCallback = (mockResponse.on as Mock).mock.calls.find(
         (call: any[]) => call[0] === 'finish'
       )?.[1];
       
@@ -95,7 +95,7 @@ describe('LoggerMiddleware', () => {
       
       middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
       
-      const finishCallback = (mockResponse.on as vi.Mock).mock.calls.find(
+      const finishCallback = (mockResponse.on as Mock).mock.calls.find(
         (call: any[]) => call[0] === 'finish'
       )?.[1];
       

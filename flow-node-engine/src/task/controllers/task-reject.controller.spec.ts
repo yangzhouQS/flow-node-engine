@@ -34,6 +34,7 @@ describe('TaskRejectController', () => {
   describe('rejectTask', () => {
     it('应该驳回任务', async () => {
       const dto = {
+        taskId: 'task-1',
         reason: '退回修改',
         comment: '请完善信息',
       };
@@ -64,6 +65,7 @@ describe('TaskRejectController', () => {
 
     it('应该支持指定目标节点驳回', async () => {
       const dto = {
+        taskId: 'task-1',
         rejectType: RejectType.ROLLBACK,
         strategy: RejectStrategy.TO_SPECIFIC,
         targetActivityId: 'activity-1',
@@ -225,6 +227,7 @@ describe('TaskRejectController', () => {
   describe('multiInstanceReject', () => {
     it('应该处理多实例任务驳回', async () => {
       const dto = {
+        taskId: 'task-1',
         strategy: MultiInstanceRejectStrategy.ALL_BACK,
         reason: '多实例退回',
       };
@@ -250,6 +253,7 @@ describe('TaskRejectController', () => {
 
     it('应该支持多数人退回策略', async () => {
       const dto = {
+        taskId: 'task-1',
         strategy: MultiInstanceRejectStrategy.MAJORITY_BACK,
         reason: '多数人退回',
         variables: { majorityThreshold: 0.6 },
@@ -278,7 +282,7 @@ describe('TaskRejectController', () => {
     it('应该检查任务是否可以驳回', async () => {
       const mockResult = {
         canReject: true,
-        strategies: [RejectStrategy.TO_PREVIOUS, RejectStrategy.TO_START],
+        strategies: [RejectStrategy.TO_PREVIOUS, RejectStrategy.TO_STARTER],
       };
       mockTaskRejectService.checkCanReject.mockResolvedValue(mockResult);
 

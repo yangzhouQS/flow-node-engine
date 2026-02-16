@@ -359,15 +359,16 @@ export class TimerService {
       }
 
       await this.timerJobRepository.save(timerJob);
-    } catch (error) {
+    } catch (error: unknown) {
       // 执行失败，更新状态
       timerJob.retry_count_ += 1;
       timerJob.locked_by_ = null;
       timerJob.locked_until_ = null;
 
+      const errorMessage = error instanceof Error ? error.message : String(error);
       if (timerJob.retry_count_ >= timerJob.max_retries_) {
         timerJob.status_ = TimerJobStatus.FAILED;
-        timerJob.exception_message_ = error?.message || 'Unknown error';
+        timerJob.exception_message_ = errorMessage || 'Unknown error';
       } else {
         // 重试：延迟执行
         timerJob.due_date_ = new Date(Date.now() + Math.pow(2, timerJob.retry_count_) * 1000);

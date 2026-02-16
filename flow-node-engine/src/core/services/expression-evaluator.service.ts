@@ -40,12 +40,12 @@ export class ExpressionEvaluatorService {
     } catch (error) {
       this.logger.error(
         `Failed to evaluate expression: ${expression}`,
-        error.stack,
+        (error as Error).stack,
       );
       this.eventBusService.emit('expression.evaluate.error', {
         expression,
         variables,
-        error: error.message,
+        error: (error as Error).message,
       });
       throw error;
     }

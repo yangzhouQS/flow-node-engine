@@ -83,7 +83,7 @@ const mockTimerJob: TimerJob = {
   extra_data_: null,
 };
 
-const mockExternalWorkerJob: ExternalWorkerJob = {
+const mockExternalWorkerJob: any = {
   id_: 'external-123',
   topic_: 'test-topic',
   status_: ExternalWorkerJobStatus.PENDING,
@@ -114,7 +114,7 @@ const mockExternalWorkerJob: ExternalWorkerJob = {
   extra_data_: null,
 };
 
-const mockDeadLetterJob: DeadLetterJob = {
+const mockDeadLetterJob: any = {
   id_: 'deadletter-123',
   original_job_id_: 'job-failed-123',
   type_: JobType.ASYNC_SERVICE,

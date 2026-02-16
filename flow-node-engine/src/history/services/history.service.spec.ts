@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
-import { HistoricActivityInstance } from '../entities/historic-activity-instance.entity';
+import { HistoricActivityInstance, ActivityType } from '../entities/historic-activity-instance.entity';
 import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
 import { HistoricTaskInstance, HistoricTaskStatus } from '../entities/historic-task-instance.entity';
 import { HistoryService } from './history.service';
@@ -21,14 +21,14 @@ describe('HistoryService', () => {
     processDefinitionId: 'proc-def-1',
     activityId: 'task-1',
     activityName: 'User Task 1',
-    activityType: 'userTask',
+    activityType: ActivityType.USER_TASK,
     assignee: 'user1',
     startTime: new Date('2026-01-01T10:00:00Z'),
     endTime: new Date('2026-01-01T11:00:00Z'),
     duration: 3600000,
   };
 
-  const mockTaskInstance: HistoricTaskInstance = {
+  const mockTaskInstance: any = {
     id: 'task-1',
     taskId: 'runtime-task-1',
     taskDefinitionKey: 'userTask1',

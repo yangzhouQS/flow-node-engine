@@ -7,10 +7,10 @@ import { BatchController } from './batch.controller';
 
 describe('BatchController', () => {
   let controller: BatchController;
-  let batchService: BatchService;
+  let batchService: any;
 
   // Mock BatchService
-  const mockBatchService = {
+  const mockBatchService: any = {
     createBatch: vi.fn(),
     queryBatches: vi.fn(),
     getBatchById: vi.fn(),
@@ -86,7 +86,7 @@ describe('BatchController', () => {
     }).compile();
 
     controller = module.get<BatchController>(BatchController);
-    batchService = mockBatchService;
+    batchService = mockBatchService as any;
   });
 
   describe('createBatch', () => {

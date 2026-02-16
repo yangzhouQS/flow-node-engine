@@ -7,7 +7,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   MigrationPlan,
-  MigrationPlanBuilder,
   MigrationResult,
   MigrationValidationResult,
   MigrationOptions,

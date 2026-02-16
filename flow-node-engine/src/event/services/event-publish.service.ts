@@ -38,7 +38,7 @@ export class EventPublishService {
         await this.publishEvent(event);
       }
     } catch (error) {
-      this.logger.error(`Failed to process pending events: ${error.message}`, error.stack);
+      this.logger.error(`Failed to process pending events: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -66,7 +66,7 @@ export class EventPublishService {
         }
       }
     } catch (error) {
-      this.logger.error(`Failed to retry failed events: ${error.message}`, error.stack);
+      this.logger.error(`Failed to retry failed events: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -99,7 +99,7 @@ export class EventPublishService {
 
       this.logger.log(`Cleaned up ${oldEvents.length} old processed events`);
     } catch (error) {
-      this.logger.error(`Failed to cleanup old events: ${error.message}`, error.stack);
+      this.logger.error(`Failed to cleanup old events: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -118,12 +118,12 @@ export class EventPublishService {
 
       this.logger.log(`Event published successfully: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to publish event ${event.id}: ${error.message}`, error.stack);
+      this.logger.error(`Failed to publish event ${event.id}: ${(error as Error).message}`, (error as Error).stack);
 
       // 更新事件状态为失败
       event.eventStatus = EventStatus.FAILED;
       event.retryCount += 1;
-      event.errorMessage = error.message;
+      event.errorMessage = (error as Error).message;
       await this.eventRepository.save(event);
     }
   }
@@ -141,7 +141,7 @@ export class EventPublishService {
 
       this.logger.log(`Event ${event.id} marked for retry (attempt ${event.retryCount})`);
     } catch (error) {
-      this.logger.error(`Failed to retry event ${event.id}: ${error.message}`, error.stack);
+      this.logger.error(`Failed to retry event ${event.id}: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -159,7 +159,7 @@ export class EventPublishService {
       event.processedTime = new Date();
       return await this.eventRepository.save(event);
     } catch (error) {
-      this.logger.error(`Failed to mark event ${eventId} as processed: ${error.message}`, error.stack);
+      this.logger.error(`Failed to mark event ${eventId} as processed: ${(error as Error).message}`, (error as Error).stack);
       throw error;
     }
   }

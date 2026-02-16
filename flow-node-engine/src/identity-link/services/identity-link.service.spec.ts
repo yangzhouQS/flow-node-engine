@@ -169,7 +169,7 @@ describe('IdentityLinkService', () => {
         { taskId: 'task-123', userId: 'user-2', linkType: IdentityLinkType.CANDIDATE },
       ];
 
-      identityLinkRepository.save.mockResolvedValue([mockIdentityLink, mockIdentityLink]);
+      identityLinkRepository.save.mockResolvedValue([mockIdentityLink, mockIdentityLink] as any);
 
       const result = await service.createIdentityLinks(paramsList);
 
@@ -654,7 +654,7 @@ describe('IdentityLinkService', () => {
 
   describe('batchCreate', () => {
     it('应该调用createIdentityLinks', async () => {
-      identityLinkRepository.save.mockResolvedValue([mockIdentityLink]);
+      identityLinkRepository.save.mockResolvedValue([mockIdentityLink] as any);
 
       const result = await service.batchCreate([
         { taskId: 'task-123', userId: 'user-123', linkType: IdentityLinkType.CANDIDATE },

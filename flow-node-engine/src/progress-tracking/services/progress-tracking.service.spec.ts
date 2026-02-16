@@ -548,7 +548,7 @@ describe('ProgressTrackingService', () => {
         completed_steps_: 2,
       };
       vi.mocked(progressRepository.findOne).mockResolvedValue(inProgressProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       const result = await service.updateProcessProgressOnTaskComplete('pi123', 'task_key_1');
 
@@ -575,7 +575,7 @@ describe('ProgressTrackingService', () => {
         completed_steps_: 4,
       };
       vi.mocked(progressRepository.findOne).mockResolvedValue(almostCompleteProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       const result = await service.updateProcessProgressOnTaskComplete('pi123', 'task_key_1');
 
@@ -591,7 +591,7 @@ describe('ProgressTrackingService', () => {
         percentage_: 80,
       };
       vi.mocked(progressRepository.findOne).mockResolvedValue(inProgressProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       const result = await service.completeProcessProgress('pi123');
 
@@ -910,7 +910,7 @@ describe('ProgressTrackingService', () => {
         status_: ProgressStatus.IN_PROGRESS,
       };
       vi.mocked(progressRepository.findOne).mockResolvedValue(inProgressProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       await service.handleProcessInstanceCompleted(event);
 
@@ -944,7 +944,7 @@ describe('ProgressTrackingService', () => {
       };
 
       vi.mocked(progressRepository.findOne).mockResolvedValue(mockProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       await service.handleProcessInstanceCancelled(event);
 
@@ -972,7 +972,7 @@ describe('ProgressTrackingService', () => {
         completed_steps_: 0,
       };
       vi.mocked(progressRepository.findOne).mockResolvedValue(inProgressProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       await service.handleTaskCompleted(event);
 
@@ -1023,7 +1023,7 @@ describe('ProgressTrackingService', () => {
 
       vi.mocked(progressRepository.find).mockResolvedValue([laggingProgress]);
       vi.mocked(progressRepository.findOne).mockResolvedValue(laggingProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       // 调用私有方法
       await service['checkWarnings']();
@@ -1043,7 +1043,7 @@ describe('ProgressTrackingService', () => {
 
       vi.mocked(progressRepository.find).mockResolvedValue([overDueProgress]);
       vi.mocked(progressRepository.findOne).mockResolvedValue(overDueProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       await service['checkWarnings']();
     });
@@ -1065,7 +1065,7 @@ describe('ProgressTrackingService', () => {
       };
       vi.mocked(progressRepository.createQueryBuilder).mockReturnValue(mockQueryBuilder as any);
       vi.mocked(progressRepository.findOne).mockResolvedValue(timeoutProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       await service['checkTimeouts']();
     });
@@ -1104,7 +1104,7 @@ describe('ProgressTrackingService', () => {
       };
 
       vi.mocked(progressRepository.findOne).mockResolvedValue(mockProgress);
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       const result = await service.updateProgress('progress123', dto);
 
@@ -1118,7 +1118,7 @@ describe('ProgressTrackingService', () => {
       };
 
       vi.mocked(progressRepository.findOne).mockResolvedValue({ ...mockProgress, total_steps_: 5 });
-      vi.mocked(progressRepository.save).mockImplementation(async (p) => p);
+      vi.mocked(progressRepository.save).mockImplementation(async (p: any) => p as any);
 
       const result = await service.updateProgress('progress123', dto);
 

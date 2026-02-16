@@ -10,16 +10,16 @@ import {
   IMailTemplateVariables,
   IMailMessage,
 } from '../interfaces/mail.interface';
-import { HandlebarsTemplateDelegate, compile } from 'handlebars';
+import * as Handlebars from 'handlebars';
 
 /**
  * 模板缓存条目
  */
 interface TemplateCacheEntry {
   template: IMailTemplate;
-  compiledSubject: HandlebarsTemplateDelegate;
-  compiledPlainContent?: HandlebarsTemplateDelegate;
-  compiledHtmlContent?: HandlebarsTemplateDelegate;
+  compiledSubject: Handlebars.TemplateDelegate;
+  compiledPlainContent?: Handlebars.TemplateDelegate;
+  compiledHtmlContent?: Handlebars.TemplateDelegate;
   compiledAt: Date;
 }
 
@@ -160,12 +160,12 @@ export class MailTemplateService implements IMailTemplateService {
    * 注册内置模板
    */
   private registerBuiltinTemplate(template: IMailTemplate): void {
-    const compiledSubject = compile(template.subject);
+    const compiledSubject = Handlebars.compile(template.subject);
     const compiledPlainContent = template.plainContent
-      ? compile(template.plainContent)
+      ? Handlebars.compile(template.plainContent)
       : undefined;
     const compiledHtmlContent = template.htmlContent
-      ? compile(template.htmlContent)
+      ? Handlebars.compile(template.htmlContent)
       : undefined;
 
     this.templateStore.set(template.id, {
@@ -202,12 +202,12 @@ export class MailTemplateService implements IMailTemplateService {
     const templateKey = tenantId ? `${tenantId}:${template.id}` : template.id;
 
     // 编译模板
-    const compiledSubject = compile(template.subject);
+    const compiledSubject = Handlebars.compile(template.subject);
     const compiledPlainContent = template.plainContent
-      ? compile(template.plainContent)
+      ? Handlebars.compile(template.plainContent)
       : undefined;
     const compiledHtmlContent = template.htmlContent
-      ? compile(template.htmlContent)
+      ? Handlebars.compile(template.htmlContent)
       : undefined;
 
     // 存储模板
@@ -266,9 +266,9 @@ export class MailTemplateService implements IMailTemplateService {
       // 如果缓存中没有，重新编译
       entry = {
         template,
-        compiledSubject: compile(template.subject),
-        compiledPlainContent: template.plainContent ? compile(template.plainContent) : undefined,
-        compiledHtmlContent: template.htmlContent ? compile(template.htmlContent) : undefined,
+        compiledSubject: Handlebars.compile(template.subject),
+        compiledPlainContent: template.plainContent ? Handlebars.compile(template.plainContent) : undefined,
+        compiledHtmlContent: template.htmlContent ? Handlebars.compile(template.htmlContent) : undefined,
         compiledAt: new Date(),
       };
     }

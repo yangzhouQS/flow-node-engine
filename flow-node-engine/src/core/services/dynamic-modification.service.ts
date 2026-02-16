@@ -238,11 +238,11 @@ export class DynamicProcessService implements IDynamicProcessService {
             return {
               success: false,
               executedModifications: [],
-              errorMessage: `Atomic modification failed: ${error.message}`,
+              errorMessage: `Atomic modification failed: ${(error as Error).message}`,
             };
           }
           // 非原子操作，记录错误继续
-          validationErrors.push(`Modification ${modification.id} failed: ${error.message}`);
+          validationErrors.push(`Modification ${modification.id} failed: ${(error as Error).message}`);
         }
       }
 
@@ -278,11 +278,11 @@ export class DynamicProcessService implements IDynamicProcessService {
         validationErrors: validationErrors.length > 0 ? validationErrors : undefined,
       };
     } catch (error) {
-      this.logger.error(`Dynamic modification failed: ${error.message}`, error.stack);
+      this.logger.error(`Dynamic modification failed: ${(error as Error).message}`, (error as Error).stack);
       return {
         success: false,
         executedModifications,
-        errorMessage: error.message,
+        errorMessage: (error as Error).message,
       };
     }
   }

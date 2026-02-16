@@ -343,16 +343,16 @@ export class ProcessExecutorService {
     } catch (error) {
       history.status = 'FAILED';
       history.endTime = new Date();
-      history.error = error.message;
+      history.error = (error as Error).message;
 
       this.logger.error(
         `Failed to execute element: ${element.id}`,
-        error.stack,
+        (error as Error).stack,
       );
       this.eventBusService.emit('element.execute.error', {
         processInstanceId: context.processInstanceId,
         element,
-        error: error.message,
+        error: (error as Error).message,
         context,
       });
 

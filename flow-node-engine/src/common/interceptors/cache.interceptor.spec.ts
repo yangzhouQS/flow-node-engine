@@ -54,10 +54,10 @@ describe('CacheInterceptor', () => {
 
   describe('with cache key', () => {
     it('should return cached value when cache hit', async () => {
-      vi.mocked(mockReflector.get).mockImplementation((key: string) => {
+      vi.mocked(mockReflector.get).mockImplementation(((key: string) => {
         if (key === CACHE_KEY_METADATA) return 'test-cache-key';
         return undefined;
-      });
+      }) as any);
       
       mockCacheManager.get.mockResolvedValue({ cached: 'data' });
       
@@ -80,11 +80,11 @@ describe('CacheInterceptor', () => {
     });
 
     it('should call handler and cache result when cache miss', async () => {
-      vi.mocked(mockReflector.get).mockImplementation((key: string) => {
+      vi.mocked(mockReflector.get).mockImplementation(((key: string) => {
         if (key === CACHE_KEY_METADATA) return 'test-cache-key';
         if (key === CACHE_TTL_METADATA) return 3600;
         return undefined;
-      });
+      }) as any);
       
       mockCacheManager.get.mockResolvedValue(null);
       
@@ -107,10 +107,10 @@ describe('CacheInterceptor', () => {
     });
 
     it('should use default TTL when not specified', async () => {
-      vi.mocked(mockReflector.get).mockImplementation((key: string) => {
+      vi.mocked(mockReflector.get).mockImplementation(((key: string) => {
         if (key === CACHE_KEY_METADATA) return 'test-cache-key';
         return undefined;
-      });
+      }) as any);
       
       mockCacheManager.get.mockResolvedValue(null);
       

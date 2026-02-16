@@ -31,12 +31,13 @@ export class ProcessCommentIntegrationService {
     tenantId?: string
   ): Promise<ProcessInstance> {
     // 启动流程
-    const processInstance = await this.processInstanceService.startProcess({
+    const processInstance = await this.processInstanceService.create(
       processDefinitionKey,
       businessKey,
+      startUserId,
       variables,
       tenantId,
-    });
+    );
 
     // 添加启动评论
     await this.commentService.addSystemComment(
@@ -126,7 +127,8 @@ export class ProcessCommentIntegrationService {
     userName?: string
   ): Promise<ProcessInstance> {
     // 取消流程
-    const processInstance = await this.processInstanceService.cancel(processInstanceId, cancelReason);
+    await this.processInstanceService.delete(processInstanceId, cancelReason);
+    const processInstance = await this.processInstanceService.findById(processInstanceId);
 
     // 添加取消评论
     await this.commentService.addComment({

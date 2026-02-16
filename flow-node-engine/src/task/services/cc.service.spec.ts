@@ -102,7 +102,7 @@ describe('CcService', () => {
         { ...mockCcRecord, id_: 'cc-1', cc_to_user_id_: 'user-2' },
         { ...mockCcRecord, id_: 'cc-2', cc_to_user_id_: 'user-3' },
       ];
-      ccRecordRepository.save.mockResolvedValue(records as CcRecordEntity[]);
+      ccRecordRepository.save.mockResolvedValue(records as any);
 
       const result = await service.batchCreateCcRecords({
         processInstanceId: 'pi-123',
@@ -114,7 +114,7 @@ describe('CcService', () => {
     });
 
     it('应该为每个接收人创建独立记录', async () => {
-      ccRecordRepository.save.mockResolvedValue([]as CcRecordEntity[]);
+      ccRecordRepository.save.mockResolvedValue([] as any);
 
       await service.batchCreateCcRecords({
         processInstanceId: 'pi-123',
@@ -127,7 +127,7 @@ describe('CcService', () => {
     });
 
     it('应该正确映射用户名称', async () => {
-      ccRecordRepository.save.mockResolvedValue([]as CcRecordEntity[]);
+      ccRecordRepository.save.mockResolvedValue([] as any);
 
       await service.batchCreateCcRecords({
         processInstanceId: 'pi-123',
@@ -509,7 +509,7 @@ describe('CcService', () => {
 
   describe('create (Controller接口)', () => {
     it('应该创建抄送', async () => {
-      ccRecordRepository.save.mockResolvedValue([mockCcRecord as CcRecordEntity]);
+      ccRecordRepository.save.mockResolvedValue([mockCcRecord as CcRecordEntity] as any);
 
       const result = await service.create({
         processInstanceId: 'pi-123',

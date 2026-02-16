@@ -83,7 +83,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Process instance start event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle process instance start event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle process instance start event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -103,7 +103,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Process instance end event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle process instance end event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle process instance end event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -122,7 +122,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Process instance suspend event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle process instance suspend event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle process instance suspend event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -141,7 +141,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Process instance activate event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle process instance activate event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle process instance activate event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -162,7 +162,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Task created event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle task created event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle task created event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -183,7 +183,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Task assigned event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle task assigned event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle task assigned event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -204,7 +204,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Task completed event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle task completed event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle task completed event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -224,7 +224,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Task cancelled event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle task cancelled event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle task cancelled event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -245,7 +245,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Activity started event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle activity started event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle activity started event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -266,7 +266,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Activity completed event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle activity completed event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle activity completed event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -285,7 +285,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Variable created event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle variable created event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle variable created event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -304,7 +304,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Variable updated event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle variable updated event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle variable updated event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -323,7 +323,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Variable deleted event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle variable deleted event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle variable deleted event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -342,7 +342,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Signal thrown event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle signal thrown event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle signal thrown event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -361,7 +361,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Signal received event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle signal received event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle signal received event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -380,7 +380,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Message sent event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle message sent event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle message sent event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -399,7 +399,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Message received event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle message received event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle message received event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -418,7 +418,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Error thrown event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle error thrown event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle error thrown event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -437,7 +437,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Error received event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle error received event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle error received event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -456,7 +456,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Timer fired event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle timer fired event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle timer fired event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -476,7 +476,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Compensation triggered event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle compensation triggered event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle compensation triggered event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 
@@ -496,7 +496,7 @@ export class EventSubscriptionService {
       await this.eventRepository.save(event);
       this.logger.log(`Custom event created: ${event.id}`);
     } catch (error) {
-      this.logger.error(`Failed to handle custom event: ${error.message}`, error.stack);
+      this.logger.error(`Failed to handle custom event: ${(error as Error).message}`, (error as Error).stack);
     }
   }
 

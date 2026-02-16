@@ -55,6 +55,9 @@ describe('TaskController', () => {
         name: 'Test Task',
         processInstanceId: 'pi-1',
         assignee: 'user-1',
+        taskDefinitionKey: 'task-def-key-1',
+        taskDefinitionId: 'task-def-id-1',
+        taskDefinitionVersion: 1,
       };
 
       mockService.create.mockResolvedValue(mockTask);
@@ -71,6 +74,9 @@ describe('TaskController', () => {
       const createDto = {
         name: 'Test Task',
         processInstanceId: 'non-existent',
+        taskDefinitionKey: 'task-def-key-1',
+        taskDefinitionId: 'task-def-id-1',
+        taskDefinitionVersion: 1,
       };
 
       mockService.create.mockRejectedValue(new Error('Process instance not found'));

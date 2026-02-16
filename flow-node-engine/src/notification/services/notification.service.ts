@@ -161,9 +161,10 @@ export class NotificationService {
               channelResults['WEBHOOK'] = { success: true };
               break;
           }
-        } catch (error) {
-          this.logger.error(`通知渠道 ${channel} 发送失败: ${error.message}`);
-          channelResults[channel] = { success: false, error: error.message };
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? (error as Error).message : String(error);
+          this.logger.error(`通知渠道 ${channel} 发送失败: ${errorMessage}`);
+          channelResults[channel] = { success: false, error: errorMessage };
         }
       }
 
@@ -172,11 +173,12 @@ export class NotificationService {
         notificationId,
         channelResults: channelResults as any,
       };
-    } catch (error) {
-      this.logger.error(`发送通知失败: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? (error as Error).message : String(error);
+      this.logger.error(`发送通知失败: ${errorMessage}`);
       return {
         success: false,
-        error: error.message,
+        error: errorMessage,
       };
     }
   }
@@ -451,8 +453,9 @@ export class NotificationService {
       if (!response.ok) {
         throw new Error(`Webhook请求失败: ${response.status}`);
       }
-    } catch (error) {
-      this.logger.error(`Webhook通知发送失败: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? (error as Error).message : String(error);
+      this.logger.error(`Webhook通知发送失败: ${errorMessage}`);
       throw error;
     }
   }

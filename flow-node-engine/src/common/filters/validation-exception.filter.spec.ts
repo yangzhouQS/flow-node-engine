@@ -1,5 +1,5 @@
 import { ArgumentsHost } from '@nestjs/common';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { ValidationException } from '../exceptions/validation.exception';
 import { ValidationExceptionFilter } from './validation-exception.filter';
 
@@ -122,7 +122,7 @@ describe('ValidationExceptionFilter', () => {
       })
     );
     
-    const call = (mockResponse.json as vi.Mock).mock.calls[0][0];
+    const call = (mockResponse.json as Mock).mock.calls[0][0];
     expect(new Date(call.timestamp).toISOString()).toBe(call.timestamp);
   });
 

@@ -58,7 +58,7 @@ describe('NotificationController', () => {
       const result = await controller.getNotifications(
         req,
         'UNREAD',
-        'TASK',
+        'TASK_ASSIGNED' as any,
         'true',
         '1',
         '10',
@@ -67,7 +67,7 @@ describe('NotificationController', () => {
       expect(mockInAppNotificationService.getNotifications).toHaveBeenCalledWith({
         userId: 'user-1',
         status: 'UNREAD',
-        type: 'TASK',
+        type: 'TASK_ASSIGNED',
         unreadOnly: true,
         page: 1,
         pageSize: 10,

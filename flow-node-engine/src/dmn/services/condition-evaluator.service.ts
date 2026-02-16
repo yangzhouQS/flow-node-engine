@@ -115,7 +115,7 @@ export class ConditionEvaluatorService implements ConditionEvaluator {
           return this.equals(inputValue, conditionValue);
       }
     } catch (error) {
-      this.logger.error(`Error evaluating condition: ${error.message}`);
+      this.logger.error(`Error evaluating condition: ${(error as Error).message}`);
       return false;
     }
   }

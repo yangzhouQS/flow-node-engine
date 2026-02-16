@@ -27,7 +27,7 @@ describe('LdapUserQueryImpl', () => {
   beforeEach(() => {
     mockTemplate = createMockTemplate();
     config = new LdapConfiguration({
-      serverUrl: 'ldap://localhost:389',
+      server: 'ldap://localhost:389',
       baseDn: 'dc=example,dc=com',
       userBaseDn: 'ou=users,dc=example,dc=com',
       userIdAttribute: 'uid',

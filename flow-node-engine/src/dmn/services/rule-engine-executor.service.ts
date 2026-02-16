@@ -211,7 +211,7 @@ export class RuleEngineExecutorService {
       };
     } catch (error) {
       const executionTimeMs = Date.now() - startTime;
-      this.logger.error(`Decision execution failed: ${error.message}`, error.stack);
+      this.logger.error(`Decision execution failed: ${(error as Error).message}`, (error as Error).stack);
 
       // 保存失败执行历史
       await this.saveExecutionHistory({
@@ -227,8 +227,8 @@ export class RuleEngineExecutorService {
         activityId: dto.activityId ?? options?.activityId,
         taskId: dto.taskId ?? options?.taskId,
         tenantId: dto.tenantId ?? options?.tenantId,
-        errorMessage: error.message,
-        errorDetails: error.stack,
+        errorMessage: (error as Error).message,
+        errorDetails: (error as Error).stack,
         auditContainer: enableAudit ? auditContainer : undefined,
       });
 
@@ -524,7 +524,7 @@ export class RuleEngineExecutorService {
 
       return expression;
     } catch (error) {
-      this.logger.warn(`Expression evaluation failed: ${expression}, error: ${error.message}`);
+      this.logger.warn(`Expression evaluation failed: ${expression}, error: ${(error as Error).message}`);
       return undefined;
     }
   }
@@ -646,7 +646,7 @@ export class RuleEngineExecutorService {
 
       await this.executionRepository.save(execution);
     } catch (error) {
-      this.logger.error(`Failed to save execution history: ${error.message}`);
+      this.logger.error(`Failed to save execution history: ${(error as Error).message}`);
     }
   }
 
@@ -675,7 +675,7 @@ export class RuleEngineExecutorService {
           status: 'failed',
           matchedCount: 0,
           executionTimeMs: 0,
-          errorMessage: error.message,
+          errorMessage: (error as Error).message,
         });
       }
     }
@@ -713,7 +713,7 @@ export class RuleEngineExecutorService {
       outputs = decision.outputs ? JSON.parse(decision.outputs) : [];
       rules = decision.rules ? JSON.parse(decision.rules) : [];
     } catch (error) {
-      errors.push(`Failed to parse decision table: ${error.message}`);
+      errors.push(`Failed to parse decision table: ${(error as Error).message}`);
       return { valid: false, errors, warnings };
     }
 

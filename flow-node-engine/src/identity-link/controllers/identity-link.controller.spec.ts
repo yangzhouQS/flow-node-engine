@@ -2,13 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { IdentityLinkService } from '../services/identity-link.service';
 import { IdentityLinkController } from './identity-link.controller';
+import { IdentityLinkType } from '../dto/identity-link.dto';
 
 describe('IdentityLinkController', () => {
   let controller: IdentityLinkController;
   let identityLinkService: ReturnType<typeof mockIdentityLinkService>;
 
   // Mock IdentityLinkService
-  const mockIdentityLinkService = {
+  const mockIdentityLinkService: any = {
     create: vi.fn(),
     batchCreate: vi.fn(),
     query: vi.fn(),
@@ -29,7 +30,7 @@ describe('IdentityLinkController', () => {
     id_: 'link-1',
     task_id_: 'task-1',
     proc_inst_id_: 'process-1',
-    type_: 'candidate',
+    type_: IdentityLinkType.CANDIDATE,
     user_id_: 'user-1',
     group_id_: null,
     create_time_: new Date('2024-01-01T00:00:00Z'),
@@ -40,7 +41,7 @@ describe('IdentityLinkController', () => {
     id_: 'link-2',
     task_id_: 'task-1',
     proc_inst_id_: 'process-1',
-    type_: 'candidate',
+    type_: IdentityLinkType.CANDIDATE,
     user_id_: null,
     group_id_: 'group-1',
     create_time_: new Date('2024-01-01T00:00:00Z'),
@@ -68,7 +69,7 @@ describe('IdentityLinkController', () => {
     it('应该成功创建身份链接', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userId: 'user-1',
       };
 
@@ -85,14 +86,14 @@ describe('IdentityLinkController', () => {
       });
       expect(result.id).toBe('link-1');
       expect(result.taskId).toBe('task-1');
-      expect(result.type).toBe('candidate');
+      expect(result.type).toBe(IdentityLinkType.CANDIDATE);
       expect(result.userId).toBe('user-1');
     });
 
     it('应该支持创建组链接', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         groupId: 'group-1',
       };
 
@@ -113,14 +114,14 @@ describe('IdentityLinkController', () => {
     it('应该支持创建流程实例级别的链接', async () => {
       const dto = {
         processInstanceId: 'process-1',
-        type: 'participant',
+        type: IdentityLinkType.PARTICIPANT,
         userId: 'user-1',
       };
 
       identityLinkService.create.mockResolvedValue({
         ...mockLink,
         proc_inst_id_: 'process-1',
-        type_: 'participant',
+        type_: IdentityLinkType.PARTICIPANT,
       });
 
       const result = await controller.create(dto);
@@ -128,7 +129,7 @@ describe('IdentityLinkController', () => {
       expect(identityLinkService.create).toHaveBeenCalledWith({
         taskId: undefined,
         processInstanceId: 'process-1',
-        linkType: 'participant',
+        linkType: IdentityLinkType.PARTICIPANT,
         userId: 'user-1',
         groupId: undefined,
       });
@@ -139,7 +140,7 @@ describe('IdentityLinkController', () => {
     it('应该批量创建用户链接', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userIds: ['user-1', 'user-2'],
       };
 
@@ -153,8 +154,8 @@ describe('IdentityLinkController', () => {
       const result = await controller.batchCreate(dto);
 
       expect(identityLinkService.batchCreate).toHaveBeenCalledWith([
-        { taskId: 'task-1', processInstanceId: undefined, linkType: 'candidate', userId: 'user-1' },
-        { taskId: 'task-1', processInstanceId: undefined, linkType: 'candidate', userId: 'user-2' },
+        { taskId: 'task-1', processInstanceId: undefined, linkType: IdentityLinkType.CANDIDATE, userId: 'user-1' },
+        { taskId: 'task-1', processInstanceId: undefined, linkType: IdentityLinkType.CANDIDATE, userId: 'user-2' },
       ]);
       expect(result).toHaveLength(2);
     });
@@ -162,7 +163,7 @@ describe('IdentityLinkController', () => {
     it('应该批量创建组链接', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         groupIds: ['group-1', 'group-2'],
       };
 
@@ -176,8 +177,8 @@ describe('IdentityLinkController', () => {
       const result = await controller.batchCreate(dto);
 
       expect(identityLinkService.batchCreate).toHaveBeenCalledWith([
-        { taskId: 'task-1', processInstanceId: undefined, linkType: 'candidate', groupId: 'group-1' },
-        { taskId: 'task-1', processInstanceId: undefined, linkType: 'candidate', groupId: 'group-2' },
+        { taskId: 'task-1', processInstanceId: undefined, linkType: IdentityLinkType.CANDIDATE, groupId: 'group-1' },
+        { taskId: 'task-1', processInstanceId: undefined, linkType: IdentityLinkType.CANDIDATE, groupId: 'group-2' },
       ]);
       expect(result).toHaveLength(2);
     });
@@ -185,7 +186,7 @@ describe('IdentityLinkController', () => {
     it('应该同时创建用户和组链接', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userIds: ['user-1'],
         groupIds: ['group-1'],
       };
@@ -205,7 +206,7 @@ describe('IdentityLinkController', () => {
     it('空用户和组数组应该返回空结果', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userIds: [],
         groupIds: [],
       };
@@ -356,25 +357,25 @@ describe('IdentityLinkController', () => {
 
   describe('setAssignee', () => {
     it('应该设置任务受让人', async () => {
-      const assigneeLink = { ...mockLink, type_: 'assignee', user_id_: 'user-1' };
+      const assigneeLink = { ...mockLink, type_: IdentityLinkType.ASSIGNEE, user_id_: 'user-1' };
       identityLinkService.setAssignee.mockResolvedValue(assigneeLink);
 
       const result = await controller.setAssignee('task-1', 'user-1');
 
       expect(identityLinkService.setAssignee).toHaveBeenCalledWith('task-1', 'user-1');
-      expect(result.type).toBe('assignee');
+      expect(result.type).toBe(IdentityLinkType.ASSIGNEE);
     });
   });
 
   describe('setOwner', () => {
     it('应该设置任务拥有者', async () => {
-      const ownerLink = { ...mockLink, type_: 'owner', user_id_: 'user-1' };
+      const ownerLink = { ...mockLink, type_: IdentityLinkType.OWNER, user_id_: 'user-1' };
       identityLinkService.setOwner.mockResolvedValue(ownerLink);
 
       const result = await controller.setOwner('task-1', 'user-1');
 
       expect(identityLinkService.setOwner).toHaveBeenCalledWith('task-1', 'user-1');
-      expect(result.type).toBe('owner');
+      expect(result.type).toBe(IdentityLinkType.OWNER);
     });
   });
 
@@ -382,7 +383,7 @@ describe('IdentityLinkController', () => {
     it('应该删除匹配的身份链接', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userId: 'user-1',
       };
 
@@ -394,7 +395,7 @@ describe('IdentityLinkController', () => {
       expect(identityLinkService.query).toHaveBeenCalledWith({
         taskId: 'task-1',
         processInstanceId: undefined,
-        linkType: 'candidate',
+        linkType: IdentityLinkType.CANDIDATE,
         userId: 'user-1',
         groupId: undefined,
       });
@@ -404,7 +405,7 @@ describe('IdentityLinkController', () => {
     it('应该删除多个匹配的链接', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
       };
 
       const links = [
@@ -423,7 +424,7 @@ describe('IdentityLinkController', () => {
     it('无匹配链接时不应该调用删除', async () => {
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
       };
 
       identityLinkService.query.mockResolvedValue([]);
@@ -482,7 +483,7 @@ describe('IdentityLinkController', () => {
 
       const result = await controller.create({
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userId: 'user-1',
       });
 
@@ -490,7 +491,7 @@ describe('IdentityLinkController', () => {
         id: 'link-1',
         taskId: 'task-1',
         processInstanceId: 'process-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userId: 'user-1',
         groupId: null,
         createTime: mockLink.create_time_,
@@ -501,12 +502,12 @@ describe('IdentityLinkController', () => {
 
   describe('边界条件测试', () => {
     it('创建时应该处理所有可选字段为空的情况', async () => {
-      const dto = { type: 'candidate' };
+      const dto = { type: IdentityLinkType.CANDIDATE };
       identityLinkService.create.mockResolvedValue({
         id_: 'link-1',
         task_id_: null,
         proc_inst_id_: null,
-        type_: 'candidate',
+        type_: IdentityLinkType.CANDIDATE,
         user_id_: null,
         group_id_: null,
         create_time_: new Date(),
@@ -523,7 +524,7 @@ describe('IdentityLinkController', () => {
       const userIds = Array.from({ length: 100 }, (_, i) => `user-${i}`);
       const dto = {
         taskId: 'task-1',
-        type: 'candidate',
+        type: IdentityLinkType.CANDIDATE,
         userIds,
       };
 

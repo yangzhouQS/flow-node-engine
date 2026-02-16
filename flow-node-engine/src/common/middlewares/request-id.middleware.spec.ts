@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { RequestIdMiddleware } from './request-id.middleware';
 
 describe('RequestIdMiddleware', () => {
   let middleware: RequestIdMiddleware;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let mockNext: vi.Mock;
+  let mockNext: Mock;
 
   beforeEach(() => {
     middleware = new RequestIdMiddleware();
@@ -55,7 +55,7 @@ describe('RequestIdMiddleware', () => {
     middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
     
     const requestId = mockRequest['requestId'];
-    const setHeaderCalls = (mockResponse.setHeader as vi.Mock).mock.calls;
+    const setHeaderCalls = (mockResponse.setHeader as Mock).mock.calls;
     
     expect(setHeaderCalls[0][1]).toBe(requestId);
   });

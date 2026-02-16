@@ -59,7 +59,8 @@ describe('ProcessExecutorService', () => {
       { id: 'flow2', sourceRef: 'task1', targetRef: 'service1' },
       { id: 'flow3', sourceRef: 'service1', targetRef: 'end' },
     ],
-    elements: [],
+    subProcesses: [],
+    // elements: [],
   });
 
   beforeEach(async () => {

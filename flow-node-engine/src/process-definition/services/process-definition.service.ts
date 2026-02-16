@@ -78,8 +78,9 @@ export class ProcessDefinitionService {
     if (dto.generateDiagram) {
       try {
         diagramSvg = await this.bpmnParser.generateDiagram(dto.bpmnXml);
-      } catch (error) {
-        this.logger.error('Failed to generate diagram', error.stack);
+      } catch (error: unknown) {
+        const errorStack = error instanceof Error ? (error as Error).stack : String(error);
+        this.logger.error('Failed to generate diagram', errorStack);
       }
     }
 

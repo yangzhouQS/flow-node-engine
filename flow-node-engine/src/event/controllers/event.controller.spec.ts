@@ -134,12 +134,12 @@ describe('EventController', () => {
 
   describe('findByEventType', () => {
     it('应该根据事件类型返回事件列表', async () => {
-      const mockEvents = [{ id: 'event-1', eventType: EventType.TIMER }];
+      const mockEvents = [{ id: 'event-1', eventType: EventType.TIMER_FIRED }];
       mockEventSubscriptionService.findByEventType.mockResolvedValue(mockEvents);
 
-      const result = await controller.findByEventType(EventType.TIMER);
+      const result = await controller.findByEventType(EventType.TIMER_FIRED);
 
-      expect(mockEventSubscriptionService.findByEventType).toHaveBeenCalledWith(EventType.TIMER);
+      expect(mockEventSubscriptionService.findByEventType).toHaveBeenCalledWith(EventType.TIMER_FIRED);
       expect(result.data).toEqual(mockEvents);
     });
   });
