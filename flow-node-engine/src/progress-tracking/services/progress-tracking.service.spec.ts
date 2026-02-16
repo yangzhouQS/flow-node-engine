@@ -138,6 +138,7 @@ describe('ProgressTrackingService', () => {
   describe('createProgress', () => {
     it('应该成功创建进度记录', async () => {
       const dto = {
+        id_: 'progress123',
         process_inst_id_: 'pi123',
         process_def_id_: 'pd123',
         type_: ProgressType.PROCESS_INSTANCE,
@@ -167,6 +168,7 @@ describe('ProgressTrackingService', () => {
 
     it('应该使用默认值创建进度记录', async () => {
       const dto = {
+        id_: 'progress123',
         process_inst_id_: 'pi123',
       };
 
@@ -191,6 +193,7 @@ describe('ProgressTrackingService', () => {
 
     it('创建进度时应该记录指标', async () => {
       const dto = {
+        id_: 'progress123',
         process_inst_id_: 'pi123',
         type_: ProgressType.TASK,
       };

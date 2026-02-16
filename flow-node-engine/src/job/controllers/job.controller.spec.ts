@@ -108,10 +108,11 @@ describe('JobController', () => {
   describe('createJob', () => {
     it('should create a job successfully', async () => {
       const dto: CreateJobDto = {
-        jobType: 'ASYNC_CONTINUATION',
-        processInstanceId: 'process-1',
-        executionId: 'execution-1',
-        processDefinitionId: 'definition-1',
+        id_: 'job-1',
+        type_: 'ASYNC_CONTINUATION',
+        process_inst_id_: 'process-1',
+        execution_id_: 'execution-1',
+        process_def_id_: 'definition-1',
       };
 
       mockJobService.createJob.mockResolvedValue(mockJob);
@@ -124,7 +125,8 @@ describe('JobController', () => {
 
     it('should throw BadRequestException when creation fails', async () => {
       const dto: CreateJobDto = {
-        jobType: 'ASYNC_CONTINUATION',
+        id_: 'job-2',
+        type_: 'ASYNC_CONTINUATION',
       };
 
       mockJobService.createJob.mockRejectedValue(new Error('Creation failed'));
@@ -254,10 +256,11 @@ describe('JobController', () => {
   describe('createTimerJob', () => {
     it('should create a timer job successfully', async () => {
       const dto: CreateTimerJobDto = {
-        jobType: 'TIMER',
-        processInstanceId: 'process-1',
-        duedate: new Date(),
-        timerExpression: 'PT5M',
+        id_: 'timer-job-1',
+        timer_type_: 'TIMER',
+        timer_expression_: 'PT5M',
+        due_date_: new Date(),
+        process_inst_id_: 'process-1',
       };
 
       mockJobService.createTimerJob.mockResolvedValue(mockTimerJob);
@@ -297,9 +300,9 @@ describe('JobController', () => {
   describe('createExternalWorkerJob', () => {
     it('should create an external worker job successfully', async () => {
       const dto: CreateExternalWorkerJobDto = {
-        jobType: 'EXTERNAL_WORKER',
-        topic: 'test-topic',
-        processInstanceId: 'process-1',
+        id_: 'external-job-1',
+        topic_: 'test-topic',
+        process_inst_id_: 'process-1',
       };
 
       mockJobService.createExternalWorkerJob.mockResolvedValue(mockExternalWorkerJob);
@@ -328,9 +331,8 @@ describe('JobController', () => {
     it('should fetch and lock jobs successfully', async () => {
       const dto: FetchAndLockDto = {
         worker_id_: 'worker-1',
-        topic: 'test-topic',
-        maxTasks: 10,
-        lockDuration: 60000,
+        topics_: [{ topic_name_: 'test-topic', lock_duration_: 60000 }],
+        max_tasks_: 10,
       };
 
       mockJobService.fetchAndLock.mockResolvedValue([mockExternalWorkerJob]);
@@ -345,9 +347,9 @@ describe('JobController', () => {
   describe('completeExternalWorkerJob', () => {
     it('should complete an external worker job successfully', async () => {
       const dto: CompleteExternalWorkerJobDto = {
-        jobId: 'external-job-1',
-        workerId: 'worker-1',
-        variables: { result: 'success' },
+        job_id_: 'external-job-1',
+        worker_id_: 'worker-1',
+        variables_: { result: 'success' },
       };
 
       mockJobService.completeExternalWorkerJob.mockResolvedValue(undefined);
@@ -359,8 +361,8 @@ describe('JobController', () => {
 
     it('should throw BadRequestException when completion fails', async () => {
       const dto: CompleteExternalWorkerJobDto = {
-        jobId: 'external-job-1',
-        workerId: 'worker-1',
+        job_id_: 'external-job-1',
+        worker_id_: 'worker-1',
       };
 
       mockJobService.completeExternalWorkerJob.mockRejectedValue(new Error('Completion failed'));
@@ -372,9 +374,9 @@ describe('JobController', () => {
   describe('failExternalWorkerJob', () => {
     it('should mark an external worker job as failed', async () => {
       const dto: FailExternalWorkerJobDto = {
-        jobId: 'external-job-1',
-        workerId: 'worker-1',
-        errorMessage: 'Task failed',
+        job_id_: 'external-job-1',
+        worker_id_: 'worker-1',
+        error_message_: 'Task failed',
       };
 
       mockJobService.failExternalWorkerJob.mockResolvedValue(undefined);
@@ -386,8 +388,8 @@ describe('JobController', () => {
 
     it('should throw BadRequestException when marking as failed fails', async () => {
       const dto: FailExternalWorkerJobDto = {
-        jobId: 'external-job-1',
-        workerId: 'worker-1',
+        job_id_: 'external-job-1',
+        worker_id_: 'worker-1',
       };
 
       mockJobService.failExternalWorkerJob.mockRejectedValue(new Error('Fail operation failed'));
@@ -415,7 +417,7 @@ describe('JobController', () => {
     it('should process a dead letter job successfully', async () => {
       const dto: ProcessDeadLetterJobDto = {
         id_: 'dead-letter-job-1',
-        action: 'RETRY',
+        action_: 'RETRY',
       };
 
       mockJobService.processDeadLetterJob.mockResolvedValue(undefined);
@@ -427,8 +429,8 @@ describe('JobController', () => {
 
     it('should throw BadRequestException when processing fails', async () => {
       const dto: ProcessDeadLetterJobDto = {
-        deadLetterJobId: 'dead-letter-job-1',
-        action: 'RETRY',
+        id_: 'dead-letter-job-1',
+        action_: 'RETRY',
       };
 
       mockJobService.processDeadLetterJob.mockRejectedValue(new Error('Processing failed'));

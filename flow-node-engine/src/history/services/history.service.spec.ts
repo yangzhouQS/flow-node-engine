@@ -5,7 +5,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 
 import { HistoricActivityInstance, ActivityType } from '../entities/historic-activity-instance.entity';
-import { HistoricProcessInstance } from '../entities/historic-process-instance.entity';
+import { HistoricProcessInstance, HistoricProcessStatus } from '../entities/historic-process-instance.entity';
 import { HistoricTaskInstance, HistoricTaskStatus } from '../entities/historic-task-instance.entity';
 import { HistoryService } from './history.service';
 
@@ -19,6 +19,8 @@ describe('HistoryService', () => {
     id: 'activity-1',
     processInstanceId: 'process-1',
     processDefinitionId: 'proc-def-1',
+    processDefinitionKey: 'test-process',
+    processDefinitionVersion: 1,
     activityId: 'task-1',
     activityName: 'User Task 1',
     activityType: ActivityType.USER_TASK,
@@ -26,6 +28,7 @@ describe('HistoryService', () => {
     startTime: new Date('2026-01-01T10:00:00Z'),
     endTime: new Date('2026-01-01T11:00:00Z'),
     duration: 3600000,
+    createTime: new Date('2026-01-01T10:00:00Z'),
   };
 
   const mockTaskInstance: any = {
@@ -69,12 +72,9 @@ describe('HistoryService', () => {
     startTime: new Date('2026-01-01T09:00:00Z'),
     endTime: new Date('2026-01-01T12:00:00Z'),
     duration: 10800000,
-    status: 'COMPLETED',
-    name: 'Test Process Instance',
-    description: 'Test description',
+    status: HistoricProcessStatus.COMPLETED,
     tenantId: 'tenant-1',
-    callbackId: null,
-    callbackType: null,
+    createTime: new Date('2026-01-01T09:00:00Z'),
   };
 
   beforeEach(async () => {

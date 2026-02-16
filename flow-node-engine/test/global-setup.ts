@@ -12,8 +12,8 @@ async function globalSetup() {
     type: 'mysql',
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '3306', 10),
-    username: process.env.DB_USERNAME || 'test',
-    password: process.env.DB_PASSWORD || 'test',
+    username: process.env.DB_USERNAME || 'root',
+    password: process.env.DB_PASSWORD || 'root',
     database: process.env.DB_DATABASE || 'flow_node_engine_test',
     synchronize: true,
     dropSchema: true, // 每次测试前清空数据库

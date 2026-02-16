@@ -522,7 +522,7 @@ describe('EventSubscriptionService', () => {
       };
       
       subscriptionRepository.find.mockResolvedValue([subscriptionOtherTenant]);
-      subscriptionRepository.save.mockResolvedValue({});
+      subscriptionRepository.save.mockResolvedValue(subscriptionOtherTenant);
 
       const result = await service.triggerSignalEvent('test-signal', {}, 'tenant-123');
 
@@ -775,7 +775,7 @@ describe('EventSubscriptionService', () => {
         getMany: vi.fn().mockResolvedValue(subscriptions),
       };
       subscriptionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
-      subscriptionRepository.save.mockResolvedValue({});
+      subscriptionRepository.save.mockResolvedValue(mockSubscription);
 
       const result = await service.triggerMessageEvent('test-message');
 

@@ -27,7 +27,8 @@ describe('LdapUserQueryImpl', () => {
   beforeEach(() => {
     mockTemplate = createMockTemplate();
     config = new LdapConfiguration({
-      server: 'ldap://localhost:389',
+      server: 'ldap://localhost',
+      port: 389,
       baseDn: 'dc=example,dc=com',
       userBaseDn: 'ou=users,dc=example,dc=com',
       userIdAttribute: 'uid',
@@ -190,13 +191,13 @@ describe('LdapGroupQueryImpl', () => {
   beforeEach(() => {
     mockTemplate = createMockTemplate();
     config = new LdapConfiguration({
-      serverUrl: 'ldap://localhost:389',
+      server: 'ldap://localhost',
+      port: 389,
       baseDn: 'dc=example,dc=com',
       groupBaseDn: 'ou=groups,dc=example,dc=com',
       groupIdAttribute: 'cn',
       groupNameAttribute: 'cn',
       groupTypeAttribute: 'objectClass',
-      groupMemberAttribute: 'member',
       queryAllGroups: '(objectClass=groupOfNames)',
     });
   });
@@ -301,13 +302,13 @@ describe('LdapIdentityServiceImpl', () => {
   beforeEach(() => {
     mockTemplate = createMockTemplate();
     config = new LdapConfiguration({
-      serverUrl: 'ldap://localhost:389',
+      server: 'ldap://localhost',
+      port: 389,
       baseDn: 'dc=example,dc=com',
       userBaseDn: 'ou=users,dc=example,dc=com',
       groupBaseDn: 'ou=groups,dc=example,dc=com',
       userIdAttribute: 'uid',
       groupIdAttribute: 'cn',
-      groupMemberAttribute: 'member',
       queryAllUsers: '(objectClass=person)',
       queryAllGroups: '(objectClass=groupOfNames)',
       groupCacheSize: 100,

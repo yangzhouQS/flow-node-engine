@@ -229,6 +229,7 @@ describe('JobService', () => {
   describe('createJob', () => {
     it('应该成功创建作业', async () => {
       const createDto = {
+        id_: 'job-123',
         type_: JobType.ASYNC_SERVICE,
         process_inst_id_: 'process-123',
         handler_type_: 'testHandler',
@@ -272,6 +273,7 @@ describe('JobService', () => {
 
     it('应该使用默认值创建作业', async () => {
       const createDto = {
+        id_: 'job-default',
         type_: JobType.SIGNAL,
       };
 
@@ -597,6 +599,7 @@ describe('JobService', () => {
   describe('createTimerJob', () => {
     it('应该成功创建定时器作业', async () => {
       const createDto = {
+        id_: 'timer-123',
         timer_type_: TimerType.DATE,
         timer_expression_: '2024-12-31T23:59:59Z',
         due_date_: new Date('2024-12-31T23:59:59Z'),
@@ -615,6 +618,7 @@ describe('JobService', () => {
 
     it('应该创建循环定时器作业', async () => {
       const createDto = {
+        id_: 'timer-cycle-123',
         timer_type_: TimerType.CYCLE,
         timer_expression_: 'R5/PT1H',
         due_date_: new Date(),
@@ -700,6 +704,7 @@ describe('JobService', () => {
   describe('createExternalWorkerJob', () => {
     it('应该成功创建外部工作者作业', async () => {
       const createDto = {
+        id_: 'external-123',
         topic_: 'test-topic',
         process_inst_id_: 'process-123',
         payload_: JSON.stringify({ task: 'do-something' }),

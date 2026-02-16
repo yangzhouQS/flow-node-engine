@@ -296,6 +296,11 @@ describe('TransactionSubProcessExecutor', () => {
         createdAt: new Date(),
         handler: {
           compensate: mockCompensate,
+          getConfig: () => ({
+            id: 'handler-1',
+            activityId: 'activity-1',
+            activityType: 'serviceTask',
+          }),
         },
       });
       
@@ -325,6 +330,11 @@ describe('TransactionSubProcessExecutor', () => {
         createdAt: new Date(),
         handler: {
           compensate: mockCompensate,
+          getConfig: () => ({
+            id: 'handler-1',
+            activityId: 'activity-1',
+            activityType: 'serviceTask',
+          }),
         },
       });
       
@@ -354,7 +364,14 @@ describe('TransactionSubProcessExecutor', () => {
         activityId: 'activity-1',
         executionId: 'exec-1',
         createdAt: new Date(),
-        handler: { compensate: mockCompensate1 },
+        handler: {
+          compensate: mockCompensate1,
+          getConfig: () => ({
+            id: 'handler-1',
+            activityId: 'activity-1',
+            activityType: 'serviceTask',
+          }),
+        },
       });
       
       await executor.registerCompensationSubscription(scope.transactionId, {
@@ -363,7 +380,14 @@ describe('TransactionSubProcessExecutor', () => {
         activityId: 'activity-2',
         executionId: 'exec-2',
         createdAt: new Date(),
-        handler: { compensate: mockCompensate2 },
+        handler: {
+          compensate: mockCompensate2,
+          getConfig: () => ({
+            id: 'handler-2',
+            activityId: 'activity-2',
+            activityType: 'serviceTask',
+          }),
+        },
       });
       
       const executed = await executor.triggerCompensation(scope.transactionId, ['activity-1']);
@@ -386,7 +410,14 @@ describe('TransactionSubProcessExecutor', () => {
         activityId: 'activity-1',
         executionId: 'exec-1',
         createdAt: new Date(),
-        handler: { compensate: async () => { order.push('activity-1'); } },
+        handler: {
+          compensate: async () => { order.push('activity-1'); return { success: true }; },
+          getConfig: () => ({
+            id: 'handler-1',
+            activityId: 'activity-1',
+            activityType: 'serviceTask',
+          }),
+        },
       });
       
       await executor.registerCompensationSubscription(scope.transactionId, {
@@ -395,7 +426,14 @@ describe('TransactionSubProcessExecutor', () => {
         activityId: 'activity-2',
         executionId: 'exec-2',
         createdAt: new Date(),
-        handler: { compensate: async () => { order.push('activity-2'); } },
+        handler: {
+          compensate: async () => { order.push('activity-2'); return { success: true }; },
+          getConfig: () => ({
+            id: 'handler-2',
+            activityId: 'activity-2',
+            activityType: 'serviceTask',
+          }),
+        },
       });
       
       await executor.triggerCompensation(scope.transactionId);

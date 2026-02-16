@@ -32,6 +32,8 @@ describe('HistoricVariableInstanceService', () => {
     long_: null,
     double_: null,
     bytes_: null,
+    proc_def_id_: 'proc-def-1',
+    proc_def_key_: 'process-key',
     scope_id_: null,
     scope_type_: null,
     tenant_id_: 'tenant-1',
@@ -453,7 +455,7 @@ describe('HistoricVariableInstanceService', () => {
       ];
 
       repository.create.mockReturnValue(mockVariable);
-      repository.save.mockResolvedValue([mockVariable, mockVariable]);
+      repository.save.mockResolvedValue([mockVariable, mockVariable] as any);
 
       const result = await service.createBatch(dtos);
 
@@ -464,7 +466,7 @@ describe('HistoricVariableInstanceService', () => {
 
   describe('deleteBatch', () => {
     it('应该批量软删除历史变量', async () => {
-      repository.update.mockResolvedValue({ affected: 2, raw: {} });
+      repository.update.mockResolvedValue({ affected: 2, raw: {}, generatedMaps: [] });
 
       await service.deleteBatch(['var-1', 'var-2']);
 
@@ -479,7 +481,7 @@ describe('HistoricVariableInstanceService', () => {
 
   describe('deleteByProcessInstanceId', () => {
     it('应该删除指定流程实例的所有变量', async () => {
-      repository.update.mockResolvedValue({ affected: 5, raw: {} });
+      repository.update.mockResolvedValue({ affected: 5, raw: {}, generatedMaps: [] });
 
       await service.deleteByProcessInstanceId('process-1');
 

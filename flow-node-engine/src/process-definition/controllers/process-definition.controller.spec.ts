@@ -8,7 +8,7 @@ describe('ProcessDefinitionController', () => {
   let controller: ProcessDefinitionController;
   let service: ProcessDefinitionService;
 
-  const mockProcessDefinition: any = {
+  const mockProcessDefinition = {
     id: 'pd-1',
     key: 'test-process',
     name: 'Test Process',
@@ -23,7 +23,10 @@ describe('ProcessDefinitionController', () => {
     endTime: null,
     created: new Date(),
     updated: new Date(),
-  } as ProcessDefinition;
+    deployment: null,
+    isSuspended: false,
+    createTime: new Date(),
+  } as unknown as ProcessDefinition;
 
   const mockService = {
     deploy: vi.fn(),

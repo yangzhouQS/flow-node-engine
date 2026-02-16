@@ -51,11 +51,12 @@ describe('ProgressController', () => {
   describe('create', () => {
     it('应该创建进度记录', async () => {
       const dto = {
-        processInstanceId: 'proc-1',
-        processDefinitionKey: 'test-process',
-        tenantId: 'tenant-1',
+        id_: 'progress-1',
+        process_inst_id_: 'proc-1',
+        process_def_key_: 'test-process',
+        tenant_id_: 'tenant-1',
       };
-      const mockProgress = { id: 'progress-1', ...dto };
+      const mockProgress = { id: 'progress-1', process_inst_id_: 'proc-1' };
       mockProgressTrackingService.createProgress.mockResolvedValue(mockProgress);
 
       const result = await controller.create(dto);
@@ -65,7 +66,7 @@ describe('ProgressController', () => {
     });
 
     it('应该处理创建失败的情况', async () => {
-      const dto = { processInstanceId: 'proc-1' };
+      const dto = { id_: 'progress-2', process_inst_id_: 'proc-1' };
       mockProgressTrackingService.createProgress.mockRejectedValue(new Error('创建失败'));
 
       await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -74,8 +75,8 @@ describe('ProgressController', () => {
 
   describe('update', () => {
     it('应该更新进度', async () => {
-      const dto = { percentage: 50 };
-      const mockProgress = { id: 'progress-1', percentage: 50 };
+      const dto = { percentage_: 50 };
+      const mockProgress = { id: 'progress-1', percentage_: 50 };
       mockProgressTrackingService.updateProgress.mockResolvedValue(mockProgress);
 
       const result = await controller.update('progress-1', dto);
@@ -85,7 +86,7 @@ describe('ProgressController', () => {
     });
 
     it('应该处理进度不存在的情况', async () => {
-      const dto = { percentage: 50 };
+      const dto = { percentage_: 50 };
       mockProgressTrackingService.updateProgress.mockRejectedValue(new Error('进度记录不存在'));
 
       await expect(controller.update('nonexistent', dto)).rejects.toThrow(NotFoundException);
@@ -203,11 +204,11 @@ describe('ProgressController', () => {
 
   describe('getStatistics', () => {
     it('应该获取进度统计', async () => {
-      const query = { tenantId: 'tenant-1' };
+      const query = { tenant_id_: 'tenant-1' };
       const mockStats = {
-        totalProcesses: 100,
-        completedProcesses: 60,
-        averageProgress: 65.5,
+        total_instances: 100,
+        completed_instances: 60,
+        avg_percentage: 65.5,
       };
       mockProgressTrackingService.getStatistics.mockResolvedValue(mockStats);
 
@@ -270,9 +271,10 @@ describe('ProgressController', () => {
   describe('recordMetric', () => {
     it('应该记录指标', async () => {
       const dto = {
-        name: 'process_duration',
-        value: 1500,
-        labels: { processKey: 'test-process' },
+        id_: 'metric-1',
+        name_: 'process_duration',
+        value_: 1500,
+        labels_: { processKey: 'test-process' },
       };
       mockProgressTrackingService.recordMetric.mockResolvedValue(undefined);
 
@@ -284,9 +286,9 @@ describe('ProgressController', () => {
 
   describe('queryMetrics', () => {
     it('应该查询指标', async () => {
-      const query = { name: 'process_duration', startTime: new Date(), endTime: new Date() };
+      const query = { name_: 'process_duration', start_time: new Date(), end_time: new Date() };
       const mockResult = {
-        list: [{ name: 'process_duration', value: 1500 }],
+        list: [{ name_: 'process_duration', value_: 1500 }],
         total: 1,
       };
       mockProgressTrackingService.queryMetrics.mockResolvedValue(mockResult);

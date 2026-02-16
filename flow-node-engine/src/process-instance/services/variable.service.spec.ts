@@ -311,7 +311,7 @@ describe('VariableService', () => {
       variableRepository.findOne.mockResolvedValue(mockVariable as Variable);
       variableRepository.save.mockResolvedValue(mockVariable as Variable);
 
-      await service.update('var-123', { value: { key: 'value' } });
+      await service.update('var-123', { value: { key: 'value' } as any });
 
       expect(variableRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({

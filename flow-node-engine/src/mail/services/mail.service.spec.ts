@@ -10,7 +10,7 @@ import { MailTransport, ProcessNotificationType, TaskNotificationType } from '..
 
 // Mock nodemailer - 使用 import 原始模块的方式
 vi.mock(import('nodemailer'), async (importOriginal) => {
-  const original = await importOriginal();
+  const original = await importOriginal() as any;
   return {
     ...original,
     default: {
@@ -24,7 +24,7 @@ vi.mock(import('nodemailer'), async (importOriginal) => {
       sendMail: vi.fn().mockResolvedValue({ messageId: 'test-message-id' }),
       verify: vi.fn().mockResolvedValue(true),
     })),
-  };
+  } as any;
 });
 
 describe('MailService', () => {

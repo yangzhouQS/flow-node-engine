@@ -366,9 +366,30 @@ describe('DmnXmlExporterService', () => {
 });
 
 /**
+ * 创建模拟决策实体的输入参数类型
+ */
+interface CreateMockDecisionParams {
+  decisionKey?: string;
+  name?: string;
+  description?: string;
+  category?: string;
+  hitPolicy?: HitPolicy;
+  aggregation?: AggregationType;
+  inputs?: Array<{ id: string; label: string; expression: string; type: string }>;
+  outputs?: Array<{ id: string; label: string; name: string; type: string }>;
+  rules?: Array<{
+    id?: string;
+    conditions: Array<{ inputId: string; operator: string; value: unknown }>;
+    outputs: Array<{ outputId: string; value: unknown }>;
+  }>;
+  tenantId?: string;
+  extra?: string;
+}
+
+/**
  * 创建模拟决策实体
  */
-function createMockDecision(overrides: Partial<DmnDecisionEntity> = {}): DmnDecisionEntity {
+function createMockDecision(overrides: CreateMockDecisionParams = {}): DmnDecisionEntity {
   const decision = new DmnDecisionEntity();
   decision.id = 'test-id';
   decision.decisionKey = overrides.decisionKey || 'test_decision';
@@ -379,19 +400,25 @@ function createMockDecision(overrides: Partial<DmnDecisionEntity> = {}): DmnDeci
   decision.aggregation = overrides.aggregation;
   decision.version = 1;
   decision.status = DmnDecisionStatus.PUBLISHED;
-  decision.inputs = overrides.inputs || [
-    { id: 'input_1', label: 'Input 1', expression: 'input1', type: 'string' },
-  ];
-  decision.outputs = overrides.outputs || [
-    { id: 'output_1', label: 'Output 1', name: 'output1', type: 'string' },
-  ];
-  decision.rules = overrides.rules || [
-    {
-      id: 'rule_1',
-      conditions: [{ inputId: 'input_1', operator: '==', value: 'test' }],
-      outputs: [{ outputId: 'output_1', value: 'result' }],
-    },
-  ];
+  decision.inputs = overrides.inputs != null
+    ? JSON.stringify(overrides.inputs)
+    : JSON.stringify([
+        { id: 'input_1', label: 'Input 1', expression: 'input1', type: 'string' },
+      ]);
+  decision.outputs = overrides.outputs != null
+    ? JSON.stringify(overrides.outputs)
+    : JSON.stringify([
+        { id: 'output_1', label: 'Output 1', name: 'output1', type: 'string' },
+      ]);
+  decision.rules = overrides.rules != null
+    ? JSON.stringify(overrides.rules)
+    : JSON.stringify([
+        {
+          id: 'rule_1',
+          conditions: [{ inputId: 'input_1', operator: '==', value: 'test' }],
+          outputs: [{ outputId: 'output_1', value: 'result' }],
+        },
+      ]);
   decision.tenantId = overrides.tenantId;
   decision.createTime = new Date();
   decision.extra = overrides.extra;
