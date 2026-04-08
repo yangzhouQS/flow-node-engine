@@ -99,7 +99,7 @@
     "handlebars": "^4.7.8",
     "jiti": "^2.6.1",
     "ldapjs": "^3.0.7",
-    "nodemailer": "^8.0.1",
+    "nodemailer": "^8.0.5",
     "prettier": "^3.8.1",
     "rimraf": "^6.1.2",
     "run-script-webpack-plugin": "0.2.3",
